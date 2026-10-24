@@ -54,6 +54,9 @@ final class MacToysProvider: SearchProvider {
             let moduleID = String(id.dropFirst(17))
             return registry.module(moduleID).map(settingsItem)
         }
+        if id.hasPrefix("mactoys:open:") {
+            return registry.module(String(id.dropFirst(13))).map(openItem)
+        }
         if id.hasPrefix("mactoys:action:") {
             let actionID = String(id.dropFirst(15))
             for m in registry.modules where registry.isEnabled(m.info.id) {
@@ -61,6 +64,27 @@ final class MacToysProvider: SearchProvider {
             }
         }
         return nil
+    }
+
+    /// Opens a utility through its `open` command (its editor or picker), or its settings when it has none.
+    private func openItem(_ m: any ToyModule) -> PaletteItem {
+        let moduleID = m.info.id
+        var item = settingsItem(m)
+        item.id = "mactoys:open:\(moduleID)"
+        item.subtitle = "MacToys · \(m.info.summary)"
+        item.accessory = "Utility"
+        item.primary = PaletteAction(id: "open", title: "Open \(m.info.name)", symbol: m.info.symbol) {
+            .dismissThen {
+                let registry = ModuleRegistry.shared
+                if !registry.isEnabled(moduleID) || !registry.dispatch(AppCommand(module: moduleID, action: "open")) {
+                    registry.showSettings?(moduleID)
+                }
+            }
+        }
+        item.actions.insert(PaletteAction(id: "settings", title: "\(m.info.name) Settings", symbol: "gearshape") {
+            .dismissThen { ModuleRegistry.shared.showSettings?(moduleID) }
+        }, at: 0)
+        return item
     }
 
     private func settingsItem(_ m: any ToyModule) -> PaletteItem {

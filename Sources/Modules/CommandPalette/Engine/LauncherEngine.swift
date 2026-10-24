@@ -24,6 +24,10 @@ final class LauncherEngine {
             HomebrewProvider(engine: self), MacToysProvider(), ScriptsProvider(engine: self),
             EditorsProvider(engine: self), HistoryProvider(engine: self),
         ]
+        options.onChange { [weak self] _ in
+            guard let self, self.isActive else { return }
+            for p in self.providers { p.optionsChanged() }
+        }
     }
 
     var isActive: Bool { !users.isEmpty }
@@ -34,6 +38,12 @@ final class LauncherEngine {
     func resolve(_ id: String) -> PaletteItem? {
         guard let colon = id.firstIndex(of: ":") else { return nil }
         return provider(String(id[..<colon]))?.resolve(id)
+    }
+
+    /// The page behind a page command id (`clipboard:page`).
+    func page(for id: String) -> ListPage? {
+        guard id.hasSuffix(":page"), let p = provider(String(id.dropLast(5))) else { return nil }
+        return p.page
     }
 
     /// Starts the providers for a launcher (`cmdpal`, `run`). Idempotent per user.

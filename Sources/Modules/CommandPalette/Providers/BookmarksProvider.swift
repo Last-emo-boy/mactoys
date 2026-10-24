@@ -134,6 +134,7 @@ final class BookmarksProvider: SearchProvider {
     private var safariBlocked = false
     private var loadedAt: Date?
     private var loadTask: Task<Void, Never>?
+    private var loadedBrowsers: [BrowserKind] = []
 
     init(engine: LauncherEngine) { self.engine = engine }
 
@@ -154,9 +155,14 @@ final class BookmarksProvider: SearchProvider {
         reload()
     }
 
+    func optionsChanged() {
+        if BrowserKind.allCases.filter(isEnabled) != loadedBrowsers { loadedAt = nil; reload() }
+    }
+
     func reload() {
         guard loadTask == nil else { return }
         let browsers = BrowserKind.allCases.filter(isEnabled)
+        loadedBrowsers = browsers
         loadTask = Task { [weak self] in
             let result = await background { () -> ([Bookmark], Bool) in
                 var all: [Bookmark] = []

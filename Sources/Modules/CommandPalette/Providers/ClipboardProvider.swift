@@ -24,9 +24,7 @@ final class ClipboardProvider: SearchProvider {
 
     func search(_ query: SearchQuery) async -> [PaletteItem] {
         let text = query.text.trimmingCharacters(in: .whitespaces)
-        if !query.scoped {
-            guard engine.options.value.clipboardInGlobalResults, text.count >= 3 else { return [] }
-        }
+        if !query.scoped { guard text.count >= 3 else { return [] } }
         let items = history.items
         if text.isEmpty {
             return items.enumerated().map { i, clip in item(clip, score: 1000 - Double(i)) }

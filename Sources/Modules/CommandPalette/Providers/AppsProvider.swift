@@ -95,6 +95,7 @@ final class AppsProvider: SearchProvider {
     private var indexTask: Task<Void, Never>?
     private var lastIndex: Date?
     private var observer: NSObjectProtocol?
+    private var indexedConfig: [String] = []
 
     init(engine: LauncherEngine) { self.engine = engine }
 
@@ -127,9 +128,15 @@ final class AppsProvider: SearchProvider {
         reindex()
     }
 
+    func optionsChanged() {
+        let o = engine.options.value
+        if o.appExtraFolders + [String(o.appIncludeCoreServices)] != indexedConfig { reindex() }
+    }
+
     func reindex() {
         guard indexTask == nil else { return }
         let o = engine.options.value
+        indexedConfig = o.appExtraFolders + [String(o.appIncludeCoreServices)]
         let folders = AppIndexer.folders(extra: o.appExtraFolders, coreServices: o.appIncludeCoreServices)
         indexTask = Task { [weak self] in
             let list = await background { AppIndexer.scan(folders) }

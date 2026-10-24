@@ -117,7 +117,6 @@ struct ProviderOptions: Codable, Equatable, Sendable {
     var confirmSystemCommands = true
     // Clipboard
     var clipboardPasteOnEnter = true
-    var clipboardInGlobalResults = false
     // Bookmarks: browser id → enabled
     var bookmarkBrowsers: [String: Bool] = [:]
     // Processes

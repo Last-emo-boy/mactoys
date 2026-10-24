@@ -48,7 +48,7 @@ enum FileActions {
                 return .dismiss
             })
         } else {
-            list.append(PaletteAction(id: "terminalhere", title: "Open Enclosing Folder in \(terminal.title)", symbol: "terminal",
+            list.append(PaletteAction(id: "terminalhere", title: "Open Folder in \(terminal.title)", symbol: "terminal",
                                       shortcut: ActionKeys.terminal) {
                 Launch.openTerminal(at: url.deletingLastPathComponent(), app: terminal)
                 return .dismiss

@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 @testable import CommandPalette
+@testable import MacToysCore
 
 // MARK: - Calculator
 
@@ -566,5 +567,149 @@ import Testing
         #expect(list[0].memory == 2048 * 1024)
         #expect(list[0].name == "Safari")
         #expect(list[1].user == "root")
+    }
+}
+
+// MARK: - Result merging and usage ranking
+
+@MainActor
+private final class FakeProvider: SearchProvider {
+    let id: String
+    let name: String
+    let summary = "Fake"
+    let icon = ItemIcon.symbol("star", .blue)
+    let defaultKeyword = ""
+    var delay: UInt64
+    var results: (String) -> [PaletteItem]
+
+    init(_ id: String, delay: UInt64 = 0, results: @escaping (String) -> [PaletteItem]) {
+        self.id = id
+        self.name = id.capitalized
+        self.delay = delay
+        self.results = results
+    }
+
+    func search(_ query: SearchQuery) async -> [PaletteItem] {
+        if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
+        return results(query.text)
+    }
+}
+
+@MainActor
+private func item(_ id: String, _ provider: String, score: Double, fallback: Bool = false, section: String? = nil) -> PaletteItem {
+    PaletteItem(id: id, title: id, icon: .symbol("star", .blue), providerID: provider, section: section, score: score,
+                primary: PaletteAction(id: "run", title: "Run", symbol: "play") { .stay }, isFallback: fallback)
+}
+
+@MainActor
+@Suite struct SearchSessionTests {
+    /// Runs a search and waits until every provider answered.
+    func run(_ session: SearchSession, _ providers: [any SearchProvider], text: String) async -> [ResultSection] {
+        await withCheckedContinuation { cont in
+            var done = false
+            session.onUpdate = { sections, pending in
+                guard !pending, !done else { return }
+                done = true
+                cont.resume(returning: sections)
+            }
+            session.run(providers.map { SearchSession.Source(provider: $0, query: SearchQuery(text: text, scoped: false, frontEnd: .palette)) })
+        }
+    }
+
+    @Test func sectionsOrderedByBestMatchAndFallbackLast() async {
+        let session = SearchSession(layout: .sections(maxPerSection: 2), usage: UsageStore(file: nil))
+        session.sectionTitle = { $0.providerID }
+        let a = FakeProvider("apps") { _ in [item("apps:1", "apps", score: 500), item("apps:2", "apps", score: 400), item("apps:3", "apps", score: 300)] }
+        let b = FakeProvider("time", delay: 20_000_000) { _ in [item("time:1", "time", score: 990)] }
+        let w = FakeProvider("web") { _ in [item("web:1", "web", score: 1, fallback: true)] }
+        let sections = await run(session, [w, a, b], text: "x")
+        #expect(sections.map(\.title) == ["time", "apps", "web"])
+        #expect(sections[1].items.map(\.id) == ["apps:1", "apps:2"])   // capped per section
+    }
+
+    @Test func duplicatesKeepTheHigherScore() async {
+        let session = SearchSession(layout: .flat(limit: 10), usage: UsageStore(file: nil))
+        let a = FakeProvider("a") { _ in [item("same", "a", score: 100)] }
+        let b = FakeProvider("b") { _ in [item("same", "b", score: 700)] }
+        let sections = await run(session, [a, b], text: "x")
+        #expect(sections.first?.items.count == 1)
+        #expect(sections.first?.items.first?.providerID == "b")
+    }
+
+    @Test func flatLayoutLimitsAndSorts() async {
+        let session = SearchSession(layout: .flat(limit: 2), usage: UsageStore(file: nil))
+        let a = FakeProvider("a") { _ in [item("1", "a", score: 1), item("2", "a", score: 3), item("3", "a", score: 2)] }
+        let sections = await run(session, [a], text: "x")
+        #expect(sections.first?.items.map(\.id) == ["2", "3"])
+    }
+
+    @Test func usageBoostReordersResults() async {
+        let usage = UsageStore(file: nil)
+        let session = SearchSession(layout: .flat(limit: 10), usage: usage)
+        let a = FakeProvider("a") { _ in [item("often", "a", score: 600), item("top", "a", score: 650)] }
+        for _ in 0..<8 { usage.record(item("often", "a", score: 0), query: "x") }
+        let sections = await run(session, [a], text: "x")
+        #expect(sections.first?.items.first?.id == "often")
+        session.boostWeight = 0
+        let plain = await run(session, [a], text: "x")
+        #expect(plain.first?.items.first?.id == "top")
+    }
+
+    @Test func newerSearchWins() async {
+        let session = SearchSession(layout: .flat(limit: 10), usage: UsageStore(file: nil))
+        let slow = FakeProvider("a", delay: 60_000_000) { q in [item("result:\(q)", "a", score: 1)] }
+        session.run([SearchSession.Source(provider: slow, query: SearchQuery(text: "old", scoped: false, frontEnd: .palette))])
+        let sections = await run(session, [slow], text: "new")
+        #expect(sections.first?.items.map(\.id) == ["result:new"])
+    }
+}
+
+@MainActor
+@Suite struct UsageStoreTests {
+    @Test func historyAndBoost() {
+        let usage = UsageStore(file: nil)
+        let a = item("apps:a", "apps", score: 0), b = item("apps:b", "apps", score: 0)
+        #expect(usage.boost("apps:a") == 0)
+        usage.record(a, query: "a")
+        usage.record(b, query: "b")
+        usage.record(a, query: "a again")
+        #expect(usage.history.map(\.id) == ["apps:a", "apps:b"])
+        #expect(usage.history.first?.query == "a again")
+        #expect(usage.boost("apps:a") > usage.boost("apps:b"))
+        let old = Date().addingTimeInterval(-30 * 86400)
+        usage.record(item("apps:c", "apps", score: 0), query: "c", at: old)
+        #expect(usage.boost("apps:c") < usage.boost("apps:b"))
+        usage.remove("apps:a")
+        #expect(!usage.history.contains { $0.id == "apps:a" })
+        #expect(usage.boost("apps:a") == 0)
+    }
+
+    @Test func persistsToDisk() throws {
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("usage-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let usage = UsageStore(file: file)
+        usage.record(item("calc:1+1", "calc", score: 0), query: "1+1")
+        usage.recordShell("ls -la")
+        usage.flush()
+        let reloaded = UsageStore(file: file)
+        #expect(reloaded.history.first?.id == "calc:1+1")
+        #expect(reloaded.shellHistory == ["ls -la"])
+    }
+
+    @Test func settingsRoundTrip() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = SettingsStore(directory: dir)
+        var s = CommandPaletteSettings()
+        s.pins.append(PinnedCommand(id: "calc:page", title: "Calc", icon: .emoji("🧮")))
+        s.aliases.append(CommandAlias(alias: "x", target: "apps:/Applications/Safari.app", title: "Safari", direct: false))
+        s.hotkeys.append(CommandHotkey(target: "system:lock", title: "Lock", icon: .symbol("lock.fill", .indigo), shortcut: Shortcut(37, [.control, .option])))
+        s.providers["files"] = ProviderToggle(enabled: false, global: false)
+        store.save(s, id: "cmdpal")
+        #expect(store.load("cmdpal", default: CommandPaletteSettings()) == s)
+        var r = RunSettings()
+        r.plugins["calc"] = PluginSetting(enabled: true, keyword: "calc", global: false)
+        store.save(r, id: "run")
+        #expect(store.load("run", default: RunSettings()) == r)
     }
 }

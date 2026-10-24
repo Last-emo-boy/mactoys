@@ -50,6 +50,8 @@ enum ActionOutcome {
     case push(ListPage)
     /// Replace the search text.
     case setQuery(String)
+    /// Go back one page.
+    case back
     /// Ask first; the confirmation's own action decides what happens next.
     case confirm(Confirmation)
 }
@@ -61,6 +63,9 @@ struct Confirmation {
     var confirmTitle: String
     var destructive = true
     var perform: @MainActor () -> ActionOutcome
+    /// An optional third choice ("Always Allow").
+    var alternateTitle: String?
+    var alternate: (@MainActor () -> ActionOutcome)?
 }
 
 /// One thing the user can do with an item.

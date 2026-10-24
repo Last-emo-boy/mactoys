@@ -86,10 +86,10 @@ final class SystemCommandsProvider: SearchProvider {
                 SystemActions.pmset("displaysleepnow")
             },
             Command(id: "restart", title: "Restart", subtitle: "Restart this Mac", symbol: "restart", tint: .orange,
-                    keywords: ["restart", "reboot"], confirm: "Restart") { SystemActions.loginwindow("aevtrrst") },
+                    keywords: ["restart", "reboot"], confirm: "Restart") { SystemActions.loginwindow("aevtrest") },
             Command(id: "shutdown", title: "Shut Down", subtitle: "Turn this Mac off", symbol: "power", tint: .red,
                     keywords: ["shut down", "shutdown", "power off", "turn off"], confirm: "Shut Down") {
-                SystemActions.loginwindow("aevtrsdn")
+                SystemActions.loginwindow("aevtshut")
             },
             Command(id: "logout", title: "Log Out", subtitle: "Log out of \(NSFullUserName())",
                     symbol: "rectangle.portrait.and.arrow.right", tint: .orange, keywords: ["log out", "logout", "sign out"],
@@ -135,6 +135,9 @@ final class SystemCommandsProvider: SearchProvider {
         [pageCommand(title: "System Commands", subtitle: "Lock, sleep, restart, shut down and more",
                      keywords: ["power", "system"])]
     }
+
+    /// Every system command, for pickers in settings.
+    var allCommands: [PaletteItem] { list.map { item($0, score: 0) } }
 
     func search(_ query: SearchQuery) async -> [PaletteItem] {
         let text = query.text.trimmingCharacters(in: .whitespaces)
@@ -218,7 +221,8 @@ enum SystemActions {
         Task { _ = await AsyncProcess.run("/usr/bin/killall", [process], timeout: 10) }
     }
 
-    /// Sends a restart / shut down / log out Apple event to loginwindow (no confirmation dialog of its own).
+    /// Sends a restart (`rest`), shut down (`shut`) or log out (`rlgo`) Apple event to loginwindow
+    /// (Technical Q&A QA1134). These skip the system's own dialog; the palette confirms instead.
     static func loginwindow(_ event: String) {
         do {
             try AppleScript.run("tell application \"loginwindow\" to «event \(event)»")

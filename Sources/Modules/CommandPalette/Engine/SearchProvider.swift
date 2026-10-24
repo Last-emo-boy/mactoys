@@ -29,6 +29,8 @@ protocol SearchProvider: AnyObject {
     func deactivate()
     /// Called each time a launcher opens (refresh caches cheaply).
     func launcherWillShow()
+    /// Called after the shared provider options changed, while the engine is active.
+    func optionsChanged()
 }
 
 extension SearchProvider {
@@ -40,6 +42,7 @@ extension SearchProvider {
     func activate() {}
     func deactivate() {}
     func launcherWillShow() {}
+    func optionsChanged() {}
 
     /// The page that searches only this provider (for commands, filters and aliases).
     var page: ListPage {

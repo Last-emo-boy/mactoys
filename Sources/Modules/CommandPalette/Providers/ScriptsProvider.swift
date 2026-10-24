@@ -99,12 +99,18 @@ final class ScriptsProvider: SearchProvider {
     private var inline: [URL: (text: String, date: Date)] = [:]
     private var refreshing: Set<URL> = []
     private let log = Log.for("cmdpal")
+    private var watchedFolder: URL?
 
     init(engine: LauncherEngine) { self.engine = engine }
+
+    func optionsChanged() {
+        if folder != watchedFolder { activate() }
+    }
 
     var folder: URL { engine.options.value.resolvedScriptsFolder }
 
     func activate() {
+        watchedFolder = folder
         prepareFolder()
         rescan()
         watch()
@@ -152,6 +158,7 @@ final class ScriptsProvider: SearchProvider {
 
     private func watch() {
         watcher?.cancel()
+        watchedFolder = folder
         let fd = open(folder.path, O_EVTONLY)
         guard fd >= 0 else { return }
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fd, eventMask: [.write, .rename, .delete], queue: .main)
