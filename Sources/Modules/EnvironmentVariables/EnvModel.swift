@@ -1,4 +1,5 @@
 import Foundation
+import MacToysCore
 
 /// One `NAME=value` pair.
 struct EnvVariable: Codable, Equatable, Identifiable, Hashable {
@@ -181,86 +182,9 @@ enum PathList {
     }
 }
 
-/// The managed region in a shell startup file:
-///
-///     # >>> MacToys Environment Variables >>>
-///     …
-///     # <<< MacToys Environment Variables <<<
-///
-/// Everything outside the markers is left byte for byte.
-struct ManagedBlock {
-    let begin: String
-    let end: String
-
-    init(name: String) {
-        begin = "# >>> MacToys \(name) >>>"
-        end = "# <<< MacToys \(name) <<<"
-    }
-
-    func contains(_ text: String) -> Bool {
-        text.components(separatedBy: "\n").contains { $0.trimmingCharacters(in: .whitespaces) == begin }
-    }
-
-    /// The block's body lines, or nil when there is no block.
-    func body(in text: String) -> [String]? {
-        let lines = text.components(separatedBy: "\n")
-        guard let b = lines.firstIndex(where: { $0.trimmingCharacters(in: .whitespaces) == begin }) else { return nil }
-        let e = lines[(b + 1)...].firstIndex { $0.trimmingCharacters(in: .whitespaces) == end } ?? lines.count
-        return Array(lines[(b + 1)..<e])
-    }
-
-    /// Replaces the first block (and drops any duplicates) with `body`, or appends a block at the end.
-    func insert(_ body: [String], into text: String) -> String {
-        let blockLines = [begin] + body + [end]
-        var (lines, position) = stripped(text)
-        if let position {
-            lines.insert(contentsOf: blockLines, at: position)
-            return lines.joined(separator: "\n")
-        }
-        // Append, keeping one blank line between user content and the block.
-        var out = text
-        if !out.isEmpty && !out.hasSuffix("\n") { out += "\n" }
-        if !out.isEmpty && !out.hasSuffix("\n\n") { out += "\n" }
-        return out + blockLines.joined(separator: "\n") + "\n"
-    }
-
-    /// Removes every block; undoes exactly what `insert` appended.
-    func remove(from text: String) -> String {
-        let (lines, position) = stripped(text)
-        guard let position else { return text }
-        var out = lines
-        // If the block was appended after a blank separator at the end of the file, drop that separator too.
-        if position == out.count - 1, out.last == "", position > 0, out[position - 1] == "" {
-            out.remove(at: position - 1)
-        }
-        return out.joined(separator: "\n")
-    }
-
-    /// Lines without any block, and where the first block started.
-    private func stripped(_ text: String) -> ([String], Int?) {
-        var lines = text.components(separatedBy: "\n")
-        var first: Int?
-        var i = 0
-        while i < lines.count {
-            guard lines[i].trimmingCharacters(in: .whitespaces) == begin else { i += 1; continue }
-            if first == nil { first = i }
-            var j = i + 1
-            while j < lines.count, lines[j].trimmingCharacters(in: .whitespaces) != end { j += 1 }
-            if j < lines.count {
-                lines.removeSubrange(i...j)
-            } else {
-                // A begin marker without an end: remove only the marker and our source line after it.
-                lines.remove(at: i)
-                if i < lines.count, lines[i].contains("MacToys/envvars/env.zsh") { lines.remove(at: i) }
-            }
-        }
-        return (lines, first)
-    }
-}
-
 /// What the files MacToys writes contain.
 enum EnvFiles {
-    static let block = ManagedBlock(name: "Environment Variables")
+    static let block = ManagedBlock(name: "Environment Variables") { $0.contains("MacToys/envvars/env.zsh") || $0.hasPrefix("# Managed by MacToys") }
     static let agentLabel = "com.w33d.mactoys.envvars"
 
     /// The `source` line for `~/.zshenv` (and the login-shell re-apply for `~/.zprofile`).

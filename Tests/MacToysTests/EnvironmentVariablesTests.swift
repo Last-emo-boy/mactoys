@@ -1,9 +1,10 @@
 import Foundation
 import Testing
 @testable import EnvironmentVariables
+import MacToysCore
 
 @Suite struct EnvironmentVariablesTests {
-    let block = ManagedBlock(name: "Environment Variables")
+    let block = EnvFiles.block
     let body = ["# Managed by MacToys", "[[ -r \"$HOME/env.zsh\" ]] && source \"$HOME/env.zsh\""]
 
     // MARK: Managed block
