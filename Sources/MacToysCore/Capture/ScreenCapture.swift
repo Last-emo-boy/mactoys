@@ -70,6 +70,8 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
     public var onFrame: ((CVPixelBuffer) -> Void)?
     public var onStop: ((Error?) -> Void)?
     private var stream: SCStream?
+    /// The running stream's configuration, so `update` keeps frame rate, cursor and shadow settings.
+    private var config: SCStreamConfiguration?
     private let queue = DispatchQueue(label: "com.w33d.mactoys.capture")
 
     public override init() { super.init() }
@@ -104,16 +106,21 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
         config.showsCursor = showsCursor
         config.pixelFormat = kCVPixelFormatType_32BGRA
         config.queueDepth = 3
+        if case .window = source {
+            // Mirrors must line up with the window frame: drop the drop shadow around it.
+            config.ignoreShadowsSingleWindow = true
+        }
         let stream = SCStream(filter: filter, configuration: config, delegate: self)
         try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: queue)
         try await stream.startCapture()
         self.stream = stream
+        self.config = config
     }
 
     /// Changes the cropped area of a running stream.
     public func update(sourceRect: CGRect, scale: CGFloat = 2) async {
         guard let stream else { return }
-        let config = SCStreamConfiguration()
+        let config = self.config ?? SCStreamConfiguration()
         config.sourceRect = sourceRect
         config.width = max(2, Int(sourceRect.width * scale))
         config.height = max(2, Int(sourceRect.height * scale))
@@ -124,6 +131,7 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
     public func stop() {
         guard let stream else { return }
         self.stream = nil
+        self.config = nil
         Task { try? await stream.stopCapture() }
     }
 
@@ -144,6 +152,7 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
         DispatchQueue.main.async { [weak self] in
             MainActor.assumeIsolated {
                 self?.stream = nil
+                self?.config = nil
                 self?.onStop?(error)
             }
         }
