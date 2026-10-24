@@ -153,6 +153,57 @@ import Testing
         #expect(DemoTypeStep.charactersPerPress(speed: 100) == 3)
     }
 
+    // MARK: Annotations
+
+    @Test func modifiersTurnThePenIntoShapes() {
+        #expect(DrawTool.effective(.pen, shift: false, control: false, tab: false) == .pen)
+        #expect(DrawTool.effective(.pen, shift: true, control: false, tab: false) == .line)
+        #expect(DrawTool.effective(.pen, shift: false, control: true, tab: false) == .rectangle)
+        #expect(DrawTool.effective(.pen, shift: false, control: false, tab: true) == .ellipse)
+        #expect(DrawTool.effective(.pen, shift: true, control: true, tab: false) == .arrow)
+        #expect(DrawTool.effective(.highlighter, shift: true, control: false, tab: false) == .line)
+        #expect(DrawTool.effective(.rectangle, shift: true, control: false, tab: false) == .rectangle)
+        #expect(DrawTool.effective(.text, shift: false, control: true, tab: false) == .text)
+    }
+
+    @Test func arrowheadPointsBackAlongTheShaft() {
+        let (a, b) = Annotation.arrowWings(from: CGPoint(x: 0, y: 0), to: CGPoint(x: 100, y: 0), width: 4)
+        #expect(a.x < 100 && b.x < 100)
+        #expect(close(a.y, -b.y, 1e-9))
+        #expect(close(hypot(100 - a.x, a.y), 14, 1e-9))
+        let (c, _) = Annotation.arrowWings(from: .zero, to: CGPoint(x: 0, y: 50), width: 10)
+        #expect(close(hypot(c.x, 50 - c.y), 35, 1e-9))
+    }
+
+    @Test func eraserHitTesting() {
+        let red = PenColor.red.rgba
+        let line = Annotation(shape: .line(CGPoint(x: 0, y: 0), CGPoint(x: 100, y: 0)), color: red, width: 4)
+        #expect(line.hit(CGPoint(x: 50, y: 5), tolerance: 4))
+        #expect(!line.hit(CGPoint(x: 50, y: 9), tolerance: 4))
+        #expect(!line.hit(CGPoint(x: 110, y: 0), tolerance: 4))
+        let rect = Annotation(shape: .rectangle(CGPoint(x: 10, y: 10), CGPoint(x: 110, y: 60)), color: red, width: 2)
+        #expect(rect.hit(CGPoint(x: 60, y: 11), tolerance: 3))
+        #expect(!rect.hit(CGPoint(x: 60, y: 35), tolerance: 3))     // the inside of an outline isn't hit
+        let ellipse = Annotation(shape: .ellipse(CGPoint(x: 0, y: 0), CGPoint(x: 200, y: 100)), color: red, width: 2)
+        #expect(ellipse.hit(CGPoint(x: 200, y: 50), tolerance: 3))
+        #expect(!ellipse.hit(CGPoint(x: 100, y: 50), tolerance: 3))
+        let pen = Annotation(shape: .pen([CGPoint(x: 0, y: 0), CGPoint(x: 10, y: 10), CGPoint(x: 20, y: 0)]), color: red, width: 6)
+        #expect(pen.hit(CGPoint(x: 15, y: 5), tolerance: 2))
+        #expect(!pen.hit(CGPoint(x: 10, y: 0), tolerance: 1))
+        let dot = Annotation(shape: .pen([CGPoint(x: 5, y: 5)]), color: red, width: 6)
+        #expect(dot.hit(CGPoint(x: 7, y: 7), tolerance: 1))
+    }
+
+    @Test func boundsCoverTheStroke() {
+        let a = Annotation(shape: .line(CGPoint(x: 10, y: 10), CGPoint(x: 50, y: 20)), color: .white, width: 8)
+        #expect(a.bounds.contains(CGRect(x: 6, y: 6, width: 48, height: 18)))
+        #expect(Annotation.rect(CGPoint(x: 9, y: 2), CGPoint(x: 1, y: 8)) == CGRect(x: 1, y: 2, width: 8, height: 6))
+        #expect(Annotation.strokeWidth(pen: 5, highlighter: true) == 15)
+        #expect(Annotation.strokeWidth(pen: 2, highlighter: true) == 12)
+        #expect(Annotation.strokeWidth(pen: 5, highlighter: false) == 5)
+        #expect(Annotation.distance(CGPoint(x: 3, y: 4), .zero, .zero) == 5)
+    }
+
     // MARK: Settings
 
     @Test func settingsRoundTripAndDefaults() throws {

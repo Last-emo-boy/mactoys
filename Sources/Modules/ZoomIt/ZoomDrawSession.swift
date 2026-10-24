@@ -121,6 +121,7 @@ final class ZoomDrawSession {
     private var typing: TextItem?
     private var crop: (purpose: CropPurpose, start: CGPoint?, current: CGPoint?)?
     private var tabHeld = false
+    private var scrollAccumulator: CGFloat = 0
     private var blurred: CGImage?
     private var ending = false
     private var stateObserver: Any?
@@ -346,9 +347,12 @@ final class ZoomDrawSession {
         if state.drawing { stopDrawing() } else { end() }
     }
 
+    /// Trackpads send many small deltas; one step per notch of travel.
     func scroll(_ dy: CGFloat) {
-        guard abs(dy) >= 0.5 else { return }
-        adjust(up: dy > 0)
+        scrollAccumulator += dy
+        guard abs(scrollAccumulator) >= 1 else { return }
+        adjust(up: scrollAccumulator > 0)
+        scrollAccumulator = 0
     }
 
     func flagsChanged(_ flags: NSEvent.ModifierFlags) {
@@ -391,7 +395,8 @@ final class ZoomDrawSession {
         case 48: tabHeld = true; flagsChanged(flags); return true             // tab
         default: break
         }
-        guard state.drawing else { return false }
+        // Zoom mode has no letter keys; swallow them rather than beep.
+        guard state.drawing else { return true }
         guard let ch = event.charactersIgnoringModifiers?.lowercased().first else { return false }
         if let color = PenColor.forKey(ch) {
             state.color = color
@@ -637,7 +642,43 @@ final class ZoomDrawSession {
     private func export(crop: CGRect?, purpose: CropPurpose) {
         annotationView.cursor = .arrow
         updateCursor()
+        if case .live = background, state.board == .screen {
+            exportLive(crop: crop, purpose: purpose)
+            return
+        }
         guard let image = composite(crop: crop) else { return }
+        deliver(image, purpose: purpose)
+    }
+
+    /// Over the live screen there is no frozen image: capture what's on screen, our drawing
+    /// (and Live Zoom) included, without the toolbar.
+    private func exportLive(crop: CGRect?, purpose: CropPurpose) {
+        guard CGPreflightScreenCaptureAccess() else {
+            HUD.show("Screen Recording permission needed", symbol: "exclamationmark.shield")
+            PermissionCenter.shared.request(.screenRecording)
+            return
+        }
+        commitText()
+        let toolbarWasVisible = toolbar?.isVisible ?? false
+        toolbar?.orderOut(nil)
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer { if toolbarWasVisible, !self.ending { self.toolbar?.orderFrontRegardless() } }
+            do {
+                var image = try await ScreenCapture.image(of: self.screen, includeOwnWindows: true)
+                if let crop {
+                    let s = CGFloat(image.width) / self.size.width
+                    if let c = image.cropping(to: CGRect(x: crop.minX * s, y: crop.minY * s, width: crop.width * s,
+                                                         height: crop.height * s).integral) { image = c }
+                }
+                self.deliver(image, purpose: purpose)
+            } catch {
+                self.log.error("Screenshot failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    private func deliver(_ image: CGImage, purpose: CropPurpose) {
         let rep = NSBitmapImageRep(cgImage: image)
         switch purpose {
         case .copy:

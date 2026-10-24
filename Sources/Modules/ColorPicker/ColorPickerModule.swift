@@ -19,6 +19,7 @@ public final class ColorPickerModule: ToyModule {
     let history: ColorHistory
     private lazy var editor = ColorEditorWindow(model: makeEditorModel())
     private var session: PickerSession?
+    private var sampler: NSColorSampler?
     private var running = false
     private var capturing = false
     private let log = Log.for("colorpicker")
@@ -140,10 +141,13 @@ public final class ColorPickerModule: ToyModule {
 
     /// Without Screen Recording, macOS' own sampler still lets the user pick (no loupe controls).
     private func sampleWithSystemPicker(fromEditor: Bool) {
-        NSColorSampler().show { [weak self] color in
-            guard let color else { return }
+        let sampler = NSColorSampler()
+        self.sampler = sampler
+        sampler.show { [weak self] color in
             MainActor.assumeIsolated {
                 guard let self else { return }
+                self.sampler = nil
+                guard let color else { return }
                 let value = ColorValue(RGBA(color))
                 self.record(value)
                 if fromEditor || self.settings.value.leftClick == .pickThenEditor || self.settings.value.activation == .pickThenEditor {
