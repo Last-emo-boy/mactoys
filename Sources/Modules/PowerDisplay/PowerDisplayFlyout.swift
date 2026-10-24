@@ -50,12 +50,13 @@ struct PowerDisplayFlyout: View {
     let module: PowerDisplayModule
     @Bindable var settings: Persisted<PowerDisplaySettings>
     var store: PowerDisplayStore
-    @State private var showIndividual = false
+    @State private var showIndividual: Bool
 
-    init(module: PowerDisplayModule) {
+    init(module: PowerDisplayModule, expanded: Bool = false) {
         self.module = module
         self.settings = module.settings
         self.store = module.store
+        self._showIndividual = State(initialValue: expanded)
     }
 
     var body: some View {
@@ -87,11 +88,12 @@ struct PowerDisplayFlyout: View {
                     ForEach(store.visibleMonitors) { m in MonitorCard(module: module, monitor: m, linked: false) }
                 }
                 if module.canLinkBrightness {
-                    Toggle(isOn: $settings.value.linkedBrightness) {
+                    HStack {
                         Text("Link brightness levels").font(.system(size: 13))
+                        Spacer()
+                        Toggle("Link brightness levels", isOn: $settings.value.linkedBrightness)
+                            .toggleStyle(.switch).controlSize(.small).labelsHidden()
                     }
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
                     .padding(.horizontal, 4)
                 }
             }
@@ -171,7 +173,7 @@ struct PowerDisplayFlyout: View {
 
     /// Sample monitors for `MacToys --snapshot`.
     @MainActor
-    static func preview() -> some View {
+    static func preview(linked: Bool = false) -> some View {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("mactoys-preview-\(UUID().uuidString)")
         let module = PowerDisplayModule(store: SettingsStore(directory: dir))
         let builtIn = MonitorSnapshot(id: "1552-41036-0", number: 1, name: "Built-in Retina Display", displayID: 1,
@@ -191,7 +193,8 @@ struct PowerDisplayFlyout: View {
         module.settings.value.monitors[lg.id] = MonitorPrefs(showInputSource: true)
         module.settings.value.profiles = [DisplayProfileRecord(id: 1, name: "Work"), DisplayProfileRecord(id: 2, name: "Movie")]
         module.settings.value.lastAppliedProfile = 1
-        return PowerDisplayFlyout(module: module)
+        module.settings.value.linkedBrightness = linked
+        return PowerDisplayFlyout(module: module, expanded: linked)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .padding(.top, 20)
     }
@@ -325,7 +328,7 @@ struct FlyoutSlider: View {
                     .frame(width: max(22, geo.size.width * value / 100))
                     .opacity(value <= 0 ? 0.35 : 1)
             }
-            .overlay(Capsule().strokeBorder(Color.accentColor.opacity(focused ? 0.9 : 0), lineWidth: 2))
+            .overlay(Capsule().strokeBorder(.white.opacity(focused ? 0.45 : 0), lineWidth: 1.5))
             .contentShape(Capsule())
             .gesture(DragGesture(minimumDistance: 0).onChanged { g in
                 value = max(0, min(100, g.location.x / max(1, geo.size.width) * 100))

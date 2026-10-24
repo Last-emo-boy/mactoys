@@ -515,6 +515,9 @@ public final class PowerDisplayModule: ToyModule {
     public var previewScenes: [PreviewScene] {
         [PreviewScene("flyout", size: CGSize(width: 440, height: 520)) {
             AnyView(PowerDisplayFlyout.preview())
+        },
+         PreviewScene("flyout-linked", size: CGSize(width: 440, height: 640)) {
+            AnyView(PowerDisplayFlyout.preview(linked: true))
         }]
     }
 }
