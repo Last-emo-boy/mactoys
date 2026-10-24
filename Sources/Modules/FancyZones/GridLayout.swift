@@ -86,6 +86,25 @@ public struct GridLayout: Codable, Hashable, Sendable {
 
     // MARK: Structure
 
+    /// Rectangular cell map matching the fractions, positive fractions, no negative zone ids.
+    /// Every other operation assumes this; grids read from disk are checked first.
+    public var isWellFormed: Bool {
+        !rows.isEmpty && !columns.isEmpty && cells.count == rows.count
+            && cells.allSatisfy { $0.count == columns.count && $0.allSatisfy { $0 >= 0 } }
+            && rows.allSatisfy { $0.isFinite && $0 > 0 } && columns.allSatisfy { $0.isFinite && $0 > 0 }
+    }
+
+    /// Well formed, zones numbered 0..<n without gaps, and every zone a filled rectangle of cells.
+    public var isValid: Bool {
+        guard isWellFormed else { return false }
+        let count = zoneCount
+        guard Set(cells.flatMap { $0 }).count == count else { return false }
+        for (z, s) in spans.enumerated() {
+            for r in s.rows { for c in s.columns where cells[r][c] != z { return false } }
+        }
+        return true
+    }
+
     public var rowCount: Int { rows.count }
     public var columnCount: Int { columns.count }
     public var zoneCount: Int { (cells.flatMap { $0 }.max() ?? -1) + 1 }

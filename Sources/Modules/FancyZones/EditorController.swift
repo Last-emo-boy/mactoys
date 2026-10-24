@@ -37,7 +37,8 @@ final class EditorController {
             self.engine.apply(layout, to: display, announce: false)
         }
         model.onSave = { [weak self] library in
-            self.map { $0.engine.library.value = library.normalized() }
+            guard let self else { return }
+            self.engine.library.value = library.normalized()
         }
         model.onClose = { [weak self] in self?.close() }
         self.model = model

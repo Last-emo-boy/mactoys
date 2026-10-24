@@ -187,6 +187,21 @@ import Testing
         #expect(rows.rows.map { ($0 * 100).rounded() } == [25, 75])
     }
 
+    @Test func malformedGridsAreRejected() {
+        #expect(GridLayout.priority(7).isValid)
+        #expect(!GridLayout(rows: [0.5, 0.5], columns: [1], cells: [[0]]).isWellFormed)          // row count
+        #expect(!GridLayout(rows: [1], columns: [0.5, 0.5], cells: [[0]]).isWellFormed)          // column count
+        #expect(!GridLayout(rows: [1], columns: [1, -1], cells: [[0, 1]]).isWellFormed)          // negative fraction
+        #expect(!GridLayout(rows: [1], columns: [0.5, 0.5], cells: [[0, 2]]).isValid)            // gap in numbering
+        #expect(!GridLayout(rows: [0.5, 0.5], columns: [0.5, 0.5], cells: [[0, 1], [1, 0]]).isValid)   // not rectangles
+        var l = ZoneLayout.newGrid(name: "Bad")
+        l.grid = GridLayout(rows: [0.5, 0.5], columns: [1], cells: [[0]])
+        #expect(l.count == 0 && l.zones(in: screen).isEmpty, "a malformed grid never crashes geometry")
+        let lib = LayoutLibrary(custom: [l, ZoneLayout(id: "c", name: "C", kind: .canvas,
+                                                       canvas: CanvasLayout(referenceWidth: 0, referenceHeight: 10, zones: []))])
+        #expect(lib.normalized().custom.isEmpty)
+    }
+
     @Test func transposeRoundTrips() {
         let g = GridLayout.priority(7)
         #expect(g.transposed().transposed() == g)

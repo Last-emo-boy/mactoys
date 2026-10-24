@@ -111,7 +111,7 @@ public struct ZoneLayout: Codable, Hashable, Identifiable, Sendable {
         case .rows: .rows(zoneCount)
         case .grid: .grid(zoneCount)
         case .priorityGrid: .priority(zoneCount)
-        case .customGrid: grid
+        case .customGrid: grid?.isValid == true ? grid : nil
         case .blank, .focus, .canvas: nil
         }
     }
@@ -161,6 +161,12 @@ public struct CanvasLayout: Codable, Hashable, Sendable {
     public var referenceHeight: Double
     public var zones: [CanvasZone]
 
+    /// A positive reference size and zones with a finite, positive size.
+    public var isValid: Bool {
+        referenceWidth.isFinite && referenceHeight.isFinite && referenceWidth > 0 && referenceHeight > 0
+            && zones.allSatisfy { [$0.x, $0.y, $0.width, $0.height].allSatisfy(\.isFinite) && $0.width > 0 && $0.height > 0 }
+    }
+
     public init(referenceWidth: Double, referenceHeight: Double, zones: [CanvasZone]) {
         self.referenceWidth = referenceWidth
         self.referenceHeight = referenceHeight
@@ -169,7 +175,7 @@ public struct CanvasLayout: Codable, Hashable, Sendable {
 
     /// Zones scaled from the reference size into `rect`.
     public func zones(in rect: CGRect) -> [CGRect] {
-        guard referenceWidth > 0, referenceHeight > 0 else { return [] }
+        guard isValid else { return [] }
         let sx = rect.width / referenceWidth, sy = rect.height / referenceHeight
         return zones.map { z in
             ZoneGeometry.rounded(CGRect(x: rect.minX + z.x * sx, y: rect.minY + z.y * sy,

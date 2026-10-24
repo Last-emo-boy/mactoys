@@ -119,7 +119,9 @@ final class GrabController {
     /// Starts a grab when a movable window of an app that isn't excluded is under the pointer.
     private func begin(at point: CGPoint, resize: Bool) -> Bool {
         guard let hit = Self.windowAt(point), hit.pid != ProcessInfo.processInfo.processIdentifier,
-              !settings.value.excludedApps.matches(app: NSRunningApplication(processIdentifier: hit.pid)) else { return false }
+              !settings.value.excludedApps.matches(app: NSRunningApplication(processIdentifier: hit.pid)),
+              // A window exactly covering a screen is full screen (or a desktop-sized utility): leave it alone.
+              !NSScreen.screens.contains(where: { $0.axFrame == hit.frame }) else { return false }
         session &+= 1
         mode = resize ? .resize : .move
         sessionButton = resize ? .right : .left

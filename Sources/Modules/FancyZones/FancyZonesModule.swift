@@ -61,8 +61,11 @@ public final class FancyZonesModule: ToyModule {
             self?.screensChanged()
         }
         observe(DistributedNotificationCenter.default(), SettingsStore.externalChangeNotification) { [weak self] in
-            self?.settings.reload()
-            self?.layouts.reload()
+            guard let self else { return }
+            self.settings.reload()
+            self.layouts.reload()
+            let repaired = self.layouts.value.normalized()
+            if repaired != self.layouts.value { self.layouts.value = repaired }
         }
         if !listeningForPermissions {
             listeningForPermissions = true

@@ -116,8 +116,20 @@ public struct LayoutLibrary: Codable, Equatable, Sendable {
             t.zoneCount = max(kind == .blank ? 0 : 1, min(t.zoneCount, 40))
             return t
         }
-        lib.custom = custom.filter { l in
-            (l.kind == .customGrid && l.grid != nil) || (l.kind == .canvas && l.canvas != nil)
+        lib.custom = custom.compactMap { l -> ZoneLayout? in
+            var l = l
+            switch l.kind {
+            case .customGrid:
+                guard let g = l.grid, g.isWellFormed else { return nil }
+                l.grid = g.normalized()
+                guard l.grid?.isValid == true else { return nil }
+            case .canvas:
+                guard l.canvas?.isValid == true else { return nil }
+            default:
+                return nil
+            }
+            l.zoneCount = l.count
+            return l
         }
         var seen = Set<Int>()
         for i in lib.templates.indices {
