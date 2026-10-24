@@ -40,11 +40,20 @@ public final class SettingsStore: @unchecked Sendable {
         }
     }
 
-    public func save<T: Encodable>(_ value: T, id: String) {
+    /// Saves `value`. Pass `defaults` so optionals the user cleared are written as explicit
+    /// `null`s — JSONEncoder omits nil, and `load` would otherwise bring the default back.
+    public func save<T: Encodable>(_ value: T, id: String, defaults: T? = nil) {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         do {
-            try encoder.encode(value).write(to: url(for: id), options: .atomic)
+            var data = try encoder.encode(value)
+            if let defaults,
+               var object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let base = try JSONSerialization.jsonObject(with: encoder.encode(defaults)) as? [String: Any] {
+                Self.fillNulls(&object, from: base)
+                data = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys])
+            }
+            try data.write(to: url(for: id), options: .atomic)
         } catch {
             log.error("Could not save \(id, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
@@ -67,6 +76,20 @@ public final class SettingsStore: @unchecked Sendable {
             let dest = directory.appendingPathComponent(file.lastPathComponent)
             try? FileManager.default.removeItem(at: dest)
             try FileManager.default.copyItem(at: file, to: dest)
+        }
+    }
+
+    /// Adds `NSNull` for every key the defaults have but `object` lacks (recursively).
+    private static func fillNulls(_ object: inout [String: Any], from defaults: [String: Any]) {
+        for (key, defaultValue) in defaults {
+            if let present = object[key] {
+                if var nested = present as? [String: Any], let nestedDefault = defaultValue as? [String: Any] {
+                    fillNulls(&nested, from: nestedDefault)
+                    object[key] = nested
+                }
+            } else {
+                object[key] = NSNull()
+            }
         }
     }
 
@@ -136,13 +159,14 @@ public final class Persisted<Value: Codable & Equatable> {
     public func flush() {
         pendingSave?.cancel()
         pendingSave = nil
-        store.save(value, id: id)
+        store.save(value, id: id, defaults: defaultValue)
     }
 
     private func scheduleSave() {
         pendingSave?.cancel()
         let snapshot = value
-        let work = DispatchWorkItem { [store, id] in store.save(snapshot, id: id) }
+        let defaults = defaultValue
+        let work = DispatchWorkItem { [store, id] in store.save(snapshot, id: id, defaults: defaults) }
         pendingSave = work
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
     }

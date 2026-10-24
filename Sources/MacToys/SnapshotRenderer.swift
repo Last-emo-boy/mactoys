@@ -38,15 +38,32 @@ enum SnapshotRenderer {
                               styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
         window.toolbar = NSToolbar(identifier: "snap")
         window.toolbarStyle = .unified
+        // cacheDisplay draws grouped-Form backgrounds in the light style even in Dark Mode,
+        // so render everything light for legible snapshots (`--dark` overrides for overlays).
+        let dark = CommandLine.arguments.contains("--dark")
+        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
         let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height))
         window.contentView = host
         window.orderFrontRegardless()
         for _ in 0..<6 { RunLoop.main.run(until: Date().addingTimeInterval(0.15)) }
         host.layoutSubtreeIfNeeded()
+        // Render the layer tree: grouped Forms draw their rows into layers, which
+        // cacheDisplay (a drawRect pass) skips.
+        let scale = window.backingScaleFactor
         let bounds = host.bounds
-        guard let rep = host.bitmapImageRepForCachingDisplay(in: bounds) else { return }
-        host.cacheDisplay(in: bounds, to: rep)
-        try? rep.representation(using: .png, properties: [:])?.write(to: url)
+        if let layer = window.contentView?.superview?.layer ?? host.layer,
+           let ctx = CGContext(data: nil, width: Int(bounds.width * scale), height: Int(bounds.height * scale),
+                               bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                               bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
+            ctx.scaleBy(x: scale, y: scale)
+            ctx.setFillColor((window.appearance ?? NSAppearance.currentDrawing()).bestMatch(from: [.darkAqua]) != nil
+                             ? CGColor(gray: 0.12, alpha: 1) : CGColor(gray: 0.96, alpha: 1))
+            ctx.fill(CGRect(origin: .zero, size: bounds.size))
+            layer.render(in: ctx)
+            if let image = ctx.makeImage() {
+                try? NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])?.write(to: url)
+            }
+        }
         window.orderOut(nil)
         print("wrote \(url.path)")
     }
@@ -58,5 +75,19 @@ struct Wallpaper: View {
         LinearGradient(colors: [Color(red: 0.09, green: 0.13, blue: 0.36), Color(red: 0.24, green: 0.17, blue: 0.56),
                                 Color(red: 0.6, green: 0.25, blue: 0.53), Color(red: 0.88, green: 0.54, blue: 0.42)],
                        startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+}
+
+/// `CGWindowListCreateImage` is unavailable to Swift on macOS 15+, but still exported.
+enum WindowImage {
+    private typealias Fn = @convention(c) (CGRect, UInt32, UInt32, UInt32) -> Unmanaged<CGImage>?
+    private static let fn: Fn? = {
+        guard let h = dlopen(nil, RTLD_NOW), let sym = dlsym(h, "CGWindowListCreateImage") else { return nil }
+        return unsafeBitCast(sym, to: Fn.self)
+    }()
+
+    static func capture(_ id: CGWindowID) -> CGImage? {
+        // optionIncludingWindow = 1 << 3; boundsIgnoreFraming = 1 << 0, bestResolution = 1 << 3
+        fn?(.null, 1 << 3, id, (1 << 0) | (1 << 3))?.takeRetainedValue()
     }
 }

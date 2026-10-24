@@ -20,6 +20,14 @@ import Testing
         #expect(loaded == V2(a: 5, b: "new"))
     }
 
+    @Test func clearedOptionalStaysCleared() throws {
+        struct S: Codable, Equatable { var shortcut: Shortcut? = Shortcut(8, [.control, .option]); var n = 1 }
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let store = SettingsStore(directory: dir)
+        store.save(S(shortcut: nil, n: 2), id: "s", defaults: S())
+        #expect(store.load("s", default: S()) == S(shortcut: nil, n: 2))
+    }
+
     @Test func appCommandURLRoundTrip() {
         let c = AppCommand(module: "powerrename", action: "open", parameters: ["q": "a b"],
                            files: [URL(fileURLWithPath: "/tmp/a b.txt")])
