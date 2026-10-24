@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>en</string>
+	<key>CFBundleDisplayName</key><string>MacToys Previews</string>
+	<key>CFBundleExecutable</key><string>MacToysQuickLook</string>
+	<key>CFBundleIdentifier</key><string>com.w33d.mactoys.quicklook</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundleName</key><string>MacToysQuickLook</string>
+	<key>CFBundlePackageType</key><string>XPC!</string>
+	<key>CFBundleShortVersionString</key><string>1.0.0</string>
+	<key>CFBundleVersion</key><string>1</string>
+	<key>LSMinimumSystemVersion</key><string>26.0</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>QLIsDataBasedPreview</key><true/>
+			<key>QLSupportedContentTypes</key>
+			<array>
+				<string>net.daringfireball.markdown</string>
+				<string>public.svg-image</string>
+				<string>com.w33d.mactoys.gcode</string>
+				<string>com.w33d.mactoys.qoi</string>
+				<string>public.standard-tesselated-geometry-format</string>
+				<string>public.source-code</string>
+				<string>public.json</string>
+				<string>public.yaml</string>
+				<string>public.xml</string>
+				<string>public.shell-script</string>
+				<string>public.python-script</string>
+				<string>public.ruby-script</string>
+				<string>com.netscape.javascript-source</string>
+				<string>public.swift-source</string>
+				<string>public.comma-separated-values-text</string>
+			</array>
+			<key>QLSupportsSearchableItems</key><false/>
+		</dict>
+		<key>NSExtensionPointIdentifier</key><string>com.apple.quicklook.preview</string>
+		<key>NSExtensionPrincipalClass</key><string>MacToysPreviewProvider</string>
+	</dict>
+</dict>
+</plist>

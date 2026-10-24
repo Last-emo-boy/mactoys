@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>en</string>
+	<key>CFBundleDisplayName</key><string>MacToys</string>
+	<key>CFBundleExecutable</key><string>MacToys</string>
+	<key>CFBundleIconFile</key><string>AppIcon</string>
+	<key>CFBundleIdentifier</key><string>com.w33d.mactoys</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundleName</key><string>MacToys</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>CFBundleShortVersionString</key><string>1.0.0</string>
+	<key>CFBundleVersion</key><string>1</string>
+	<key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+	<key>LSMinimumSystemVersion</key><string>26.0</string>
+	<key>LSUIElement</key><true/>
+	<key>NSHighResolutionCapable</key><true/>
+	<key>NSPrincipalClass</key><string>NSApplication</string>
+	<key>NSSupportsAutomaticTermination</key><false/>
+	<key>NSAppleEventsUsageDescription</key><string>MacToys reads the Finder selection for Peek, PowerRename and New+, and switches the system appearance for Light Switch.</string>
+	<key>NSMicrophoneUsageDescription</key><string>ZoomIt records audio with screen recordings and transcribes snip dictation.</string>
+	<key>NSSpeechRecognitionUsageDescription</key><string>ZoomIt transcribes snip dictation on this Mac.</string>
+	<key>NSLocationWhenInUseUsageDescription</key><string>Light Switch uses your location to compute sunrise and sunset.</string>
+	<key>NSLocationUsageDescription</key><string>Light Switch uses your location to compute sunrise and sunset.</string>
+	<key>NSLocalNetworkUsageDescription</key><string>Mouse Without Borders finds and connects to your other Macs on the local network.</string>
+	<key>NSBonjourServices</key>
+	<array><string>_mactoys-mwb._tcp</string></array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key><string>com.w33d.mactoys</string>
+			<key>CFBundleURLSchemes</key><array><string>mactoys</string></array>
+		</dict>
+	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key><string>Property List</string>
+			<key>CFBundleTypeRole</key><string>Editor</string>
+			<key>LSHandlerRank</key><string>Alternate</string>
+			<key>LSItemContentTypes</key><array><string>com.apple.property-list</string></array>
+		</dict>
+	</array>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key><dict><key>default</key><string>PowerRename</string></dict>
+			<key>NSMessage</key><string>runService</string>
+			<key>NSUserData</key><string>powerrename/open</string>
+			<key>NSRequiredContext</key><dict/>
+			<key>NSSendFileTypes</key><array><string>public.item</string></array>
+		</dict>
+		<dict>
+			<key>NSMenuItem</key><dict><key>default</key><string>Resize Images with MacToys</string></dict>
+			<key>NSMessage</key><string>runService</string>
+			<key>NSUserData</key><string>imageresizer/open</string>
+			<key>NSRequiredContext</key><dict/>
+			<key>NSSendFileTypes</key><array><string>public.image</string></array>
+		</dict>
+		<dict>
+			<key>NSMenuItem</key><dict><key>default</key><string>What’s Using This File?</string></dict>
+			<key>NSMessage</key><string>runService</string>
+			<key>NSUserData</key><string>filelocksmith/open</string>
+			<key>NSRequiredContext</key><dict/>
+			<key>NSSendFileTypes</key><array><string>public.item</string></array>
+		</dict>
+		<dict>
+			<key>NSMenuItem</key><dict><key>default</key><string>Peek</string></dict>
+			<key>NSMessage</key><string>runService</string>
+			<key>NSUserData</key><string>peek/open</string>
+			<key>NSRequiredContext</key><dict/>
+			<key>NSSendFileTypes</key><array><string>public.item</string></array>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key><string>com.w33d.mactoys.gcode</string>
+			<key>UTTypeDescription</key><string>G-code toolpath</string>
+			<key>UTTypeConformsTo</key><array><string>public.plain-text</string></array>
+			<key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>gcode</string><string>gco</string><string>nc</string></array></dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key><string>com.w33d.mactoys.qoi</string>
+			<key>UTTypeDescription</key><string>QOI image</string>
+			<key>UTTypeConformsTo</key><array><string>public.image</string><string>public.data</string></array>
+			<key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>qoi</string></array></dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key><string>com.w33d.mactoys.bgcode</string>
+			<key>UTTypeDescription</key><string>Binary G-code</string>
+			<key>UTTypeConformsTo</key><array><string>public.data</string></array>
+			<key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>bgcode</string></array></dict>
+		</dict>
+	</array>
+</dict>
+</plist>
