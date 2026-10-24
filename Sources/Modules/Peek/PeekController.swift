@@ -64,9 +64,10 @@ final class PeekController: NSObject, NSWindowDelegate {
         keyMonitor = nil
         model.content = .loading
         model.fields = []
-        // Let the app we came from (usually Finder) have the keyboard back.
+        // Let the app we came from (usually Finder) have the keyboard back — unless the user already
+        // switched elsewhere (focus loss) or another MacToys window is open.
         let others = NSApp.windows.contains { $0 !== window && $0.isVisible && $0.canBecomeMain }
-        if !others, let app = previousApp, !app.isTerminated { app.activate() }
+        if NSApp.isActive, !others, let app = previousApp, !app.isTerminated { app.activate() }
         previousApp = nil
     }
 
@@ -79,19 +80,21 @@ final class PeekController: NSObject, NSWindowDelegate {
 
     private func makeWindow() -> NSWindow {
         let w = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 900, height: 640),
-                           styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-                           backing: .buffered, defer: false)
-        w.titleVisibility = .hidden
-        w.titlebarAppearsTransparent = true
+                         styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                         backing: .buffered, defer: false)
+        w.toolbarStyle = .unified
         w.isMovableByWindowBackground = true
         w.isReleasedWhenClosed = false
         w.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         w.minSize = CGSize(width: 420, height: 300)
+        w.tabbingMode = .disallowed
         w.delegate = self
-        w.setAccessibilityTitle("Peek")
-        let host = NSHostingView(rootView: PeekView(model: model))
+        // SwiftUI's .toolbar and .navigationTitle become the window's own toolbar and title.
+        let host = NSHostingController(rootView: PeekView(model: model))
         host.sizingOptions = []
-        w.contentView = host
+        host.sceneBridgingOptions = [.toolbars, .title]
+        w.contentViewController = host
+        w.setContentSize(CGSize(width: 900, height: 640))
         return w
     }
 
@@ -133,7 +136,7 @@ final class PeekController: NSObject, NSWindowDelegate {
         let screen = window?.screen ?? NSScreen.underMouse ?? NSScreen.main
         let vf = screen?.visibleFrame.size ?? CGSize(width: 1440, height: 900)
         let scale = screen?.backingScaleFactor ?? 2
-        return CGSize(width: min(3200, vf.width * 0.85 * scale), height: min(2400, (vf.height * 0.85 - 82) * scale))
+        return CGSize(width: min(3200, vf.width * 0.85 * scale), height: min(2400, (vf.height * 0.85 - 90) * scale))
     }
 
     /// The content size a file would like (before chrome), from its kind and, for images, its pixels.
@@ -168,7 +171,9 @@ final class PeekController: NSObject, NSWindowDelegate {
         guard let w = window else { return }
         let screen = (center ? NSScreen.underMouse : w.screen) ?? NSScreen.main
         guard let vf = screen?.visibleFrame else { return }
-        let chrome = PeekView.headerHeight + 1 + (settings.value.showDetails ? PeekView.footerHeight + 1 : 0)
+        // Title bar and toolbar come from frameRect(forContentRect:); the footer is part of the content.
+        let footer = settings.value.showDetails ? PeekView.footerHeight + 1 : 0
+        let chrome = w.frameRect(forContentRect: CGRect(x: 0, y: 0, width: 100, height: 100)).height - 100 + footer
         let maxW = vf.width * 0.85, maxH = vf.height * 0.85 - chrome
         let s = min(1, min(maxW / content.width, maxH / content.height))
         let size = CGSize(width: max(w.minSize.width, (content.width * s).rounded()),

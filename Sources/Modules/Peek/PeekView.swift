@@ -14,7 +14,7 @@ final class PeekModel {
     var defaultApp: String?
     var pinned = false
     var showDetails = true
-    /// Draw stand-in window buttons (offscreen scenes have no real title bar).
+    /// Draw the title bar inside the view (offscreen scenes have no real window).
     var drawsWindowButtons = false
 
     @ObservationIgnored var onPrevious: () -> Void = {}
@@ -23,16 +23,31 @@ final class PeekModel {
     @ObservationIgnored var onTogglePin: () -> Void = {}
 }
 
-/// Design 07: title "name — 3 of 6", previous/next, "Open with …", content, metadata footer.
+/// Design 07: title "name — 3 of 6", previous/next, "Open with …" in the title bar, content, metadata footer.
 struct PeekView: View {
     @Bindable var model: PeekModel
     static let headerHeight: CGFloat = 52
     static let footerHeight: CGFloat = 30
 
     var body: some View {
+        if model.drawsWindowButtons {
+            // Offscreen scenes have no window: draw the title bar as part of the view.
+            VStack(spacing: 0) {
+                header
+                Divider()
+                main
+            }
+        } else {
+            main
+                .navigationTitle(model.items.title)
+                .toolbar {
+                    ToolbarItemGroup(placement: .primaryAction) { toolbarButtons }
+                }
+        }
+    }
+
+    private var main: some View {
         VStack(spacing: 0) {
-            header
-            Divider()
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             if model.showDetails && !model.fields.isEmpty {
@@ -41,20 +56,39 @@ struct PeekView: View {
             }
         }
         .background(Color(nsColor: .windowBackgroundColor))
-        .ignoresSafeArea()
+    }
+
+    /// Pin, previous/next and "Open with …", in the window's toolbar.
+    @ViewBuilder
+    private var toolbarButtons: some View {
+        Button(action: model.onTogglePin) {
+            Label(model.pinned ? "Unpin" : "Pin", systemImage: model.pinned ? "pin.fill" : "pin")
+        }
+        .help(model.pinned ? "Unpin: fit the window to each file" : "Pin the window's position and size")
+        if model.items.count > 1 {
+            ControlGroup {
+                Button(action: model.onPrevious) { Label("Previous", systemImage: "chevron.left") }
+                    .help("Previous (←)")
+                Button(action: model.onNext) { Label("Next", systemImage: "chevron.right") }
+                    .help("Next (→)")
+            }
+        }
+        if model.items.current != nil {
+            Button(action: model.onOpen) {
+                Text(model.defaultApp.map { "Open with \($0)" } ?? "Open")
+            }
+            .buttonStyle(.borderedProminent)
+            .help("Open with the default app (⌘↩)")
+        }
     }
 
     private var header: some View {
         HStack(spacing: 10) {
-            if model.drawsWindowButtons {
-                HStack(spacing: 8) {
-                    ForEach([Color(red: 1, green: 0.37, blue: 0.34), Color(red: 1, green: 0.74, blue: 0.18), Color(red: 0.16, green: 0.79, blue: 0.25)],
-                            id: \.self) { Circle().fill($0).frame(width: 12, height: 12) }
-                }
-                .padding(.trailing, 14)
-            } else {
-                Color.clear.frame(width: 70, height: 1)       // room for the window buttons
+            HStack(spacing: 8) {
+                ForEach([Color(red: 1, green: 0.37, blue: 0.34), Color(red: 1, green: 0.74, blue: 0.18), Color(red: 0.16, green: 0.79, blue: 0.25)],
+                        id: \.self) { Circle().fill($0).frame(width: 12, height: 12) }
             }
+            .padding(.trailing, 14)
             Text(model.items.title)
                 .font(.system(size: 13, weight: .semibold))
                 .lineLimit(1)
