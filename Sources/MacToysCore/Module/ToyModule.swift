@@ -106,13 +106,33 @@ public protocol ToyModule: AnyObject {
     /// Handles `mactoys://<module-id>/<action>?…` URLs, Finder extension calls and CLI requests.
     /// Return false for unknown actions.
     func handle(_ command: AppCommand) -> Bool
+    /// Overlays and windows rendered with sample data by `MacToys --snapshot <dir> --only <module-id>`,
+    /// so UI can be checked without Screen Recording permission or a live screen.
+    var previewScenes: [PreviewScene] { get }
 }
 
 extension ToyModule {
     public var quickActions: [QuickAction] { [] }
     public var shortcutBindings: [ShortcutBinding] { [] }
     public func handle(_ command: AppCommand) -> Bool { false }
+    public var previewScenes: [PreviewScene] { [] }
     public var isEnabled: Bool { ModuleRegistry.shared.isEnabled(info.id) }
+}
+
+/// A named view rendered offscreen for visual checks (see `ToyModule.previewScenes`).
+public struct PreviewScene {
+    public let name: String
+    public let size: CGSize
+    /// Draw a wallpaper-like gradient behind the view (for glass overlays).
+    public let wallpaper: Bool
+    public let view: @MainActor () -> AnyView
+
+    public init(_ name: String, size: CGSize, wallpaper: Bool = true, view: @escaping @MainActor () -> AnyView) {
+        self.name = name
+        self.size = size
+        self.wallpaper = wallpaper
+        self.view = view
+    }
 }
 
 /// A request addressed to one module: `mactoys://powerrename/open?file=/a&file=/b`.
