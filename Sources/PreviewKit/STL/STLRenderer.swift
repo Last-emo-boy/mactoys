@@ -75,10 +75,7 @@ public enum STLRenderer {
         let cameraNode = SCNNode()
         cameraNode.camera = camera
         let aspect = Float(size.width / max(1, size.height))
-        let halfFOV = Float(camera.fieldOfView * .pi / 360)
-        // Fit the bounding sphere vertically, or horizontally for tall images.
-        let fit = aspect >= 1 ? radius / sin(halfFOV) : radius / (sin(halfFOV) * aspect)
-        let eye = viewDirection * fit * 1.08
+        let eye = viewDirection * fitDistance(extent: extent, aspect: aspect, verticalFOV: Float(camera.fieldOfView)) * 1.06
         cameraNode.position = SCNVector3(eye.x, eye.y, eye.z)
         cameraNode.look(at: SCNVector3(0, 0, 0))
         scene.rootNode.addChildNode(cameraNode)
@@ -86,18 +83,18 @@ public enum STLRenderer {
         let ambient = SCNNode()
         ambient.light = SCNLight()
         ambient.light?.type = .ambient
-        ambient.light?.intensity = 380
+        ambient.light?.intensity = 170
         scene.rootNode.addChildNode(ambient)
         let key = SCNNode()
         key.light = SCNLight()
         key.light?.type = .directional
-        key.light?.intensity = 900
+        key.light?.intensity = 720
         key.eulerAngles = SCNVector3(-0.85, 0.45, 0)
         scene.rootNode.addChildNode(key)
         let fill = SCNNode()
         fill.light = SCNLight()
         fill.light?.type = .directional
-        fill.light?.intensity = 320
+        fill.light?.intensity = 240
         fill.eulerAngles = SCNVector3(0.35, -2.4, 0)
         scene.rootNode.addChildNode(fill)
 
@@ -108,6 +105,22 @@ public enum STLRenderer {
         let image = renderer.snapshot(atTime: 0, with: size, antialiasingMode: .multisampling4X)
         var rect = CGRect(origin: .zero, size: size)
         return image.cgImage(forProposedRect: &rect, context: nil, hints: nil)
+    }
+
+    /// Camera distance at which the box (centered at the origin) just fits the view, perspective included.
+    static func fitDistance(extent: SIMD3<Float>, aspect: Float, verticalFOV: Float) -> Float {
+        let d = viewDirection
+        var right = SIMD3<Float>(d.z, 0, -d.x)            // cross((0, 1, 0), d)
+        right /= max(1e-6, (right * right).sum().squareRoot())
+        let up = SIMD3(d.y * right.z - d.z * right.y, d.z * right.x - d.x * right.z, d.x * right.y - d.y * right.x)
+        let tanV = tan(verticalFOV * .pi / 360), tanH = tanV * aspect
+        var distance: Float = 1e-3
+        for sx in [-0.5, 0.5] as [Float] { for sy in [-0.5, 0.5] as [Float] { for sz in [-0.5, 0.5] as [Float] {
+            let p = extent * SIMD3(sx, sy, sz)
+            let toward = (p * d).sum()
+            distance = max(distance, toward + abs((p * right).sum()) / tanH, toward + abs((p * up).sum()) / tanV)
+        } } }
+        return distance
     }
 
     /// Painter's-algorithm fallback with Lambert shading (orthographic, same viewing direction).
