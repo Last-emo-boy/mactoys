@@ -71,7 +71,7 @@ public final class FancyZonesModule: ToyModule {
             listeningForPermissions = true
             PermissionCenter.shared.onChange { [weak self] granted in
                 guard let self, self.running, granted.contains(.accessibility) else { return }
-                self.watcher.watchRunningApps()
+                self.watcher.rewatchAll()
             }
         }
     }
@@ -253,7 +253,8 @@ public final class FancyZonesModule: ToyModule {
     public func handle(_ command: AppCommand) -> Bool {
         switch command.action {
         case "editor", "open", "show":
-            openEditor()
+            // The editor belongs to a running FancyZones; when it's off, show its settings instead.
+            if running { openEditor() } else { ModuleRegistry.shared.showSettings?(info.id) }
             return true
         case "close":
             editor.close()
@@ -267,7 +268,7 @@ public final class FancyZonesModule: ToyModule {
             let target = command.parameters["display"].flatMap(Int.init).flatMap { n in displays.first { $0.number == n } }
                 ?? engine.activeDisplay()
             guard let target else { return false }
-            engine.apply(layout, to: target, announce: true)
+            engine.apply(layout, to: target, announce: running)   // no overlays while FancyZones is off
             return true
         case "move", "extend":
             guard running, let d = command.parameters["direction"].flatMap(ZoneDirection.init(rawValue:)) else { return false }

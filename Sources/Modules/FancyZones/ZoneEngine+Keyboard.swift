@@ -55,7 +55,7 @@ extension ZoneEngine {
         let zones = self.zones(for: display)
         let current = currentZones(of: w, frame: frame, on: display, zones: zones)
         guard !current.isEmpty else { moveFocusedWindow(direction); return }
-        let record = validRecord(for: w, on: display)
+        let record = validRecord(for: w, frame: frame, on: display)
         let anchor = record?.extendAnchor ?? current
         let d = direction.vector
         let cursor = record?.extendCursor ?? current.max {
@@ -84,26 +84,29 @@ extension ZoneEngine {
 
     // MARK: Helpers
 
+    /// The focused window, its frame and its display: the display it was snapped on while it
+    /// is still in that zone (spanning layouts can reach across screens), else the one showing it.
     private func focusedTarget() -> (WindowRef, CGRect, ZoneDisplay)? {
         guard let w = focusedWindow(), isSnappable(w), let frame = w.frame else { return nil }
+        AXUIElementSetMessagingTimeout(w.element, 0.5)
         let all = displays
-        let display = records[w].flatMap { r in all.first { $0.key == r.displayKey } }
+        let display = liveRecord(for: w, frame: frame).flatMap { r in all.first { $0.key == r.displayKey } }
             ?? ZoneDisplay.showing(frame, in: all)
         guard let display else { return nil }
         return (w, frame, display)
     }
 
-    private func validRecord(for w: WindowRef, on display: ZoneDisplay) -> SnapRecord? {
-        guard let r = records[w], r.displayKey == display.key, r.layoutID == layout(for: display).id else { return nil }
+    /// The window's record while it is still in its zone of `display`'s current layout.
+    private func validRecord(for w: WindowRef, frame: CGRect, on display: ZoneDisplay) -> SnapRecord? {
+        guard let r = liveRecord(for: w, frame: frame), r.displayKey == display.key,
+              r.layoutID == layout(for: display).id else { return nil }
         return r
     }
 
-    /// The zones a window occupies: its snap record, else zones its frame matches.
+    /// The zones a window occupies: its snap record, else the zones its frame matches.
     private func currentZones(of w: WindowRef, frame: CGRect, on display: ZoneDisplay, zones: [CGRect]) -> [Int] {
-        if let r = validRecord(for: w, on: display), r.zones.allSatisfy({ zones.indices.contains($0) }) {
-            let union = ZoneGeometry.union(of: r.zones, in: zones)
-            // Trust the record only while the window still sits there.
-            if abs(union.minX - frame.minX) < 24 && abs(union.minY - frame.minY) < 24 { return r.zones }
+        if let r = validRecord(for: w, frame: frame, on: display), r.zones.allSatisfy({ zones.indices.contains($0) }) {
+            return r.zones
         }
         return ZoneGeometry.zonesMatching(frame: frame, in: zones, tolerance: 6)
     }

@@ -23,6 +23,7 @@ private struct ZoneScreenView: View {
     let model: ZoneScreenModel
     var body: some View {
         ZoneFieldView(zones: model.zones, highlighted: model.highlighted, style: model.style)
+            .ignoresSafeArea()      // the camera housing must not shift zones on notched displays
     }
 }
 
@@ -40,11 +41,15 @@ final class ZoneOverlay {
     private var namePanel: OverlayPanel?
     private var nameWork: DispatchWorkItem?
     private var flashWork: DispatchWorkItem?
+    /// Bumped whenever a panel is shown again, so an older fade-out doesn't hide it.
+    private var flashGeneration = 0
+    private var nameGeneration = 0
     private(set) var isShowingDrag = false
 
     /// Shows `layers` (zones per display). With `onlyScreen`, other screens are hidden.
     func show(_ layers: [ZoneLayer], style: ZoneStyle, onlyScreen: CGRect? = nil) {
         flashWork?.cancel()
+        flashGeneration += 1
         isShowingDrag = true
         present(layers, style: style, onlyScreen: onlyScreen)
     }
@@ -52,6 +57,7 @@ final class ZoneOverlay {
     func hide() {
         isShowingDrag = false
         flashWork?.cancel()
+        flashGeneration += 1
         for p in panels { p.panel.orderOut(nil) }
     }
 
@@ -59,6 +65,8 @@ final class ZoneOverlay {
     func flash(_ layer: ZoneLayer, style: ZoneStyle) {
         guard !isShowingDrag else { return }
         flashWork?.cancel()
+        flashGeneration += 1
+        let generation = flashGeneration
         present([layer], style: style, onlyScreen: nil, onlyIntersecting: layer.display.frame)
         let targets = panels.filter { $0.panel.isVisible }
         let work = DispatchWorkItem { [weak self] in
@@ -67,7 +75,7 @@ final class ZoneOverlay {
                 for p in targets { p.panel.animator().alphaValue = 0 }
             }, completionHandler: {
                 MainActor.assumeIsolated {
-                    guard self?.isShowingDrag != true else { return }
+                    guard let self, self.flashGeneration == generation else { return }
                     for p in targets { p.panel.orderOut(nil); p.panel.alphaValue = 1 }
                 }
             })
@@ -99,16 +107,23 @@ final class ZoneOverlay {
         let frame = ScreenGeometry.toCocoa(CGRect(x: x, y: y, width: size.width, height: size.height))
         let panel = namePanel ?? OverlayPanel(frame: frame, level: .statusBar)
         panel.setFrame(frame, display: false)
-        panel.setContent(badge.frame(maxWidth: .infinity, maxHeight: .infinity))
+        panel.setContent(badge.frame(maxWidth: .infinity, maxHeight: .infinity).ignoresSafeArea())
         panel.alphaValue = 1
         panel.orderFrontRegardless()
         namePanel = panel
         nameWork?.cancel()
-        let work = DispatchWorkItem {
+        nameGeneration += 1
+        let generation = nameGeneration
+        let work = DispatchWorkItem { [weak self] in
             NSAnimationContext.runAnimationGroup({ ctx in
                 ctx.duration = 0.25
                 panel.animator().alphaValue = 0
-            }, completionHandler: { panel.orderOut(nil) })
+            }, completionHandler: {
+                MainActor.assumeIsolated {
+                    guard self?.nameGeneration == generation else { return }
+                    panel.orderOut(nil)
+                }
+            })
         }
         nameWork = work
         DispatchQueue.main.asyncAfter(deadline: .now() + max(0.3, s.layoutNameDuration / 1000), execute: work)
@@ -118,6 +133,8 @@ final class ZoneOverlay {
     func tearDown() {
         flashWork?.cancel()
         nameWork?.cancel()
+        flashGeneration += 1
+        nameGeneration += 1
         isShowingDrag = false
         for p in panels { p.panel.orderOut(nil); p.panel.close() }
         panels.removeAll()

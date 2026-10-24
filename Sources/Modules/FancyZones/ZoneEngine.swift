@@ -10,6 +10,8 @@ struct SnapRecord {
     var displayKey: String
     var layoutID: String
     var zones: [Int]
+    /// The frame the window had right after snapping (apps may clamp the zone's size).
+    var frame: CGRect
     /// Size before the first snap, restored when the window is dragged out.
     var originalSize: CGSize
     /// Snap order, for cycling windows that share a zone.
@@ -126,6 +128,22 @@ final class ZoneEngine {
 
     func record(for w: WindowRef) -> SnapRecord? { records[w] }
 
+    /// The window's snap record while it is still where it was snapped. A window moved or
+    /// resized by something else since (the app, Grab And Move, the user's own drag) loses it.
+    func liveRecord(for w: WindowRef, frame: CGRect? = nil) -> SnapRecord? {
+        guard let r = records[w] else { return nil }
+        guard let f = frame ?? w.frame, Self.isClose(f, r.frame) else {
+            records[w] = nil
+            return nil
+        }
+        return r
+    }
+
+    private static func isClose(_ a: CGRect, _ b: CGRect, tolerance: CGFloat = 8) -> Bool {
+        abs(a.minX - b.minX) <= tolerance && abs(a.minY - b.minY) <= tolerance
+            && abs(a.width - b.width) <= tolerance && abs(a.height - b.height) <= tolerance
+    }
+
     func forget(_ w: WindowRef) { records[w] = nil }
 
     /// Moves a window over `zones` of `display` and remembers it.
@@ -138,6 +156,7 @@ final class ZoneEngine {
         guard !target.isNull else { return }
         let current = w.frame
         let original = originalSize ?? records[w]?.originalSize ?? current?.size ?? target.size
+        AXUIElementSetMessagingTimeout(w.element, 0.5)
         if w.isResizable {
             w.setFrame(target)
         } else if let size = current?.size {
@@ -147,7 +166,7 @@ final class ZoneEngine {
         }
         sequence += 1
         records[w] = SnapRecord(displayKey: display.key, layoutID: layout.id, zones: indices,
-                                originalSize: original, sequence: sequence,
+                                frame: w.frame ?? target, originalSize: original, sequence: sequence,
                                 extendAnchor: extend?.anchor, extendCursor: extend?.cursor)
         if let bid = w.bundleIdentifier {
             history.value[bid] = ZoneHistoryEntry(displayKey: display.key, layoutID: layout.id, zones: indices)
@@ -155,13 +174,14 @@ final class ZoneEngine {
     }
 
     /// Re-snaps windows on `display` to the same zone numbers of its current layout; windows
-    /// whose zone no longer exists are released.
-    func refit(_ display: ZoneDisplay) {
+    /// whose zone no longer exists are released. With `requireLive`, windows that left their
+    /// zone since are released too; after a display change macOS itself may have moved them.
+    func refit(_ display: ZoneDisplay, requireLive: Bool = true) {
         let layout = layout(for: display)
         let count = layout.count
         for (w, r) in records where r.displayKey == display.key {
-            guard r.zones.allSatisfy({ $0 < count }) else { records[w] = nil; continue }
-            guard w.position != nil else { records[w] = nil; continue }
+            guard r.zones.allSatisfy({ $0 < count }), w.position != nil else { records[w] = nil; continue }
+            if requireLive && liveRecord(for: w) == nil { continue }
             snap(w, to: r.zones, on: display, originalSize: r.originalSize)
         }
     }
@@ -169,7 +189,7 @@ final class ZoneEngine {
     /// After the display arrangement or resolution changed.
     func refitAll() {
         purgeStaleRecords()
-        for d in displays { refit(d) }
+        for d in displays { refit(d, requireLive: false) }
     }
 
     func purgeStaleRecords() {
@@ -178,9 +198,9 @@ final class ZoneEngine {
 
     /// Windows snapped to the same zones of the same display as `w`, in snap order.
     func windowsSharingZone(with w: WindowRef) -> [WindowRef] {
-        guard let r = records[w] else { return [] }
-        purgeStaleRecords()
-        return records.filter { $0.value.displayKey == r.displayKey && $0.value.zones == r.zones && !$0.key.isMinimized }
+        guard let r = liveRecord(for: w) else { return [] }
+        return records.filter { $0.value.displayKey == r.displayKey && $0.value.zones == r.zones }
+            .filter { liveRecord(for: $0.key) != nil && !$0.key.isMinimized }
             .sorted { $0.value.sequence < $1.value.sequence }
             .map(\.key)
     }

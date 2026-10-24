@@ -98,17 +98,20 @@ struct EditorScreenView: View {
     let screens: [CGRect]
 
     var body: some View {
-        let editingHere = model.mode == .editing && model.screen(for: model.selectedDisplay, in: screens) == screen
+        // A display spanning several screens is edited on all of them; each panel shows its slice.
+        let display = model.selectedDisplay
+        let editingHere = model.mode == .editing && display.frame.intersects(screen)
         ZStack(alignment: .topLeading) {
             Color.black.opacity(editingHere ? 0.42 : 0.2)
                 .contentShape(Rectangle())
                 .onTapGesture { if let d = displaysHere.first { model.selectDisplay(d.key) } }
             if editingHere, let draft = model.draft {
-                let area = local(model.selectedDisplay.workArea)
+                let area = local(display.workArea)
+                let toolbar = toolbarPosition(for: display)
                 if draft.kind == .canvas {
-                    CanvasEditorView(model: model, area: area)
+                    CanvasEditorView(model: model, area: area, toolbar: toolbar)
                 } else {
-                    GridEditorView(model: model, area: area)
+                    GridEditorView(model: model, area: area, toolbar: toolbar)
                 }
             } else {
                 ForEach(displaysHere) { d in
@@ -123,7 +126,18 @@ struct EditorScreenView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .ignoresSafeArea()
         .environment(\.colorScheme, .dark)
+    }
+
+    /// Where the editor toolbar goes, in the display's work-area coordinates: top center of the
+    /// part on the editor's home screen. Nil on the other screens of a spanning display.
+    private func toolbarPosition(for display: ZoneDisplay) -> CGPoint? {
+        let home = model.screen(for: display, in: screens)
+        guard home == screen else { return nil }
+        let visible = home.intersection(display.workArea)
+        let r = visible.isNull ? display.workArea : visible
+        return CGPoint(x: r.midX - display.workArea.minX, y: r.minY - display.workArea.minY + 46)
     }
 
     private var displaysHere: [ZoneDisplay] {

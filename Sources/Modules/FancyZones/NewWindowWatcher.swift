@@ -45,10 +45,18 @@ final class NewWindowWatcher {
         seen.removeAll()
     }
 
-    /// Adds observers for apps that could not be watched before (e.g. once Accessibility is granted).
+    /// Adds observers for every running app not watched yet.
     func watchRunningApps() {
         guard isRunning else { return }
         for app in NSWorkspace.shared.runningApplications { watch(app) }
+    }
+
+    /// Replaces every observer (after Accessibility is granted: ones made before don't deliver).
+    func rewatchAll() {
+        guard isRunning else { return }
+        for w in watchers.values { w.invalidate() }
+        watchers.removeAll()
+        watchRunningApps()
     }
 
     private func launched(_ app: NSRunningApplication) {
@@ -65,7 +73,7 @@ final class NewWindowWatcher {
 
     private func watch(_ app: NSRunningApplication) {
         let pid = app.processIdentifier
-        guard app.activationPolicy == .regular, !app.isTerminated, watchers[pid] == nil,
+        guard AXIsProcessTrusted(), app.activationPolicy == .regular, !app.isTerminated, watchers[pid] == nil,
               pid != ProcessInfo.processInfo.processIdentifier else { return }
         let watcher = AXWatcher(pid: pid) { [weak self] _, element in
             MainActor.assumeIsolated {

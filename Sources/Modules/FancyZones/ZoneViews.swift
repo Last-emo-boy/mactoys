@@ -95,6 +95,26 @@ struct LayoutThumbnail: View {
     }
 }
 
+/// Buttons on the editor's dark glass: accent-filled when prominent, faint white otherwise.
+/// Drawn by hand so they look the same whether or not the panel is the key window.
+struct GlassButtonStyle: ButtonStyle {
+    var prominent = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 12.5, weight: prominent ? .semibold : .medium))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(prominent ? Color.accentColor : Color.white.opacity(0.12)))
+            .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .strokeBorder(.white.opacity(prominent ? 0 : 0.1)))
+            .opacity(configuration.isPressed ? 0.75 : 1)
+            .contentShape(Rectangle())
+    }
+}
+
 /// The layout name shown briefly when the layout changes while zones are visible.
 struct LayoutNameBadge: View {
     let name: String

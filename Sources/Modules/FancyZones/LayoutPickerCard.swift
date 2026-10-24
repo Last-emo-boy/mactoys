@@ -27,7 +27,7 @@ struct LayoutPickerCard: View {
             .padding(22)
             .frame(width: CGFloat(Self.columns) * Self.cardWidth + CGFloat(Self.columns - 1) * 14 + 44)
             .foregroundStyle(.white)
-            .background(Color.black.opacity(0.38))
+            .background(Color.black.opacity(0.62))
             .overlay { if model.mode == .creating { createSheet } }
         }
         .shadow(color: .black.opacity(0.35), radius: 30, y: 12)
@@ -218,8 +218,7 @@ struct LayoutPickerCard: View {
                            tint: model.pendingDelete == layout.id ? .red : nil) { model.delete(layout) }
             }
             Button("Done") { model.onClose() }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
+                .buttonStyle(GlassButtonStyle(prominent: true))
         }
         .font(.system(size: 12))
     }
@@ -259,8 +258,8 @@ struct LayoutPickerCard: View {
                     .fixedSize(horizontal: false, vertical: true)
                 HStack {
                     Spacer()
-                    Button("Cancel") { model.mode = .picker }
-                    Button("Create") { model.create() }.buttonStyle(.borderedProminent)
+                    Button("Cancel") { model.mode = .picker }.buttonStyle(GlassButtonStyle())
+                    Button("Create") { model.create() }.buttonStyle(GlassButtonStyle(prominent: true))
                 }
             }
             .padding(20)

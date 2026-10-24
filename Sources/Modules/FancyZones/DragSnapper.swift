@@ -4,9 +4,10 @@ import MacToysCore
 /// Detects window drags and snaps the window into the zone under the pointer.
 ///
 /// A drag is a left-button press followed by the window under the pointer changing position
-/// (and not size) through Accessibility. The event-tap handler only copies a few scalars; a
-/// 60 Hz timer running while the button is down does the Accessibility reads, hit testing and
-/// drawing, so the tap stays allocation-free and never blocks.
+/// (and not size) through Accessibility. For mouse moves the event-tap handler only copies a few
+/// scalars; a 60 Hz timer running while the button is down does the Accessibility reads, hit
+/// testing and drawing. On release the tap computes the target zones (pure geometry) and queues
+/// the window move, so no Accessibility call ever runs inside the tap.
 @MainActor
 final class DragSnapper {
     private unowned let engine: ZoneEngine
@@ -25,10 +26,11 @@ final class DragSnapper {
     private var wheelAccumulator: Double = 0
     private var swallowRightUp = false
     private var swallowOtherUp = false
-    private var released = false
+    private var lastEvent: TimeInterval = 0
     // Settings snapshot taken when a drag starts, read by the tap handler.
     private var cfgNonPrimary = false
     private var cfgMiddleSpans = false
+    private var cfgHoldShift = true
     private var wheelEnabled = false
     private var zonesShown = false
 
@@ -82,25 +84,25 @@ final class DragSnapper {
     private func handle(_ type: CGEventType, _ event: CGEvent) -> TapDecision {
         switch type {
         case .leftMouseDown:
-            if released { finish() }
-            endSession()
+            if phase != .idle { release() }       // the previous release never reached us
             phase = .pressed
             pressLocation = event.location
             location = pressLocation
             flags = event.flags
+            lastEvent = ProcessInfo.processInfo.systemUptime
             return .pass
         case .leftMouseDragged:
             guard phase == .pressed || phase == .candidate || phase == .dragging else { return .pass }
             location = event.location
             flags = event.flags
+            lastEvent = ProcessInfo.processInfo.systemUptime
             if pump == nil { startPump() }
             return .pass
         case .leftMouseUp:
             guard phase != .idle else { return .pass }
             location = event.location
-            if pump == nil || phase == .ignored { endSession(); return .pass }
-            released = true
-            DispatchQueue.main.async { [weak self] in self?.finish() }
+            flags = event.flags
+            release()
             return .pass
         case .flagsChanged:
             if phase != .idle { flags = event.flags }
@@ -149,6 +151,7 @@ final class DragSnapper {
         let s = engine.settings.value
         cfgNonPrimary = s.nonPrimaryButtonToggles
         cfgMiddleSpans = s.middleButtonSpansZones
+        cfgHoldShift = s.holdShiftToActivate
         let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
@@ -158,10 +161,19 @@ final class DragSnapper {
 
     private func tick() {
         ticks += 1
+        // A release the tap never saw (it can be disabled while the main thread is busy) must
+        // not leave zones on screen: end once the button is up and nothing arrived for a second.
+        if ProcessInfo.processInfo.systemUptime - lastEvent > 1,
+           !CGEventSource.buttonState(.hidSystemState, button: .left) {
+            release()
+            return
+        }
         switch phase {
         case .pressed:
             guard !Self.isOverOwnWindow(location), let w = WindowRef.at(location), engine.isSnappable(w),
                   let f = w.frame else { ignore(); return }
+            // An app that stops responding must not stall the drag for the 6 s default.
+            AXUIElementSetMessagingTimeout(w.element, 0.25)
             window = w
             startFrame = f
             phase = .candidate
@@ -188,7 +200,7 @@ final class DragSnapper {
         layouts = displays.map { engine.layout(for: $0) }
         displayZones = zip(layouts, displays).map { $0.zones(in: $1.workArea) }
         wheelEnabled = s.mouseWheelSwitchesLayouts && engine.library.value.wheelCycle.count >= 2
-        if let record = engine.record(for: w) {
+        if let record = engine.liveRecord(for: w, frame: startFrame) {
             originalSize = record.originalSize
             engine.forget(w)
             if s.restoreSizeOnUnsnap, record.originalSize != frame.size, frame.width > 0 {
@@ -204,23 +216,44 @@ final class DragSnapper {
         update()
     }
 
+    /// Whether zones are active: ⇧ held (or not, when activation doesn't need it), flipped by
+    /// the non-primary-button toggle.
+    private var zonesActive: Bool {
+        let toggledShift = flags.contains(.maskShift) != mouseToggled
+        return cfgHoldShift ? toggledShift : !toggledShift
+    }
+
+    private func displayIndex(at p: CGPoint) -> Int? {
+        displays.firstIndex { $0.frame.containsInclusive(p) }
+            ?? displays.indices.min { displays[$0].frame.distance(to: p) < displays[$1].frame.distance(to: p) }
+    }
+
+    /// The display and zones under the pointer (nil while zones are inactive). Pure geometry,
+    /// apart from tracking where a ⌘ span started.
+    private func currentTarget() -> (display: Int, zones: [Int])? {
+        guard !displays.isEmpty, zonesActive, let index = displayIndex(at: location) else { return nil }
+        if index != activeIndex { activeIndex = index; spanAnchor = nil }
+        let zones = displayZones[index]
+        var hits = ZoneGeometry.zones(at: location, in: zones, distance: CGFloat(layouts[index].highlightDistance),
+                                      algorithm: engine.settings.value.overlapAlgorithm)
+        if flags.contains(.maskCommand) != spanToggled {
+            if spanAnchor == nil && !hits.isEmpty { spanAnchor = hits }
+            if let anchor = spanAnchor { hits = hits.isEmpty ? highlighted : ZoneGeometry.span(from: anchor, to: hits, in: zones) }
+        } else {
+            spanAnchor = nil
+        }
+        return (index, hits)
+    }
+
     /// Recomputes activation and highlight; redraws only when something changed.
     private func update() {
         guard !displays.isEmpty else { return }
-        let s = engine.settings.value
-        let toggledShift = flags.contains(.maskShift) != mouseToggled
-        let active = s.holdShiftToActivate ? toggledShift : !toggledShift
-        guard active else {
+        guard zonesActive else {
             if zonesShown { engine.overlay.hide(); zonesShown = false; highlighted = []; renderedIndex = nil }
             spanAnchor = nil
             return
         }
-        let index = displays.firstIndex { $0.frame.containsInclusive(location) }
-            ?? displays.indices.min { displays[$0].frame.distance(to: location) < displays[$1].frame.distance(to: location) }
-        guard let index else { return }
-        if index != activeIndex { activeIndex = index; spanAnchor = nil }
-
-        if wheelSteps != 0 {
+        if wheelSteps != 0, let index = displayIndex(at: location) {
             let steps = wheelSteps
             wheelSteps = 0
             if let next = engine.library.value.cycled(from: layouts[index].id, steps: steps) {
@@ -228,20 +261,11 @@ final class DragSnapper {
                 return
             }
         }
-
-        let zones = displayZones[index]
-        var hits = ZoneGeometry.zones(at: location, in: zones, distance: CGFloat(layouts[index].highlightDistance),
-                                      algorithm: s.overlapAlgorithm)
-        if flags.contains(.maskCommand) != spanToggled {
-            if spanAnchor == nil && !hits.isEmpty { spanAnchor = hits }
-            if let anchor = spanAnchor { hits = hits.isEmpty ? highlighted : ZoneGeometry.span(from: anchor, to: hits, in: zones) }
-        } else {
-            spanAnchor = nil
-        }
-        guard !zonesShown || hits != highlighted || renderedIndex != index else { return }
-        highlighted = hits
-        renderedIndex = index
-        render(index, showAll: s.showZonesOnAllDisplays)
+        guard let target = currentTarget() else { return }
+        guard !zonesShown || target.zones != highlighted || renderedIndex != target.display else { return }
+        highlighted = target.zones
+        renderedIndex = target.display
+        render(target.display, showAll: engine.settings.value.showZonesOnAllDisplays)
     }
 
     private func render(_ index: Int, showAll: Bool) {
@@ -253,14 +277,13 @@ final class DragSnapper {
         zonesShown = true
     }
 
-    /// Mouse released: snap if zones are showing and one is highlighted.
-    private func finish() {
-        guard released else { return }
-        if phase == .dragging {
-            update()
-            if zonesShown, !highlighted.isEmpty, let w = window, let i = activeIndex {
-                engine.snap(w, to: highlighted, on: displays[i], originalSize: originalSize)
-            }
+    /// Mouse released: snap to the zones under the pointer when zones are active. Runs inside the
+    /// tap, so the window move itself is queued for right after.
+    private func release() {
+        if phase == .dragging, let w = window, let target = currentTarget(), !target.zones.isEmpty {
+            let display = displays[target.display], zones = target.zones, original = originalSize
+            let engine = self.engine
+            DispatchQueue.main.async { engine.snap(w, to: zones, on: display, originalSize: original) }
         }
         endSession()
     }
@@ -283,7 +306,6 @@ final class DragSnapper {
         pump = nil
         if zonesShown { engine.overlay.hide() }
         phase = .idle
-        released = false
         zonesShown = false
         mouseToggled = false
         spanToggled = false

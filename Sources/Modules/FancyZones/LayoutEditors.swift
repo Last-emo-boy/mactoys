@@ -26,11 +26,13 @@ struct EditorToolbar: View {
                     .fixedSize()
                 if let addZone {
                     Button(action: addZone) { Label("Add zone", systemImage: "plus") }
+                        .buttonStyle(GlassButtonStyle())
                 }
                 Divider().frame(height: 18)
                 Button("Cancel") { model.draft = nil; model.mode = .picker }
+                    .buttonStyle(GlassButtonStyle())
                 Button("Save") { model.saveDraft() }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(GlassButtonStyle(prominent: true))
             }
             .controlSize(.regular)
             .padding(.horizontal, 14)
@@ -75,6 +77,8 @@ struct GridEditorView: View {
     @Bindable var model: EditorModel
     /// The display's work area, in this screen's local coordinates.
     let area: CGRect
+    /// Toolbar position in work-area coordinates; nil hides it (other screens of a spanning display).
+    let toolbar: CGPoint?
     @State private var hover: CGPoint?
     @State private var selecting = false
 
@@ -83,7 +87,11 @@ struct GridEditorView: View {
     var body: some View {
         let grid = model.draft?.grid ?? .columns(1)
         let size = area.size
-        let zones = grid.zones(in: CGRect(origin: .zero, size: size), spacing: CGFloat(model.draft?.effectiveSpacing ?? 0))
+        let bounds = CGRect(origin: .zero, size: size)
+        // Tiles are laid out without spacing so clicks, split lines and dividers map exactly onto
+        // the grid; the gap between tiles is only visual. Labels show the real zone size.
+        let zones = grid.zones(in: bounds, spacing: 0)
+        let real = grid.zones(in: bounds, spacing: CGFloat(model.draft?.effectiveSpacing ?? 0))
         let units = grid.unitRects
         ZStack(alignment: .topLeading) {
             Color.white.opacity(0.001)
@@ -93,9 +101,11 @@ struct GridEditorView: View {
                 }
                 .gesture(clickOrSelect(grid: grid, size: size))
             ForEach(zones.indices, id: \.self) { i in
-                EditorZoneTile(number: i + 1, size: zones[i].size, selected: model.gridSelection.contains(i))
-                    .frame(width: zones[i].width, height: zones[i].height)
-                    .position(x: zones[i].midX, y: zones[i].midY)
+                let tile = zones[i].insetBy(dx: 5, dy: 5)
+                EditorZoneTile(number: i + 1, size: real.indices.contains(i) ? real[i].size : zones[i].size,
+                               selected: model.gridSelection.contains(i))
+                    .frame(width: max(0, tile.width), height: max(0, tile.height))
+                    .position(x: tile.midX, y: tile.midY)
                     .allowsHitTesting(false)
             }
             if let p = hover, !selecting, model.mergePoint == nil, let z = zone(at: p, units: units, size: size) {
@@ -107,8 +117,10 @@ struct GridEditorView: View {
             if let p = model.mergePoint, model.gridSelection.count > 1 {
                 mergeBar.position(x: min(max(p.x, 120), size.width - 120), y: min(max(p.y + 34, 40), size.height - 30))
             }
-            EditorToolbar(model: model, hint: "Click to split · ⇧ rotates · drag dividers · drag across zones to merge")
-                .position(x: size.width / 2, y: 46)
+            if let toolbar {
+                EditorToolbar(model: model, hint: "Click to split · ⇧ rotates · drag dividers · drag across zones to merge")
+                    .position(toolbar)
+            }
         }
         .frame(width: size.width, height: size.height)
         .coordinateSpace(.named(Self.space))
@@ -129,6 +141,8 @@ struct GridEditorView: View {
     private func clickOrSelect(grid: GridLayout, size: CGSize) -> some Gesture {
         DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.space))
             .onChanged { v in
+                // A new gesture starts at zero translation: forget a previous one that was cancelled.
+                if v.translation == .zero { selecting = false }
                 if !selecting && hypot(v.translation.width, v.translation.height) > 6 {
                     selecting = true
                     model.mergePoint = nil
@@ -199,8 +213,9 @@ struct GridEditorView: View {
         GlassPanel(cornerRadius: 12) {
             HStack(spacing: 10) {
                 Button { model.mergeSelection() } label: { Label("Merge zones", systemImage: "rectangle.compress.vertical") }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(GlassButtonStyle(prominent: true))
                 Button("Cancel") { model.gridSelection = []; model.mergePoint = nil }
+                    .buttonStyle(GlassButtonStyle())
             }
             .padding(8)
         }
@@ -215,6 +230,7 @@ struct GridEditorView: View {
 struct CanvasEditorView: View {
     @Bindable var model: EditorModel
     let area: CGRect
+    let toolbar: CGPoint?
     @State private var dragStart: CGRect?
 
     private static let space = "canvas-editor"
@@ -229,9 +245,11 @@ struct CanvasEditorView: View {
             ForEach(zones.indices, id: \.self) { i in
                 zoneView(i, zones[i].rect, size: size)
             }
-            EditorToolbar(model: model, hint: "Drag to move · handles resize · arrows nudge",
-                          addZone: { model.addCanvasZone(in: size) })
-                .position(x: size.width / 2, y: 46)
+            if let toolbar {
+                EditorToolbar(model: model, hint: "Drag to move · handles resize · arrows nudge",
+                              addZone: { model.addCanvasZone(in: size) })
+                    .position(toolbar)
+            }
         }
         .frame(width: size.width, height: size.height)
         .coordinateSpace(.named(Self.space))

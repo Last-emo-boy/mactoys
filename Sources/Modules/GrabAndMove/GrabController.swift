@@ -8,9 +8,10 @@ typealias WindowRef = MacToysCore.WindowRef
 /// from the nearest edge or corner. The clicks are consumed so the app underneath never sees
 /// them (and no context menu appears after a right-drag).
 ///
-/// The tap handler only records scalars. The window is identified at mouse-down from the window
-/// server list (fast, no Accessibility round trip); a 60 Hz timer resolves its AX element and
-/// writes the frame, so the target app is messaged at most 60 times a second.
+/// While dragging, the tap handler only records scalars. At a modifier-click it must decide at
+/// once whether to take the click, so it asks the window server which window is under the pointer
+/// (one CGWindowList call, no Accessibility round trip to another app). A 60 Hz timer resolves the
+/// AX element and writes the frame, so the target app is messaged at most 60 times a second.
 @MainActor
 final class GrabController {
     private static let tapID = "grabandmove"
@@ -153,6 +154,7 @@ final class GrabController {
             log.debug("No movable window under the pointer")
             return
         }
+        AXUIElementSetMessagingTimeout(w.element, 0.25)   // a hung app must not stall the drag
         window = w
         if let f = w.frame { startFrame = f; applied = f }
         if settings.value.bringToFront { w.focus() }
