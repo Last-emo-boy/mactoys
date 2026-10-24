@@ -31,9 +31,9 @@ import ZoomIt
 import MacToysCore
 
 @MainActor
-enum AllModules {
+public enum AllModules {
     /// Every utility, in no particular order (Settings sorts by category and name).
-    static func make() -> [any ToyModule] {
+    public static func make() -> [any ToyModule] {
         [
         AdvancedPasteModule(),
         AlwaysOnTopModule(),

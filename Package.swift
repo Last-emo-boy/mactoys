@@ -64,15 +64,21 @@ let package = Package(
             ]
         ),
         .target(name: "PreviewKit", path: "Sources/PreviewKit", swiftSettings: settings),
+        .target(
+            name: "MacToysModules",
+            dependencies: ["MacToysCore"] + toyModules.map { .target(name: $0) },
+            path: "Sources/MacToysModules",
+            swiftSettings: settings
+        ),
         .executableTarget(
             name: "MacToys",
-            dependencies: ["MacToysCore"] + toyModules.map { .target(name: $0) },
+            dependencies: ["MacToysCore", "MacToysModules"],
             path: "Sources/MacToys",
             swiftSettings: settings
         ),
         .executableTarget(
             name: "MacToysCLI",
-            dependencies: ["MacToysCore"] + toyModules.map { .target(name: $0) },
+            dependencies: ["MacToysCore", "MacToysModules"] + toyModules.map { .target(name: $0) },
             path: "Sources/MacToysCLI",
             swiftSettings: settings
         ),

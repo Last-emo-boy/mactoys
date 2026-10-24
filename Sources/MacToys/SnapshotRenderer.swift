@@ -1,5 +1,6 @@
 import AppKit
 import MacToysCore
+import MacToysModules
 import SwiftUI
 
 /// `MacToys --snapshot <dir> [--only <page>]` renders Settings pages — and each module's
