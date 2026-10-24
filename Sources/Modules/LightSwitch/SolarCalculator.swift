@@ -1,22 +1,22 @@
 import Foundation
 
 /// Sunrise and sunset for one calendar day at one place.
-public struct SunTimes: Equatable, Sendable {
+struct SunTimes: Equatable, Sendable {
     /// Nil when the sun doesn't cross the horizon that day.
-    public var sunrise: Date?
-    public var sunset: Date?
+    var sunrise: Date?
+    var sunset: Date?
     /// The sun stays above the horizon all day (midnight sun).
-    public var isPolarDay: Bool
+    var isPolarDay: Bool
     /// The sun stays below the horizon all day.
-    public var isPolarNight: Bool
+    var isPolarNight: Bool
 }
 
 /// NOAA's sunrise/sunset algorithm (the one behind the NOAA Solar Calculator), in pure code.
 /// Accurate to about a minute between ±72° latitude; uses the standard -0.833° refraction-corrected
 /// horizon. Longitude is positive east of Greenwich.
-public enum SolarCalculator {
+enum SolarCalculator {
     /// Sun times for the calendar day containing `date` in `calendar`'s time zone.
-    public static func sunTimes(on date: Date, latitude: Double, longitude: Double,
+    static func sunTimes(on date: Date, latitude: Double, longitude: Double,
                                 calendar: Calendar = .current) -> SunTimes {
         let c = calendar.dateComponents([.year, .month, .day], from: date)
         return sunTimes(year: c.year ?? 2000, month: c.month ?? 1, day: c.day ?? 1,
@@ -24,7 +24,7 @@ public enum SolarCalculator {
     }
 
     /// Sun times for a calendar date (the event nearest that date's local solar day).
-    public static func sunTimes(year: Int, month: Int, day: Int, latitude: Double, longitude: Double) -> SunTimes {
+    static func sunTimes(year: Int, month: Int, day: Int, latitude: Double, longitude: Double) -> SunTimes {
         let lat = max(-89.999, min(89.999, latitude))
         let lon = longitude.truncatingRemainder(dividingBy: 360)
         let jd = julianDay(year: year, month: month, day: day)

@@ -2,15 +2,15 @@ import Foundation
 import MacToysCore
 
 /// Light or dark system appearance.
-public enum Appearance: String, Codable, Sendable, CaseIterable {
+enum Appearance: String, Codable, Sendable, CaseIterable {
     case light, dark
 
-    public var opposite: Appearance { self == .light ? .dark : .light }
-    public var title: String { self == .light ? "Light" : "Dark" }
+    var opposite: Appearance { self == .light ? .dark : .light }
+    var title: String { self == .light ? "Light" : "Dark" }
 }
 
 /// How Light Switch decides when to switch.
-public enum ScheduleMode: String, Codable, CaseIterable, Sendable {
+enum ScheduleMode: String, Codable, CaseIterable, Sendable {
     /// Manual only: the shortcut, the menu bar switch and the CLI still toggle.
     case off
     case fixedHours
@@ -18,7 +18,7 @@ public enum ScheduleMode: String, Codable, CaseIterable, Sendable {
     /// Dark while macOS Night Shift's schedule is on.
     case followNightShift
 
-    public var title: String {
+    var title: String {
         switch self {
         case .off: "Off (manual only)"
         case .fixedHours: "Fixed hours"
@@ -28,7 +28,7 @@ public enum ScheduleMode: String, Codable, CaseIterable, Sendable {
     }
 
     /// The name used by the command line: `fixed-hours`, `sunset-to-sunrise`, `follow-night-shift`.
-    public var cliName: String {
+    var cliName: String {
         switch self {
         case .off: "off"
         case .fixedHours: "fixed-hours"
@@ -37,7 +37,7 @@ public enum ScheduleMode: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    public init?(cliName: String) {
+    init?(cliName: String) {
         guard let m = ScheduleMode.allCases.first(where: { $0.cliName == cliName.lowercased() }) else { return nil }
         self = m
     }

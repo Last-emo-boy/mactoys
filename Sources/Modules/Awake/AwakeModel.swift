@@ -1,7 +1,7 @@
 import Foundation
 
 /// What Awake asks of the Mac.
-public enum AwakeMode: String, Codable, CaseIterable, Sendable {
+enum AwakeMode: String, Codable, CaseIterable, Sendable {
     /// Follow the system's Energy settings; Awake holds nothing.
     case off
     /// Stay awake until Awake is turned off.
@@ -11,7 +11,7 @@ public enum AwakeMode: String, Codable, CaseIterable, Sendable {
     /// Stay awake until a date and time, then return to `off`.
     case until
 
-    public var title: String {
+    var title: String {
         switch self {
         case .off: "Off (follow system)"
         case .indefinite: "Keep awake indefinitely"
@@ -22,12 +22,12 @@ public enum AwakeMode: String, Codable, CaseIterable, Sendable {
 }
 
 /// A named keep-awake duration offered in the menu (PowerToys `customTrayTimes`).
-public struct AwakePreset: Codable, Equatable, Hashable, Sendable, Identifiable {
-    public var name: String
-    public var seconds: Int
-    public var id: String { "\(name)|\(seconds)" }
+struct AwakePreset: Codable, Equatable, Hashable, Sendable, Identifiable {
+    var name: String
+    var seconds: Int
+    var id: String { "\(name)|\(seconds)" }
 
-    public init(name: String, seconds: Int) {
+    init(name: String, seconds: Int) {
         self.name = name
         self.seconds = seconds
     }
@@ -52,6 +52,8 @@ struct AwakeSettings: Codable, Equatable {
     var showMenuBarIcon = true
     /// Extra durations for the menu, after the built-in ones.
     var customPresets: [AwakePreset] = []
+    /// Set from the command line (`--pid`): Awake turns off when this process exits.
+    var boundProcess: Int32?
 }
 
 /// Pure keep-awake timing rules, shared by the module, its menu and the CLI.
@@ -180,6 +182,7 @@ enum AwakeSchedule {
         if !s.keepScreenOn { screen = "screen may sleep" }
         else if locked && s.allowDisplaySleepWhenLocked { screen = "screen may sleep while locked" }
         else { screen = "screen stays on" }
+        if let pid = s.boundProcess, s.mode != .off { return "While process \(pid) runs · \(screen)" }
         switch s.mode {
         case .off: return "Off · following system"
         case .indefinite: return "Indefinitely · \(screen)"

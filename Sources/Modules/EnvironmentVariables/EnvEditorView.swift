@@ -100,7 +100,7 @@ struct EnvEditorView: View {
                 }
                 switch editor.selection {
                 case .profile(let id):
-                    if let i = s.value.profiles.firstIndex(where: { $0.id == id }) { profileDetail(i) }
+                    if let profile = s.value.profiles.first(where: { $0.id == id }) { profileDetail(profile) }
                 case .user:
                     ScopeEditor(title: "User", subtitle: "~/.zshenv · launchctl", vars: $s.value.userVariables,
                                 emptyText: "Variables here apply to every zsh and, with launchd on, to apps you open.")
@@ -112,11 +112,19 @@ struct EnvEditorView: View {
         }
     }
 
-    @ViewBuilder private func profileDetail(_ i: Int) -> some View {
-        let id = s.value.profiles[i].id
+    /// A binding to one profile by id, safe while the profile is being deleted.
+    private func profileBinding(_ profile: EnvProfile) -> Binding<EnvProfile> {
+        let id = profile.id
+        return Binding(get: { s.value.profiles.first { $0.id == id } ?? profile },
+                       set: { new in if let i = s.value.profiles.firstIndex(where: { $0.id == id }) { s.value.profiles[i] = new } })
+    }
+
+    @ViewBuilder private func profileDetail(_ profile: EnvProfile) -> some View {
+        let id = profile.id
+        let binding = profileBinding(profile)
         let applied = s.value.appliedProfile == id
         HStack(spacing: 12) {
-            TextField("Profile name", text: $s.value.profiles[i].name)
+            TextField("Profile name", text: binding.name)
                 .textFieldStyle(.plain)
                 .font(.system(size: 20, weight: .bold))
             Spacer()
@@ -128,9 +136,9 @@ struct EnvEditorView: View {
             } label: { Image(systemName: "ellipsis.circle") }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
         }
-        ScopeEditor(title: s.value.profiles[i].name,
+        ScopeEditor(title: profile.name,
                     subtitle: applied ? "applied to zsh\(s.value.applyToLaunchd ? " + launchd" : "")" : "not applied — only one profile can be applied",
-                    vars: $s.value.profiles[i].variables,
+                    vars: binding.variables,
                     emptyText: "Add the variables this profile sets. They take precedence over User variables of the same name.",
                     userVariables: s.value.userVariables)
         ScopeEditor(title: "User", subtitle: "~/.zshenv · launchctl", vars: $s.value.userVariables,
@@ -175,7 +183,7 @@ private struct ScopeEditor: View {
                 Spacer()
                 addMenu
             }
-            let plain = vars.indices.filter { !vars[$0].isPathLike }
+            let plain = vars.filter { !$0.isPathLike }
             if vars.isEmpty {
                 Text(emptyText).font(.system(size: 12)).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -183,16 +191,17 @@ private struct ScopeEditor: View {
                     .background(card)
             } else if !plain.isEmpty {
                 VStack(spacing: 0) {
-                    ForEach(Array(plain.enumerated()), id: \.element) { n, i in
+                    ForEach(Array(plain.enumerated()), id: \.element.id) { n, v in
                         if n > 0 { Divider() }
-                        VariableRow(variable: $vars[i], onDelete: { vars.remove(at: i) },
-                                    onMove: { delta in move(i, by: delta) }, isFirst: i == 0, isLast: i == vars.count - 1)
+                        VariableRow(variable: binding(v), onDelete: { vars.removeAll { $0.id == v.id } },
+                                    onMove: { delta in move(v.id, by: delta) },
+                                    isFirst: vars.first?.id == v.id, isLast: vars.last?.id == v.id)
                     }
                 }
                 .background(card)
             }
-            ForEach(vars.indices.filter { vars[$0].isPathLike }, id: \.self) { i in
-                PathEditor(variable: $vars[i], onDelete: { vars.remove(at: i) })
+            ForEach(vars.filter(\.isPathLike)) { v in
+                PathEditor(variable: binding(v), onDelete: { vars.removeAll { $0.id == v.id } })
             }
         }
     }
@@ -222,7 +231,15 @@ private struct ScopeEditor: View {
         .controlSize(.small)
     }
 
-    private func move(_ i: Int, by delta: Int) {
+    /// A binding to one variable by id, safe while it's being deleted.
+    private func binding(_ v: EnvVariable) -> Binding<EnvVariable> {
+        let id = v.id
+        return Binding(get: { vars.first { $0.id == id } ?? v },
+                       set: { new in if let i = vars.firstIndex(where: { $0.id == id }) { vars[i] = new } })
+    }
+
+    private func move(_ id: UUID, by delta: Int) {
+        guard let i = vars.firstIndex(where: { $0.id == id }) else { return }
         let j = i + delta
         guard vars.indices.contains(j) else { return }
         vars.swapAt(i, j)

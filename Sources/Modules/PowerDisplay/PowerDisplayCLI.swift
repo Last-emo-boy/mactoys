@@ -37,7 +37,7 @@ public enum PowerDisplayCLI {
     }
 
     /// Discovers displays in this process.
-    public static func discover() -> [MonitorSnapshot] {
+    static func discover() -> [MonitorSnapshot] {
         let names = MainActor.assumeIsolated { DisplayEngine.screenNames() }
         let settings = loadSettings()
         engine.maxCompatibility = settings.maxCompatibility

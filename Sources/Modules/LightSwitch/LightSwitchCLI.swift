@@ -66,8 +66,14 @@ public enum LightSwitchCLI {
         !NSRunningApplication.runningApplications(withBundleIdentifier: Paths.bundleIdentifier).isEmpty
     }
 
-    /// Asks the running app to switch, then waits up to `timeout` for the appearance to change.
-    public static func setTheme(_ target: Appearance?, timeout: TimeInterval = 6) throws -> Appearance {
+    /// Asks the running app to switch to dark (`true`), light (`false`) or the other theme (`nil`),
+    /// then waits up to `timeout` for the appearance to change. Returns whether dark mode is on.
+    @discardableResult
+    public static func setTheme(dark: Bool?, timeout: TimeInterval = 6) throws -> Bool {
+        try setTheme(dark.map { $0 ? Appearance.dark : .light }, timeout: timeout) == .dark
+    }
+
+    static func setTheme(_ target: Appearance?, timeout: TimeInterval) throws -> Appearance {
         guard isEnabled else { throw Failure(code: .unavailable, message: "Light Switch is turned off. Turn it on in MacToys Settings.") }
         guard appRunning else { throw Failure(code: .unavailable, message: "MacToys isn't running.") }
         let before = SystemAppearance.current
@@ -84,8 +90,18 @@ public enum LightSwitchCLI {
         throw Failure(code: .timedOut, message: "Timed out waiting for the appearance to change. It may still change; run `status` before retrying. If macOS asked about System Events, allow it.")
     }
 
-    /// Turns the schedule on (with `mode`, or keeping the current one) or off.
-    public static func setSchedule(enabled: Bool, mode: ScheduleMode?) throws {
+    /// Turns the schedule on (with `mode`: `fixed-hours`, `sunset-to-sunrise` or `follow-night-shift`;
+    /// nil keeps the current one) or off.
+    public static func setSchedule(enabled: Bool, mode: String?) throws {
+        var parsed: ScheduleMode?
+        if let mode {
+            guard let m = ScheduleMode(cliName: mode) else { throw Failure(code: .invalidArguments, message: "unknown mode \(mode)") }
+            parsed = m
+        }
+        try setSchedule(enabled: enabled, parsed)
+    }
+
+    static func setSchedule(enabled: Bool, _ mode: ScheduleMode?) throws {
         var s = load()
         if enabled {
             if let mode {
@@ -133,9 +149,9 @@ public enum LightSwitchCLI {
                 return 0
             case "status":
                 break
-            case "light": _ = try setTheme(.light)
-            case "dark": _ = try setTheme(.dark)
-            case "toggle": _ = try setTheme(nil)
+            case "light": _ = try setTheme(.light, timeout: 6)
+            case "dark": _ = try setTheme(.dark, timeout: 6)
+            case "toggle": _ = try setTheme(nil, timeout: 6)
             case "schedule":
                 let rest = Array(args.dropFirst())
                 switch rest.first {
@@ -148,9 +164,9 @@ public enum LightSwitchCLI {
                         }
                         mode = m
                     }
-                    try setSchedule(enabled: true, mode: mode)
+                    try setSchedule(enabled: true, mode)
                 case "disable":
-                    try setSchedule(enabled: false, mode: nil)
+                    try setSchedule(enabled: false, nil)
                 default:
                     throw Failure(code: .invalidArguments, message: "expected `schedule enable` or `schedule disable`")
                 }

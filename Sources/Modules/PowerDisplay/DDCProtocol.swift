@@ -6,62 +6,62 @@ import Foundation
 /// address 0x37 and the host's source address 0x51 are supplied by the call, so a packet here
 /// starts at the length byte. Checksums are the XOR of every byte on the wire, including the
 /// display's address 0x6E and the source address 0x51 (or the virtual host address 0x50 in replies).
-public enum DDCPacket {
-    public static let chipAddress: UInt32 = 0x37
-    public static let sourceAddress: UInt8 = 0x51
-    public static let displayAddress: UInt8 = 0x6E
-    public static let replyHostAddress: UInt8 = 0x50
+enum DDCPacket {
+    static let chipAddress: UInt32 = 0x37
+    static let sourceAddress: UInt8 = 0x51
+    static let displayAddress: UInt8 = 0x6E
+    static let replyHostAddress: UInt8 = 0x50
 
     /// Checksum seed for requests: destination ⊕ source.
-    public static let requestSeed: UInt8 = displayAddress ^ sourceAddress
+    static let requestSeed: UInt8 = displayAddress ^ sourceAddress
     /// Seed used by m1ddc and MonitorControl for Get requests; some displays only answer to it.
-    public static let legacyReadSeed: UInt8 = displayAddress
+    static let legacyReadSeed: UInt8 = displayAddress
 
-    public static let getVCPOpcode: UInt8 = 0x01
-    public static let getVCPReplyOpcode: UInt8 = 0x02
-    public static let setVCPOpcode: UInt8 = 0x03
-    public static let capabilitiesOpcode: UInt8 = 0xF3
-    public static let capabilitiesReplyOpcode: UInt8 = 0xE3
+    static let getVCPOpcode: UInt8 = 0x01
+    static let getVCPReplyOpcode: UInt8 = 0x02
+    static let setVCPOpcode: UInt8 = 0x03
+    static let capabilitiesOpcode: UInt8 = 0xF3
+    static let capabilitiesReplyOpcode: UInt8 = 0xE3
 
     /// Size of a Get VCP Feature reply read back from the display.
-    public static let vcpReplyLength = 11
+    static let vcpReplyLength = 11
     /// Size of a capabilities fragment read: 32 data bytes plus framing.
-    public static let capabilitiesReplyLength = 38
+    static let capabilitiesReplyLength = 38
 
-    public static func checksum<S: Sequence>(_ bytes: S, seed: UInt8) -> UInt8 where S.Element == UInt8 {
+    static func checksum<S: Sequence>(_ bytes: S, seed: UInt8) -> UInt8 where S.Element == UInt8 {
         bytes.reduce(seed, ^)
     }
 
     /// Set VCP Feature: `84 03 <code> <hi> <lo> <chk>`.
-    public static func setVCP(_ code: UInt8, value: UInt16) -> [UInt8] {
+    static func setVCP(_ code: UInt8, value: UInt16) -> [UInt8] {
         var p: [UInt8] = [0x84, setVCPOpcode, code, UInt8(value >> 8), UInt8(value & 0xFF)]
         p.append(checksum(p, seed: requestSeed))
         return p
     }
 
     /// Get VCP Feature request: `82 01 <code> <chk>`.
-    public static func getVCP(_ code: UInt8, seed: UInt8 = requestSeed) -> [UInt8] {
+    static func getVCP(_ code: UInt8, seed: UInt8 = requestSeed) -> [UInt8] {
         var p: [UInt8] = [0x82, getVCPOpcode, code]
         p.append(checksum(p, seed: seed))
         return p
     }
 
     /// Capabilities Request at a byte offset: `83 F3 <hi> <lo> <chk>`.
-    public static func capabilitiesRequest(offset: UInt16) -> [UInt8] {
+    static func capabilitiesRequest(offset: UInt16) -> [UInt8] {
         var p: [UInt8] = [0x83, capabilitiesOpcode, UInt8(offset >> 8), UInt8(offset & 0xFF)]
         p.append(checksum(p, seed: requestSeed))
         return p
     }
 
     /// Whether a reply's last byte matches the XOR of the virtual host address and the rest.
-    public static func replyChecksumValid(_ bytes: [UInt8], length: Int) -> Bool {
+    static func replyChecksumValid(_ bytes: [UInt8], length: Int) -> Bool {
         guard length >= 2, bytes.count >= length else { return false }
         return checksum(bytes[0..<(length - 1)], seed: replyHostAddress) == bytes[length - 1]
     }
 
     /// Parses a Get VCP Feature reply:
     /// `6E 88 02 <result> <code> <type> <max hi> <max lo> <cur hi> <cur lo> <chk>`.
-    public static func parseVCPReply(_ bytes: [UInt8], code: UInt8) -> VCPReply? {
+    static func parseVCPReply(_ bytes: [UInt8], code: UInt8) -> VCPReply? {
         guard bytes.count >= vcpReplyLength, bytes[2] == getVCPReplyOpcode, bytes[4] == code,
               bytes[1] & 0x80 != 0, Int(bytes[1] & 0x7F) == 8,
               replyChecksumValid(bytes, length: vcpReplyLength) else { return nil }
@@ -72,7 +72,7 @@ public enum DDCPacket {
 
     /// Parses one capabilities fragment: `6E <80|n> E3 <off hi> <off lo> <data…> <chk>`.
     /// Returns the fragment's data (empty at the end of the string), or nil when invalid.
-    public static func parseCapabilitiesReply(_ bytes: [UInt8], offset: UInt16) -> [UInt8]? {
+    static func parseCapabilitiesReply(_ bytes: [UInt8], offset: UInt16) -> [UInt8]? {
         guard bytes.count >= 6, bytes[1] & 0x80 != 0, bytes[2] == capabilitiesReplyOpcode else { return nil }
         let n = Int(bytes[1] & 0x7F)
         guard n >= 3, n <= 35, bytes.count >= n + 3,
@@ -83,32 +83,32 @@ public enum DDCPacket {
 }
 
 /// A decoded Get VCP Feature reply.
-public struct VCPReply: Equatable, Sendable {
-    public var code: UInt8
+struct VCPReply: Equatable, Sendable {
+    var code: UInt8
     /// False when the display answered "unsupported VCP code".
-    public var supported: Bool
-    public var isMomentary: Bool
-    public var maximum: UInt16
-    public var current: UInt16
+    var supported: Bool
+    var isMomentary: Bool
+    var maximum: UInt16
+    var current: UInt16
 }
 
 /// A parsed MCCS capabilities string, e.g.
 /// `(prot(monitor)type(lcd)model(27UK850)cmds(01 02 03 0C E3 F3)vcp(10 12 14(05 08 0B) 60(0F 11 12) 62 D6(01 04))mccs_ver(2.1))`.
-public struct DDCCapabilities: Codable, Equatable, Sendable {
-    public var raw: String
-    public var type: String?
-    public var model: String?
-    public var mccsVersion: String?
-    public var commands: [UInt8]
+struct DDCCapabilities: Codable, Equatable, Sendable {
+    var raw: String
+    var type: String?
+    var model: String?
+    var mccsVersion: String?
+    var commands: [UInt8]
     /// VCP code → the discrete values the display lists for it (empty for continuous controls).
-    public var vcp: [UInt8: [UInt16]]
+    var vcp: [UInt8: [UInt16]]
 
-    public func supports(_ code: UInt8) -> Bool { vcp[code] != nil }
+    func supports(_ code: UInt8) -> Bool { vcp[code] != nil }
 
     /// VCP codes in ascending order.
-    public var codes: [UInt8] { vcp.keys.sorted() }
+    var codes: [UInt8] { vcp.keys.sorted() }
 
-    public static func parse(_ text: String) -> DDCCapabilities {
+    static func parse(_ text: String) -> DDCCapabilities {
         // NULs go; other control characters (line breaks some monitors send) become spaces.
         let cleaned = String(String.UnicodeScalarView(text.unicodeScalars.compactMap { u -> Unicode.Scalar? in
             if u.value == 0 || u.value >= 0x7F { return nil }
@@ -215,17 +215,17 @@ public struct DDCCapabilities: Codable, Equatable, Sendable {
 }
 
 /// MCCS names for VCP codes and their well-known values.
-public enum MCCS {
-    public static let brightness: UInt8 = 0x10
-    public static let contrast: UInt8 = 0x12
-    public static let colorPreset: UInt8 = 0x14
-    public static let inputSource: UInt8 = 0x60
-    public static let volume: UInt8 = 0x62
-    public static let mute: UInt8 = 0x8D
-    public static let orientation: UInt8 = 0xAA
-    public static let powerMode: UInt8 = 0xD6
+enum MCCS {
+    static let brightness: UInt8 = 0x10
+    static let contrast: UInt8 = 0x12
+    static let colorPreset: UInt8 = 0x14
+    static let inputSource: UInt8 = 0x60
+    static let volume: UInt8 = 0x62
+    static let mute: UInt8 = 0x8D
+    static let orientation: UInt8 = 0xAA
+    static let powerMode: UInt8 = 0xD6
 
-    public static let featureNames: [UInt8: String] = [
+    static let featureNames: [UInt8: String] = [
         0x02: "New control value", 0x04: "Restore factory defaults", 0x05: "Restore brightness and contrast",
         0x06: "Restore geometry", 0x08: "Restore color defaults", 0x0B: "Color temperature increment",
         0x0C: "Color temperature request", 0x10: "Brightness", 0x12: "Contrast", 0x14: "Select color preset",
@@ -244,7 +244,7 @@ public enum MCCS {
         0xDC: "Display mode", 0xDF: "VCP version", 0xE0: "Manufacturer specific",
     ]
 
-    public static let inputSourceNames: [UInt16: String] = [
+    static let inputSourceNames: [UInt16: String] = [
         0x01: "VGA 1", 0x02: "VGA 2", 0x03: "DVI 1", 0x04: "DVI 2", 0x05: "Composite 1", 0x06: "Composite 2",
         0x07: "S-Video 1", 0x08: "S-Video 2", 0x09: "Tuner 1", 0x0A: "Tuner 2", 0x0B: "Tuner 3",
         0x0C: "Component 1", 0x0D: "Component 2", 0x0E: "Component 3", 0x0F: "DisplayPort 1",
@@ -252,31 +252,31 @@ public enum MCCS {
         0x15: "Thunderbolt 1", 0x16: "Thunderbolt 2", 0x19: "USB-C 1", 0x1A: "USB-C 2", 0x1B: "USB-C 3",
     ]
 
-    public static let colorPresetNames: [UInt16: String] = [
+    static let colorPresetNames: [UInt16: String] = [
         0x01: "sRGB", 0x02: "Display native", 0x03: "4000 K", 0x04: "5000 K", 0x05: "6500 K", 0x06: "7500 K",
         0x07: "8200 K", 0x08: "9300 K", 0x09: "10000 K", 0x0A: "11500 K", 0x0B: "User 1", 0x0C: "User 2",
         0x0D: "User 3",
     ]
 
-    public static let powerModeNames: [UInt16: String] = [
+    static let powerModeNames: [UInt16: String] = [
         0x01: "On", 0x02: "Standby", 0x03: "Suspend", 0x04: "Off (DPM)", 0x05: "Off (power button)",
     ]
 
-    public static func featureName(_ code: UInt8) -> String {
+    static func featureName(_ code: UInt8) -> String {
         featureNames[code] ?? (code >= 0xE0 ? "Manufacturer specific" : "Unknown")
     }
 
-    public static func hex(_ v: Int) -> String { String(format: "0x%02X", v) }
+    static func hex(_ v: Int) -> String { String(format: "0x%02X", v) }
 }
 
 /// Maps between slider percentages and a display's raw VCP range (not every display uses 0–100).
-public enum VCPScale {
-    public static func percent(raw: UInt16, maximum: UInt16) -> Double {
+enum VCPScale {
+    static func percent(raw: UInt16, maximum: UInt16) -> Double {
         let m = maximum == 0 ? 100 : Double(maximum)
         return max(0, min(100, (Double(raw) / m * 100).rounded()))
     }
 
-    public static func raw(percent: Double, maximum: UInt16) -> UInt16 {
+    static func raw(percent: Double, maximum: UInt16) -> UInt16 {
         let m = maximum == 0 ? 100 : Double(maximum)
         return UInt16(max(0, min(m, (max(0, min(100, percent)) / 100 * m).rounded())))
     }

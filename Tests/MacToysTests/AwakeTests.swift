@@ -187,6 +187,19 @@ import Testing
         #expect(throws: AwakeCLI.Failure.self) { try AwakeCLI.parse(["until", "2020-01-01 10:00"], now: now) }
     }
 
+    @Test func bindsToAProcess() throws {
+        let me = ProcessInfo.processInfo.processIdentifier
+        let r = try AwakeCLI.parse(["--pid", "\(me)"], now: now)
+        #expect(r.pid == me && r.mode == nil)
+        #expect(try AwakeCLI.parse(["--use-parent-pid"], now: now).pid == getppid())
+        #expect(throws: AwakeCLI.Failure.self) { try AwakeCLI.parse(["--pid", "999999"], now: now) }
+        #expect(throws: AwakeCLI.Failure.self) { try AwakeCLI.parse(["--pid", "x"], now: now) }
+        var s = AwakeSettings()
+        s.mode = .indefinite
+        s.boundProcess = me
+        #expect(AwakeSchedule.describe(s, now: now) == "While process \(me) runs · screen stays on")
+    }
+
     @Test func settingsRoundTripThroughJSON() throws {
         var s = AwakeSettings()
         AwakeSchedule.startTimed(&s, seconds: 900, now: now)

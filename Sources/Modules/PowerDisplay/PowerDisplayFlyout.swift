@@ -98,6 +98,7 @@ struct PowerDisplayFlyout: View {
                 }
             }
             .padding(14)
+            .foregroundStyle(.white)
             .disabled(store.isRefreshing)
             .overlay(alignment: .top) {
                 if store.isRefreshing && store.hasScanned {
@@ -374,6 +375,7 @@ enum IdentifyOverlay {
                     Text("\(m.1)").font(.system(size: 120, weight: .bold, design: .rounded)).monospacedDigit()
                     Text(m.2).font(.system(size: 15, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                 }
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             })
             panel.orderFrontRegardless()

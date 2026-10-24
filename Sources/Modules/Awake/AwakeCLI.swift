@@ -44,10 +44,13 @@ public enum AwakeCLI {
                            enabled: isEnabled, appRunning: appRunning)
     }
 
-    /// Changes the mode and/or the screen option, then tells the running app.
+    /// Changes the mode and/or the screen option, then tells the running app. With `whileProcess`,
+    /// Awake turns off when that process exits (PowerToys `--pid`); without a mode it keeps awake indefinitely.
     public static func set(_ mode: Mode?, keepScreenOn: Bool? = nil, allowDisplaySleepWhenLocked: Bool? = nil,
-                           now: Date = Date()) {
+                           whileProcess pid: Int32? = nil, now: Date = Date()) {
         var s = AwakeSchedule.restored(SettingsStore.shared.load("awake", default: AwakeSettings()), now: now)
+        if mode != nil || pid != nil { s.boundProcess = pid }
+        let mode = mode ?? (pid != nil ? .indefinite : nil)
         switch mode {
         case .off?: s.mode = .off; s.timedExpiresAt = nil
         case .indefinite?: s.mode = .indefinite; s.lastActiveMode = .indefinite
@@ -85,6 +88,8 @@ public enum AwakeCLI {
       --locked-sleep on|off  Let the displays sleep while the screen is locked
       --time-limit <sec>     Same as `for`, in seconds
       --expire-at <date>     Same as `until`
+      --pid <pid>            Stay awake only while that process runs (indefinitely unless a mode is given)
+      --use-parent-pid       Stay awake only while the calling shell (or script) runs
       --json                 Print the resulting status as JSON
     """
 
@@ -94,8 +99,9 @@ public enum AwakeCLI {
         do {
             let request = try parse(arguments, now: Date())
             if request.help { print(usage); return 0 }
-            if request.mode != nil || request.screen != nil || request.lockedSleep != nil {
-                set(request.mode, keepScreenOn: request.screen, allowDisplaySleepWhenLocked: request.lockedSleep)
+            if request.mode != nil || request.screen != nil || request.lockedSleep != nil || request.pid != nil {
+                set(request.mode, keepScreenOn: request.screen, allowDisplaySleepWhenLocked: request.lockedSleep,
+                    whileProcess: request.pid)
             }
             let st = status()
             if request.json {
@@ -110,7 +116,7 @@ public enum AwakeCLI {
             if !st.enabled || !st.appRunning {
                 let why = st.enabled ? "MacToys isn't running" : "Awake is turned off in MacToys"
                 FileHandle.standardError.write(Data("warning: \(why); the mode applies once it runs.\n".utf8))
-                return request.mode == nil ? 0 : 3
+                return request.mode == nil && request.pid == nil ? 0 : 3
             }
             return 0
         } catch let failure as Failure {
@@ -126,6 +132,7 @@ public enum AwakeCLI {
         var mode: Mode?
         var screen: Bool?
         var lockedSleep: Bool?
+        var pid: Int32?
         var json = false
         var help = false
     }
@@ -173,6 +180,11 @@ public enum AwakeCLI {
                 r.mode = .until(date)
             case "--screen", "--display-on": r.screen = try bool(try next(arg))
             case "--locked-sleep": r.lockedSleep = try bool(try next(arg))
+            case "--pid":
+                let v = try next(arg)
+                guard let pid = Int32(v), pid > 0, kill(pid, 0) == 0 || errno == EPERM else { throw bad("no running process \(v)") }
+                r.pid = pid
+            case "--use-parent-pid": r.pid = getppid()
             default: throw bad("unknown argument \(raw)\n\n\(usage)")
             }
         }

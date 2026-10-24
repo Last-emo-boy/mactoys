@@ -22,6 +22,7 @@ public final class AwakeModule: ToyModule {
     private var screenLocked = false
     private var expiryTimer: Timer?
     private var tickTimer: Timer?
+    private var processWatch: (pid: Int32, source: DispatchSourceProcess)?
     private var observers: [(NotificationCenter, NSObjectProtocol)] = []
     private lazy var statusItem = AwakeStatusItem(module: self)
 
@@ -58,6 +59,7 @@ public final class AwakeModule: ToyModule {
         expiryTimer = nil
         tickTimer?.invalidate()
         tickTimer = nil
+        watchProcess(nil)
         systemAssertion.release()
         displayAssertion.release()
         statusItem.remove()
@@ -85,6 +87,12 @@ public final class AwakeModule: ToyModule {
             settings.update { $0.mode = .off; $0.timedExpiresAt = nil }
             return // onChange calls apply again
         }
+        if s.mode != .off, let pid = s.boundProcess, kill(pid, 0) != 0 && errno == ESRCH {
+            log.info("bound process \(pid) is gone")
+            settings.update { $0.mode = .off; $0.boundProcess = nil; $0.timedExpiresAt = nil }
+            return
+        }
+        watchProcess(s.mode == .off ? nil : s.boundProcess)
         let awake = s.mode != .off
         let displayOn = awake && s.keepScreenOn && !(screenLocked && s.allowDisplaySleepWhenLocked)
         if awake { systemAssertion.hold() } else { systemAssertion.release() }
@@ -92,6 +100,23 @@ public final class AwakeModule: ToyModule {
         scheduleTimers(expiry: AwakeSchedule.expiry(of: s))
         if s.showMenuBarIcon { statusItem.install() } else { statusItem.remove() }
         statusItem.refresh()
+    }
+
+    /// Turns Awake off when the bound process exits (`mactoys awake --pid`).
+    private func watchProcess(_ pid: Int32?) {
+        guard processWatch?.pid != pid else { return }
+        processWatch?.source.cancel()
+        processWatch = nil
+        guard let pid else { return }
+        let source = DispatchSource.makeProcessSource(identifier: pid, eventMask: .exit, queue: .main)
+        source.setEventHandler { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.settings.value.boundProcess == pid else { return }
+                self.settings.update { $0.mode = .off; $0.boundProcess = nil; $0.timedExpiresAt = nil }
+            }
+        }
+        source.resume()
+        processWatch = (pid, source)
     }
 
     private func scheduleTimers(expiry: Date?) {
@@ -121,14 +146,14 @@ public final class AwakeModule: ToyModule {
     var isScreenLocked: Bool { screenLocked }
     var statusText: String { AwakeSchedule.describe(settings.value, now: Date(), locked: screenLocked) }
 
-    func turnOff() { settings.update { $0.mode = .off; $0.timedExpiresAt = nil } }
+    func turnOff() { settings.update { $0.mode = .off; $0.timedExpiresAt = nil; $0.boundProcess = nil } }
 
     func keepAwakeIndefinitely() {
-        settings.update { $0.mode = .indefinite; $0.lastActiveMode = .indefinite; $0.timedExpiresAt = nil }
+        settings.update { $0.mode = .indefinite; $0.lastActiveMode = .indefinite; $0.timedExpiresAt = nil; $0.boundProcess = nil }
     }
 
     func keepAwake(forSeconds seconds: Int) {
-        settings.update { AwakeSchedule.startTimed(&$0, seconds: seconds, now: Date()) }
+        settings.update { AwakeSchedule.startTimed(&$0, seconds: seconds, now: Date()); $0.boundProcess = nil }
     }
 
     /// Starts a timed session with the interval chosen in Settings.
@@ -138,7 +163,7 @@ public final class AwakeModule: ToyModule {
     }
 
     func keepAwake(until date: Date) {
-        settings.update { AwakeSchedule.startUntil(&$0, date: date, now: Date()) }
+        settings.update { AwakeSchedule.startUntil(&$0, date: date, now: Date()); $0.boundProcess = nil }
     }
 
     /// Changes the Settings interval; a running timed session restarts with it (as in PowerToys).
@@ -169,7 +194,7 @@ public final class AwakeModule: ToyModule {
     }
 
     func toggle() {
-        if isAwake { turnOff() } else { settings.value = AwakeSchedule.toggledOn(settings.value, now: Date()) }
+        if isAwake { turnOff() } else { settings.update { $0 = AwakeSchedule.toggledOn($0, now: Date()); $0.boundProcess = nil } }
     }
 
     func perform(_ action: AwakeMenuAction) {

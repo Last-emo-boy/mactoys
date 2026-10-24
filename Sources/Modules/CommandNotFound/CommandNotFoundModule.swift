@@ -273,7 +273,8 @@ struct CNFSettingsView: View {
             Section("Try a command") {
                 HStack(spacing: 8) {
                     Text("$").font(.system(size: 13, design: .monospaced)).foregroundStyle(.secondary)
-                    TextField("command", text: $tryCommand)
+                    TextField("Command", text: $tryCommand, prompt: Text("wget"))
+                        .labelsHidden()
                         .textFieldStyle(.roundedBorder)
                         .font(.system(size: 13, design: .monospaced))
                         .frame(maxWidth: 240)

@@ -5,10 +5,10 @@ import IOKit
 import MacToysCore
 
 /// A control the flyout offers.
-public enum DisplayFeature: String, Codable, CaseIterable, Sendable {
+enum DisplayFeature: String, Codable, CaseIterable, Sendable {
     case brightness, contrast, volume, inputSource, colorTemperature, powerState
 
-    public var vcp: UInt8 {
+    var vcp: UInt8 {
         switch self {
         case .brightness: MCCS.brightness
         case .contrast: MCCS.contrast
@@ -19,9 +19,9 @@ public enum DisplayFeature: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    public var isContinuous: Bool { self == .brightness || self == .contrast || self == .volume }
+    var isContinuous: Bool { self == .brightness || self == .contrast || self == .volume }
 
-    public var title: String {
+    var title: String {
         switch self {
         case .brightness: "Brightness"
         case .contrast: "Contrast"
@@ -32,7 +32,7 @@ public enum DisplayFeature: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    public var symbol: String {
+    var symbol: String {
         switch self {
         case .brightness: "sun.max"
         case .contrast: "circle.righthalf.filled"
@@ -44,7 +44,7 @@ public enum DisplayFeature: String, Codable, CaseIterable, Sendable {
     }
 
     /// The CLI name: `brightness`, `contrast`, `volume`, `input-source`, `color-temperature`, `power-state`.
-    public var cliName: String {
+    var cliName: String {
         switch self {
         case .inputSource: "input-source"
         case .colorTemperature: "color-temperature"
@@ -53,14 +53,14 @@ public enum DisplayFeature: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    public init?(cliName: String) {
+    init?(cliName: String) {
         guard let f = DisplayFeature.allCases.first(where: { $0.cliName == cliName.lowercased() }) else { return nil }
         self = f
     }
 }
 
 /// How MacToys talks to a display.
-public enum MonitorKind: String, Codable, Sendable {
+enum MonitorKind: String, Codable, Sendable {
     /// The built-in panel, through DisplayServices.
     case builtIn
     /// Apple external displays (Studio Display, Pro Display XDR, UltraFine), through DisplayServices.
@@ -71,29 +71,29 @@ public enum MonitorKind: String, Codable, Sendable {
     case unsupported
 }
 
-public struct FeatureReading: Codable, Equatable, Sendable {
-    public var current: UInt16
-    public var maximum: UInt16
+struct FeatureReading: Codable, Equatable, Sendable {
+    var current: UInt16
+    var maximum: UInt16
 }
 
 /// Everything known about one connected display after discovery.
-public struct MonitorSnapshot: Sendable, Identifiable {
+struct MonitorSnapshot: Sendable, Identifiable {
     /// Stable across reconnects: `vendor-model-serial` (plus `#n` for identical twins).
-    public var id: String
+    var id: String
     /// 1-based, built-in first, then left to right.
-    public var number: Int
-    public var name: String
-    public var displayID: CGDirectDisplayID
-    public var kind: MonitorKind
-    public var transport: String
-    public var capabilities: DDCCapabilities?
-    public var readings: [DisplayFeature: FeatureReading]
+    var number: Int
+    var name: String
+    var displayID: CGDirectDisplayID
+    var kind: MonitorKind
+    var transport: String
+    var capabilities: DDCCapabilities?
+    var readings: [DisplayFeature: FeatureReading]
     /// Discrete values for input source, color preset and power state.
-    public var options: [DisplayFeature: [UInt16]]
+    var options: [DisplayFeature: [UInt16]]
     /// Degrees, read-only (macOS has no public API to rotate a display).
-    public var rotation: Int
+    var rotation: Int
 
-    public var supported: [DisplayFeature] { DisplayFeature.allCases.filter { readings[$0] != nil } }
+    var supported: [DisplayFeature] { DisplayFeature.allCases.filter { readings[$0] != nil } }
 }
 
 /// Discovers displays and reads or writes their controls. Synchronous and not thread-safe:
