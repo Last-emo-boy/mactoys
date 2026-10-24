@@ -60,6 +60,7 @@ final class MouseHighlighter {
     }
 
     func toggle() {
+        guard isActive || ensureAccessibility() else { return }
         setActive(!isActive)
         HUD.show("Mouse Highlighter \(isActive ? "on" : "off")", symbol: "cursorarrow.click.2")
     }

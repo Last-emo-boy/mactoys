@@ -53,6 +53,7 @@ final class Crosshairs {
     }
 
     func toggle() {
+        guard isActive || ensureAccessibility() else { return }
         setActive(!isActive)
         HUD.show("Crosshairs \(isActive ? "on" : "off")", symbol: "scope")
     }
@@ -144,6 +145,7 @@ final class GlidingCursorController {
     /// The shortcut was pressed: start, or advance to the next phase.
     func press() {
         if !machine.isActive {
+            guard ensureAccessibility() else { return }
             begin()
             return
         }

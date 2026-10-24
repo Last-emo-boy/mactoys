@@ -41,6 +41,7 @@ final class CursorWrap {
     }
 
     func toggle() {
+        guard isActive || ensureAccessibility() else { return }
         setActive(!isActive)
         HUD.show("CursorWrap \(isActive ? "on" : "off")", symbol: "arrow.left.and.right.square")
     }

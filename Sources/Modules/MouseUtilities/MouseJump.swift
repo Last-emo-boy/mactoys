@@ -107,12 +107,15 @@ final class MouseJumpModel {
 /// The popup window; it takes keyboard focus and closes when it loses it.
 final class MouseJumpPanel: OverlayPanel {
     var onKey: ((NSEvent) -> Bool)?
-    var onClose: (() -> Void)?
+    /// Esc or Return.
+    var onDismiss: (() -> Void)?
+    /// Another window or app took focus.
+    var onResign: (() -> Void)?
 
     override func keyDown(with event: NSEvent) {
         if event.keyCode == UInt16(kVK_Escape) || event.keyCode == UInt16(kVK_Return)
             || event.keyCode == UInt16(kVK_ANSI_KeypadEnter) {
-            onClose?()
+            onDismiss?()
             return
         }
         if onKey?(event) != true { super.keyDown(with: event) }
@@ -120,7 +123,7 @@ final class MouseJumpPanel: OverlayPanel {
 
     override func resignKey() {
         super.resignKey()
-        onClose?()
+        onResign?()
     }
 }
 
@@ -194,22 +197,28 @@ final class MouseJump {
         panel.onKey = { [weak model] event in
             model?.key(Int(event.keyCode), current: MouseSynth.location) ?? false
         }
-        panel.onClose = { [weak self] in self?.close() }
+        panel.onDismiss = { [weak self] in self?.close() }
+        // Focus went elsewhere on purpose: don't take it back.
+        panel.onResign = { [weak self] in self?.close(restoringFocus: false) }
         previousApp = NSWorkspace.shared.frontmostApplication
         self.panel = panel
         panel.present()
         loadImages(for: model, screens: screens)
     }
 
-    func close() {
+    /// Closes the popup; after a jump or Esc the app that was in front gets focus back.
+    func close(restoringFocus: Bool = true) {
         guard let panel else { return }
         self.panel = nil
-        panel.onClose = nil
+        panel.onDismiss = nil
+        panel.onResign = nil
         panel.orderOut(nil)
         for c in captures { c.stop() }
         captures = []
         model = nil
-        if let previousApp, previousApp.bundleIdentifier != Bundle.main.bundleIdentifier { previousApp.activate() }
+        if restoringFocus, let previousApp, previousApp.bundleIdentifier != Bundle.main.bundleIdentifier {
+            previousApp.activate()
+        }
         previousApp = nil
     }
 

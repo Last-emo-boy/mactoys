@@ -115,6 +115,8 @@ final class FindMyMouse {
     func activate() {
         guard running else { return }
         if isShowing { dismiss(animated: true); return }
+        // Without the event tap a click or key could never dismiss the spotlight.
+        guard ensureAccessibility() else { return }
         let front = NSWorkspace.shared.frontmostApplication
         if settings.excludedApps.matches(app: front) { return }
         if settings.skipFullScreenApps && FrontmostApp.isFullScreen() { return }

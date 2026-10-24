@@ -140,7 +140,10 @@ public final class MouseWithoutBordersModule: ToyModule {
 
     func tiles() -> [MachineMatrixView.Tile?] {
         let me = machineID
-        return settings.value.layout.normalized.slots.map { slot in
+        var layout = settings.value.layout.normalized
+        // Before the first start the layout may not list this Mac yet.
+        if !layout.contains(me) { layout.add(MachineSlot(id: me, name: MWBSystem.computerName)) }
+        return layout.slots.map { slot in
             guard let slot else { return nil }
             let isMe = slot.id == me
             let info = controller?.peerInfo[slot.id]

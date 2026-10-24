@@ -48,6 +48,17 @@ enum CursorVisibility {
     }
 }
 
+/// Pointer tools that follow the mouse need the event tap, which needs Accessibility.
+/// Without it: shows the standard HUD, asks for access, and returns false.
+@MainActor
+@discardableResult
+func ensureAccessibility() -> Bool {
+    if AXIsProcessTrusted() { return true }
+    HUD.show("Accessibility permission needed", symbol: "exclamationmark.shield")
+    PermissionCenter.shared.request(.accessibility)
+    return false
+}
+
 /// Closes an open context menu (macOS opens them on mouse-down, so a locked right button
 /// would otherwise leave one tracking the pointer, and its release would pick an item).
 @MainActor

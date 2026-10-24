@@ -16,6 +16,10 @@ final class KeyCaptureNSView: NSView {
 
     private var pendingModifier: Int?
     private var mediaMonitor: Any?
+    /// What was last reported through `onFocus`: recording only counts while the window is key,
+    /// so remapping resumes as soon as you switch to another app.
+    private var reportedFocus = false
+    private var windowObservers: [NSObjectProtocol] = []
 
     override var acceptsFirstResponder: Bool { true }
     override var focusRingType: NSFocusRingType { get { .none } set {} }
@@ -26,28 +30,57 @@ final class KeyCaptureNSView: NSView {
     }
 
     override func becomeFirstResponder() -> Bool {
-        onFocus?(true)
-        mediaMonitor = NSEvent.addLocalMonitorForEvents(matching: .systemDefined) { [weak self] event in
-            guard let self, event.subtype.rawValue == 8 else { return event }
-            let state = (event.data1 & 0xFF00) >> 8
-            if state == 0xA { self.onCapture?(KeyCombo([], .media((event.data1 & 0xFFFF_0000) >> 16))) }
-            return nil
-        }
+        report(window?.isKeyWindow ?? false)
         return true
     }
 
     override func resignFirstResponder() -> Bool {
-        if let mediaMonitor { NSEvent.removeMonitor(mediaMonitor) }
-        mediaMonitor = nil
         pendingModifier = nil
         onModifiers?([])
-        onFocus?(false)
+        report(false)
         return true
     }
 
     override func viewWillMove(toWindow newWindow: NSWindow?) {
         if newWindow == nil, window?.firstResponder === self { window?.makeFirstResponder(nil) }
+        report(false)
+        for o in windowObservers { NotificationCenter.default.removeObserver(o) }
+        windowObservers = []
         super.viewWillMove(toWindow: newWindow)
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard let window else { return }
+        let center = NotificationCenter.default
+        windowObservers = [
+            center.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.report(self.window?.firstResponder === self)
+                }
+            },
+            center.addObserver(forName: NSWindow.didResignKeyNotification, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.report(false) }
+            },
+        ]
+    }
+
+    private func report(_ focused: Bool) {
+        guard focused != reportedFocus else { return }
+        reportedFocus = focused
+        if focused {
+            mediaMonitor = NSEvent.addLocalMonitorForEvents(matching: .systemDefined) { [weak self] event in
+                guard let self, event.subtype.rawValue == 8 else { return event }
+                let state = (event.data1 & 0xFF00) >> 8
+                if state == 0xA { self.onCapture?(KeyCombo([], .media((event.data1 & 0xFFFF_0000) >> 16))) }
+                return nil
+            }
+        } else {
+            if let mediaMonitor { NSEvent.removeMonitor(mediaMonitor) }
+            mediaMonitor = nil
+        }
+        onFocus?(focused)
     }
 
     override func keyDown(with event: NSEvent) {
