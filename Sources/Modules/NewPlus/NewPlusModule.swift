@@ -159,8 +159,12 @@ public final class NewPlusModule: ToyModule {
 
     // MARK: Creating
 
+    /// The frontmost Finder folder, or the Desktop when Finder can't be asked (Automation is requested then).
     private func currentFolder() -> URL {
-        FinderSelection.currentFolder()
+        if !PermissionCenter.shared.isGranted(.automation), !PermissionCenter.automationGranted(bundleID: "com.apple.finder") {
+            PermissionCenter.shared.request(.automation)
+        }
+        return FinderSelection.currentFolder()
             ?? FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser
     }

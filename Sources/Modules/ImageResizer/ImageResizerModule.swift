@@ -63,8 +63,12 @@ public final class ImageResizerModule: ToyModule {
             if command.files.isEmpty { openWithFinderSelection() } else { open(command.files, source: "from Finder") }
         case "resize":
             guard isEnabled else { return true }
-            resizeDirectly(command.files.isEmpty ? FinderSelection.selectedURLs() : command.files,
-                           presetName: command.parameters["preset"])
+            if command.files.isEmpty {
+                guard let urls = FinderSelection.selectionRequestingPermission() else { return true }
+                resizeDirectly(urls, presetName: command.parameters["preset"])
+            } else {
+                resizeDirectly(command.files, presetName: command.parameters["preset"])
+            }
         default:
             return false
         }
@@ -81,7 +85,8 @@ public final class ImageResizerModule: ToyModule {
     }
 
     func openWithFinderSelection() {
-        open(FinderSelection.selectedURLs(), source: "from Finder selection")
+        guard let urls = FinderSelection.selectionRequestingPermission() else { return }
+        open(urls, source: "from Finder selection")
     }
 
     func open(_ urls: [URL], source: String) {
@@ -101,7 +106,7 @@ public final class ImageResizerModule: ToyModule {
                 s.options.removeMetadata = m.options.removeMetadata
             }
         }
-        var window: HostedToolWindow?
+        weak var window: HostedToolWindow?
         let view = ImageResizerView(model: model,
                                     onClose: { window?.close() },
                                     onEditSizes: { [weak self] in
@@ -118,8 +123,8 @@ public final class ImageResizerModule: ToyModule {
             model.cancel()
             self?.windows.removeAll { $0 === w }
         }
-        window = w
         windows.append(w)
+        window = w
         w.show()
     }
 

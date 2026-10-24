@@ -69,8 +69,12 @@ public final class FileLocksmithModule: ToyModule {
             ModuleRegistry.shared.showSettings?(info.id)
         case "open", "show", "admin":
             guard isEnabled else { ModuleRegistry.shared.showSettings?(info.id); return true }
-            let files = command.files.isEmpty ? FinderSelection.selectedURLs() : command.files
-            open(files, elevated: command.action == "admin")
+            if command.files.isEmpty {
+                guard let files = FinderSelection.selectionRequestingPermission() else { return true }
+                open(files, elevated: command.action == "admin")
+            } else {
+                open(command.files, elevated: command.action == "admin")
+            }
         default:
             return false
         }
@@ -78,7 +82,8 @@ public final class FileLocksmithModule: ToyModule {
     }
 
     func openWithFinderSelection() {
-        open(FinderSelection.selectedURLs())
+        guard let urls = FinderSelection.selectionRequestingPermission() else { return }
+        open(urls)
     }
 
     func open(_ urls: [URL], elevated: Bool = false) {

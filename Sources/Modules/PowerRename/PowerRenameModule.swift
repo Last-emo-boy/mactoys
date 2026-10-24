@@ -71,8 +71,10 @@ public final class PowerRenameModule: ToyModule {
 
     // MARK: Windows
 
+    /// Opens the window for the Finder selection (an empty window, ready for dropped files, when nothing is selected).
     func openWithFinderSelection() {
-        open(FinderSelection.selectedURLs())
+        guard let urls = FinderSelection.selectionRequestingPermission() else { return }
+        open(urls)
     }
 
     func open(_ urls: [URL]) {
