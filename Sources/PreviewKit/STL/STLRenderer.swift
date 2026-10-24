@@ -15,6 +15,9 @@ public enum STLRenderer {
         return renderSoftware(mesh, bounds: bounds, size: size, color: color, background: background)
     }
 
+    /// Triangles handed to SceneKit at most.
+    public static let maxSceneTriangles = 2_500_000
+
     /// Camera direction in SceneKit space (y up, +z toward the viewer): front right, above.
     static let viewDirection: SIMD3<Float> = {
         let d = SIMD3<Float>(0.85, 0.75, 1.35)
@@ -24,10 +27,13 @@ public enum STLRenderer {
     private static func renderSceneKit(_ mesh: STLMesh, bounds: (min: SIMD3<Float>, max: SIMD3<Float>), size: CGSize,
                                        color: CGColor, background: CGColor?, device: MTLDevice) -> CGImage? {
         // Interleaved float position + face normal; STL is z-up, SceneKit y-up: (x, y, z) → (x, z, -y).
-        let count = mesh.triangleCount * 3
+        // Huge meshes are thinned to stay within the memory of a Quick Look extension.
+        let step = max(1, mesh.triangleCount / maxSceneTriangles)
+        let triangles = Swift.stride(from: 0, to: mesh.triangleCount, by: step)
+        let count = (mesh.triangleCount + step - 1) / step * 3
         var interleaved = [Float]()
         interleaved.reserveCapacity(count * 6)
-        for t in 0..<mesh.triangleCount {
+        for t in triangles {
             let n = mesh.normal(ofTriangle: t)
             for v in 0..<3 {
                 let p = mesh.vertices[t * 3 + v]

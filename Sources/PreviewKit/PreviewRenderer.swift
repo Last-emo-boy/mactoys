@@ -16,6 +16,8 @@ public struct PreviewOptions: Sendable, Equatable {
     /// nil renders STL on a transparent background.
     public var stlBackground: String?
     public var toolpath: ToolpathStyle
+    /// G-code points kept for drawing (lower in memory-limited extensions).
+    public var gcodePointLimit = GCodeParser.defaultPointLimit
 
     public init(settings s: FinderAddonsSettings = FinderAddonsSettings()) {
         code = s.codeOptions
@@ -140,10 +142,11 @@ public enum PreviewRenderer {
         case .svg:
             result = await SVGRenderer.render(try read(url), maxSize: maxSize, background: options.svgBackground)
         case .gcode:
-            result = ToolpathRenderer.render(GCodeParser.parse(try read(url)), size: maxSize, style: options.toolpath)
+            result = ToolpathRenderer.render(GCodeParser.parse(try read(url), pointLimit: options.gcodePointLimit),
+                                             size: maxSize, style: options.toolpath)
         case .bgcode:
             let data = try read(url)
-            if let path = try? BGCode.toolpath(data), path.moveCount > 0 {
+            if let path = try? BGCode.toolpath(data, pointLimit: options.gcodePointLimit), path.moveCount > 0 {
                 result = ToolpathRenderer.render(path, size: maxSize, style: options.toolpath)
             } else {
                 result = (try? BGCode.parse(data, decodeGCode: false))?.thumbnails
@@ -190,7 +193,9 @@ public enum PreviewRenderer {
             if let best = embedded.max(by: { $0.width * $0.height < $1.width * $1.height }), let image = best.image() {
                 return ImageUtil.scaled(image, toFit: maxSize)
             }
-            let path = kind == .bgcode ? try BGCode.toolpath(data) : GCodeParser.parse(data)
+            // Thumbnails are small: a coarser toolpath is enough and keeps the extension's memory low.
+            let limit = 1_500_000
+            let path = kind == .bgcode ? try BGCode.toolpath(data, pointLimit: limit) : GCodeParser.parse(data, pointLimit: limit)
             let style = ToolpathStyle(view: settings.gcodeView, showTravel: false, darkBackground: true)
             guard let image = ToolpathRenderer.render(path, size: maxSize, style: style) else { throw PreviewError.unreadable("G-code") }
             return image

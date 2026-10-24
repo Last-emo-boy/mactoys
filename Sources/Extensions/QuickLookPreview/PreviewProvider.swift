@@ -20,7 +20,8 @@ final class MacToysPreviewProvider: QLPreviewProvider, QLPreviewingController {
         let settings = FinderAddonsSettings.load()
         var kind = PreviewKind.of(url)
         if kind == .other || kind == .folder { kind = .code("text") }      // a source type we claim but don't know by name
-        let options = PreviewOptions(settings: settings)
+        var options = PreviewOptions(settings: settings)
+        options.gcodePointLimit = 3_000_000          // Quick Look extensions have a tight memory budget
 
         guard FinderAddonsSettings.moduleEnabled(), settings.previewEnabled(kind) else {
             if kind.isText { return try plainText(url, maxBytes: options.maxTextBytes) }
