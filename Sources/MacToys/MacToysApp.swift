@@ -25,6 +25,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settingsObserver: NSObjectProtocol?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        installURLHandler()
+    }
+
+    /// SwiftUI's app lifecycle installs its own kAEGetURL handler during launch (it only routes
+    /// to scenes, and MacToys has no window scene), so ours is installed before and after it.
+    private func installURLHandler() {
         NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleURL(_:reply:)),
                                                      forEventClass: AEEventClass(kInternetEventClass),
                                                      andEventID: AEEventID(kAEGetURL))
@@ -41,6 +47,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         NSApp.setActivationPolicy(.accessory)
+        installURLHandler()
+        DispatchQueue.main.async { self.installURLHandler() }
         let registry = ModuleRegistry.shared
         registry.register(AllModules.make())
         registry.showSettings = { SettingsWindow.shared.show(page: $0) }
@@ -88,6 +96,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func open(_ url: URL) {
+        Log.for("app").info("open \(url.absoluteString, privacy: .public)")
         if url.isFileURL {
             // Files opened with MacToys (e.g. .plist via Plist Preview).
             let cmd = AppCommand(module: url.pathExtension == "plist" ? "plistpreview" : "peek", action: "open", files: [url])
@@ -100,6 +109,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case "settings": SettingsWindow.shared.show(page: cmd.parameters["page"])
             case "welcome": WelcomeWindow.shared.show()
             case "reload": ModuleRegistry.shared.reloadFromDisk()
+            case "debug-screenshot", "debug-state":
+                // Only when launched with --debug: lets a developer see the screen and app state remotely.
+                guard CommandLine.arguments.contains("--debug") else { return }
+                Task { await DebugDump.run(screenshot: cmd.action == "debug-screenshot") }
             default: break
             }
             return
