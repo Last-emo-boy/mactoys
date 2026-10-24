@@ -106,6 +106,35 @@ public struct Shortcut: Codable, Hashable, Sendable, CustomStringConvertible {
     }
 }
 
+/// The ASCII-capable keyboard layout's key table, fetched once and refreshed when the input
+/// source changes. Text Input Source calls abort when made from two threads at once, so they
+/// happen only here, under a lock.
+private enum LayoutCache {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var cached: Data?
+    nonisolated(unsafe) private static var observer: NSObjectProtocol?
+
+    static func data() -> Data? {
+        lock.lock()
+        defer { lock.unlock() }
+        if let cached { return cached }
+        guard let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
+              let ptr = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData) else { return nil }
+        let data = Unmanaged<CFData>.fromOpaque(ptr).takeUnretainedValue() as Data
+        cached = data
+        if observer == nil {
+            observer = DistributedNotificationCenter.default().addObserver(
+                forName: NSNotification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String),
+                object: nil, queue: nil) { _ in
+                lock.lock()
+                cached = nil
+                lock.unlock()
+            }
+        }
+        return data
+    }
+}
+
 /// Virtual key codes and their display names.
 public enum KeyCodes {
     public static let special: [UInt16: String] = [
@@ -170,11 +199,7 @@ public enum KeyCodes {
     /// The character a key produces on the current ASCII-capable layout (so shortcuts read `` ` `` and `.`
     /// even while a Chinese or Japanese input source is active).
     public static func character(for code: UInt16, shift: Bool) -> String? {
-        guard let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
-              let ptr = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData) else {
-            return ansi[code]
-        }
-        let data = Unmanaged<CFData>.fromOpaque(ptr).takeUnretainedValue() as Data
+        guard let data = LayoutCache.data() else { return ansi[code] }
         return data.withUnsafeBytes { raw -> String? in
             guard let layout = raw.baseAddress?.assumingMemoryBound(to: UCKeyboardLayout.self) else { return nil }
             var deadKeys: UInt32 = 0

@@ -112,14 +112,23 @@ public final class SettingsStore: @unchecked Sendable {
 @MainActor
 @Observable
 public final class Persisted<Value: Codable & Equatable> {
+    /// Writing an equal value is a no-op: no observation change, no save. Without this,
+    /// SwiftUI bindings that write back on every update (e.g. `MenuBarExtra(isInserted:)`)
+    /// invalidate their own view graph forever.
     public var value: Value {
-        didSet {
-            guard value != oldValue else { return }
+        get {
+            access(keyPath: \.value)
+            return storage
+        }
+        set {
+            guard newValue != storage else { return }
+            withMutation(keyPath: \.value) { storage = newValue }
             scheduleSave()
-            for observer in observers { observer(value) }
+            for observer in observers { observer(newValue) }
         }
     }
 
+    @ObservationIgnored private var storage: Value
     @ObservationIgnored public let id: String
     @ObservationIgnored private let store: SettingsStore
     @ObservationIgnored private let defaultValue: Value
@@ -130,7 +139,7 @@ public final class Persisted<Value: Codable & Equatable> {
         self.id = id
         self.store = store
         self.defaultValue = defaultValue
-        self.value = store.load(id, default: defaultValue)
+        self.storage = store.load(id, default: defaultValue)
     }
 
     /// Called after every change, on the main actor.
