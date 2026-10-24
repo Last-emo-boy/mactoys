@@ -261,6 +261,7 @@ final class AdvancedPasteController {
 
     private func finish(_ output: AdvancedPasteTransforms.Output, original: ClipItem?) {
         let app = targetApp
+        session?.state = .idle
         closeWindow()
         task = Task { [weak self] in
             await self?.paste(output, original: original, into: app)
