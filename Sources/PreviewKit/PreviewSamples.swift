@@ -126,7 +126,8 @@ public enum PreviewSamples {
         let colors = [CGColor(srgbRed: 0.98, green: 0.73, blue: 0.42, alpha: 1), CGColor(srgbRed: 0.96, green: 0.52, blue: 0.38, alpha: 1),
                       CGColor(srgbRed: 0.38, green: 0.36, blue: 0.90, alpha: 1)] as CFArray
         guard let gradient = CGGradient(colorsSpace: ImageUtil.sRGB, colors: colors, locations: [0, 0.5, 1]) else { return nil }
-        ctx.drawLinearGradient(gradient, start: CGPoint(x: 0, y: CGFloat(height)), end: CGPoint(x: CGFloat(width) * 0.6, y: 0), options: [])
+        ctx.drawLinearGradient(gradient, start: CGPoint(x: 0, y: CGFloat(height)), end: CGPoint(x: CGFloat(width) * 0.6, y: 0),
+                               options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
         return ctx.makeImage()
     }
 }
