@@ -40,7 +40,7 @@ struct ScreenRulerSettingsView: View {
                 }
                 SliderRow("Pixel tolerance for edge detection",
                           subtitle: "Higher values forgive gradients and shadows.",
-                          value: $settings.value.pixelTolerance, in: 0...255, step: 1)
+                          value: $settings.value.pixelTolerance, in: 0...255)
             }
             Section("Appearance") {
                 Picker(selection: $settings.value.extraUnit) {
