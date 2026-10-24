@@ -107,6 +107,16 @@ public struct FinderAddonsSettings: Codable, Equatable, Sendable {
     public static var defaultURL: URL {
         RealHome.url.appendingPathComponent("Library/Application Support/MacToys/Settings/finderaddons.json")
     }
+
+    /// Whether the Finder Add-ons utility is switched on in MacToys (`general.json`, default on).
+    /// The extensions keep working while MacToys isn't running, so they check this themselves.
+    public static func moduleEnabled(generalURL: URL = RealHome.url
+        .appendingPathComponent("Library/Application Support/MacToys/Settings/general.json")) -> Bool {
+        guard let data = try? Data(contentsOf: generalURL),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let enabled = json["enabled"] as? [String: Any], let on = enabled["finderaddons"] as? Bool else { return true }
+        return on
+    }
 }
 
 /// The user's home folder even inside an app sandbox (where `NSHomeDirectory()` is the container).

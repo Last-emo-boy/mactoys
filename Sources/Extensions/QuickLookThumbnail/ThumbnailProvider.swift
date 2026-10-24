@@ -16,7 +16,7 @@ final class MacToysThumbnailProvider: QLThumbnailProvider {
         let scale = max(1, request.scale)
         let settings = FinderAddonsSettings.load()
         let kind = PreviewKind.of(url)
-        guard settings.thumbnailEnabled(kind) else {
+        guard FinderAddonsSettings.moduleEnabled(), settings.thumbnailEnabled(kind) else {
             handler(nil, PreviewError.unsupported)
             return
         }

@@ -22,7 +22,7 @@ final class MacToysPreviewProvider: QLPreviewProvider, QLPreviewingController {
         if kind == .other || kind == .folder { kind = .code("text") }      // a source type we claim but don't know by name
         let options = PreviewOptions(settings: settings)
 
-        guard settings.previewEnabled(kind) else {
+        guard FinderAddonsSettings.moduleEnabled(), settings.previewEnabled(kind) else {
             if kind.isText { return try plainText(url, maxBytes: options.maxTextBytes) }
             throw PreviewError.unsupported
         }
