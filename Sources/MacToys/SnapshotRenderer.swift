@@ -51,11 +51,15 @@ enum SnapshotRenderer {
         // cacheDisplay (a drawRect pass) skips.
         let scale = window.backingScaleFactor
         let bounds = host.bounds
-        if let layer = window.contentView?.superview?.layer ?? host.layer,
+        if let layer = host.layer,
            let ctx = CGContext(data: nil, width: Int(bounds.width * scale), height: Int(bounds.height * scale),
                                bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
                                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
             ctx.scaleBy(x: scale, y: scale)
+            if layer.isGeometryFlipped {
+                ctx.translateBy(x: 0, y: bounds.height)
+                ctx.scaleBy(x: 1, y: -1)
+            }
             ctx.setFillColor((window.appearance ?? NSAppearance.currentDrawing()).bestMatch(from: [.darkAqua]) != nil
                              ? CGColor(gray: 0.12, alpha: 1) : CGColor(gray: 0.96, alpha: 1))
             ctx.fill(CGRect(origin: .zero, size: bounds.size))
