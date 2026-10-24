@@ -60,7 +60,8 @@ struct ProviderOptionsView: View {
         case "units":
             Toggle(isOn: $options.value.unitsCopyWithUnit) { RowLabel("Copy results with their unit", subtitle: "“6.21 mi” instead of “6.21”") }
         case "time": time
-        case "web", "url": web
+        case "web": web
+        case "url": browserPicker
         case "shell": shell
         case "windows":
             Toggle(isOn: $options.value.windowsIncludeMinimized) { RowLabel("Include minimized windows") }
@@ -141,10 +142,14 @@ struct ProviderOptionsView: View {
                 TextField("", text: $options.value.customSearchURL).textFieldStyle(.roundedBorder).frame(width: 300)
             } label: { RowLabel("Search URL", subtitle: "%s is replaced by the query") }
         }
+        browserPicker
+    }
+
+    private var browserPicker: some View {
         Picker(selection: $options.value.browserBundleID) {
             Text("Default browser").tag("")
             ForEach(Self.browsers, id: \.bundleID) { b in Text(b.name).tag(b.bundleID) }
-        } label: { RowLabel("Open in") }
+        } label: { RowLabel("Open web pages in", subtitle: "Shared by web search and URLs") }
     }
 
     @ViewBuilder private var shell: some View {

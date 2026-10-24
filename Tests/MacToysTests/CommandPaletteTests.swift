@@ -130,6 +130,8 @@ import Testing
         #expect(try !calc.evaluate("pi").isTrivial)
         #expect(try !calc.evaluate("1+1").isTrivial)
         #expect(try calc.evaluate("2+2=").value == 4)
+        #expect(try !calc.evaluate("0xFF").isTrivial)
+        #expect(try !calc.evaluate("255 in hex").isTrivial)
     }
 
     @Test func errors() {
@@ -711,5 +713,115 @@ private func item(_ id: String, _ provider: String, score: Double, fallback: Boo
         r.plugins["calc"] = PluginSetting(enabled: true, keyword: "calc", global: false)
         store.save(r, id: "run")
         #expect(store.load("run", default: RunSettings()) == r)
+    }
+}
+
+// MARK: - Providers
+
+@MainActor
+@Suite struct ProviderTests {
+    func query(_ text: String, scoped: Bool = false) -> SearchQuery { SearchQuery(text: text, scoped: scoped, frontEnd: .palette) }
+
+    @Test func calculatorSkipsTrivialGlobalInput() async throws {
+        let calc = try #require(LauncherEngine.shared.provider("calc"))
+        #expect(await calc.search(query("42")).isEmpty)
+        #expect(await calc.search(query("safari")).isEmpty)
+        #expect(await calc.search(query("2+")).isEmpty)
+        let results = await calc.search(query("2+2"))
+        #expect(results.first?.title == "4")
+        #expect(results.first?.primary.title == "Copy")
+        let scoped = await calc.search(query("2+", scoped: true))
+        #expect(scoped.first?.title == "Invalid expression")
+        let hex = await calc.search(query("255 in hex"))
+        #expect(hex.first?.title == "0xFF")
+    }
+
+    @Test func systemSettingsSearch() async throws {
+        let settings = try #require(LauncherEngine.shared.provider("settings"))
+        let displays = await settings.search(query("displays"))
+        #expect(displays.first?.title == "Displays")
+        let privacy = await settings.search(query("privacy>cam", scoped: true))
+        #expect(privacy.contains { $0.title == "Camera" })
+        let general = await settings.search(query("general:", scoped: true))
+        #expect(general.contains { $0.title == "Date & Time" })
+        #expect(!general.contains { $0.title == "Displays" })
+        #expect(SystemSettingsProvider.panes.allSatisfy { $0.url != nil })
+    }
+
+    @Test func timeKeywordNeedsWholeWord() async throws {
+        let time = try #require(LauncherEngine.shared.provider("time"))
+        #expect(await time.search(query("tim")).isEmpty)
+        let now = await time.search(query("time"))
+        #expect(now.first?.accessory == "Copy")
+        let unix = await time.search(query("unix 1792852868"))
+        #expect(unix.contains { $0.title == "2026-10-24T14:41:08Z" || $0.subtitle == "ISO 8601" })
+    }
+
+    @Test func unitsAndValues() async throws {
+        let units = try #require(LauncherEngine.shared.provider("units"))
+        #expect(await units.search(query("10 km to mi")).first?.title == "6.213711922 mi")
+        let values = try #require(LauncherEngine.shared.provider("values"))
+        #expect(await values.search(query("md5 abc")).first?.title == "900150983cd24fb0d6963f7d28e17f72")
+        #expect(await values.search(query("hello")).isEmpty)
+    }
+
+    @Test func scriptFolderScan() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("scripts-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let script = dir.appendingPathComponent("hello.sh")
+        try "#!/bin/zsh\n# @mactoys.title Hello There\n# @mactoys.mode silent\necho hi\n".write(to: script, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: script.path)
+        try "just notes".write(to: dir.appendingPathComponent("notes.txt"), atomically: true, encoding: .utf8)
+        try "#!/usr/bin/env python3\nprint('x')\n".write(to: dir.appendingPathComponent("not-executable.py"), atomically: true, encoding: .utf8)
+        let found = ScriptLibrary.scan(dir)
+        #expect(found.map(\.meta.title) == ["Hello There", "Not Executable"])
+        #expect(found.first?.meta.mode == .silent)
+        let example = ScriptMetadata.parse(ScriptLibrary.example, fileName: "say-hello.sh")
+        #expect(example.title == "Say Hello")
+        #expect(example.argument == "Name")
+        #expect(example.argumentOptional)
+    }
+
+    @Test func scriptRunsWithArgument() async throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("scripts-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appendingPathComponent("greet.sh")
+        try "#!/bin/sh\necho \"Hello, $1!\"\n".write(to: url, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
+        let s = try #require(ScriptLibrary.scan(dir).first)
+        let out = await ScriptLibrary.execute(s, argument: "Ada; rm -rf /")
+        #expect(out.ok)
+        #expect(out.text == "Hello, Ada; rm -rf /!")
+    }
+
+    @Test func chromiumBookmarksParse() throws {
+        let json = """
+        {"roots":{"bookmark_bar":{"name":"Bookmarks bar","type":"folder","children":[
+          {"name":"PowerToys","type":"url","url":"https://github.com/microsoft/PowerToys"},
+          {"name":"Work","type":"folder","children":[{"name":"","type":"url","url":"https://example.com/"}]}]}}}
+        """
+        let obj = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any]
+        let roots = try #require(obj?["roots"] as? [String: Any])
+        var out: [Bookmark] = []
+        for (_, node) in roots { BookmarkReader.walkChromium(node, folder: "", browser: .chrome, into: &out) }
+        #expect(out.count == 2)
+        #expect(out[0].title == "PowerToys")
+        #expect(out[0].folder == "Bookmarks bar")
+        #expect(out[1].title == "https://example.com/")
+        #expect(out[1].folder == "Bookmarks bar › Work")
+    }
+
+    @Test func editorHistoryParse() {
+        let json = """
+        {"entries":[{"folderUri":"file:///Users/ada/src/mactoys"},{"fileUri":"file:///Users/ada/notes.md"},
+        {"folderUri":"vscode-remote://ssh-remote%2Bbox/home/ada/app","remoteAuthority":"ssh-remote+box"},
+        {"workspace":{"id":"1","configPath":"file:///Users/ada/w.code-workspace"}}]}
+        """
+        let list = EditorHistory.parse(Data(json.utf8), editor: .vscode)
+        #expect(list.map(\.kind) == [.folder, .file, .folder, .workspace])
+        #expect(list[0].name == "mactoys")
+        #expect(list[2].remote == "ssh-remote+box")
     }
 }

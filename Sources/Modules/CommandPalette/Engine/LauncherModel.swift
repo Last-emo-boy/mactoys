@@ -179,7 +179,7 @@ final class LauncherModel {
     // MARK: Searching
 
     private func queryChanged() {
-        if stack.isEmpty { rootQuery = query }
+        if stack.isEmpty { rootQuery = query } else { stack[stack.count - 1].selectedID = nil }
         shelfSelection = nil
         userMoved = false
         if collapsesWhenEmpty && stack.isEmpty { expanded = !query.isEmpty }
@@ -342,7 +342,7 @@ final class LauncherModel {
     func perform(_ action: PaletteAction, of item: PaletteItem?) {
         actionsMenu = nil
         if action.recordsUsage, let item, stack.isEmpty || item.isPinnable, !item.id.hasPrefix("history:") {
-            engine.usage.record(item, query: stack.isEmpty ? query : (stack.first?.query ?? query))
+            engine.usage.record(item, query: query)
         }
         handle(action.perform())
     }

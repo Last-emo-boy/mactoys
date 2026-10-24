@@ -110,7 +110,13 @@ struct Calculator {
         let value = try eval(node)
         guard !value.isNaN else { throw CalcError.domain("The expression") }
         guard value.isFinite else { throw CalcError.overflow }
-        return Result(value: value == 0 ? 0 : value, base: base, isTrivial: node.isTrivial)
+        // A bare decimal number is trivial; "0xFF" or "255 in hex" is a conversion worth showing.
+        let radixLiteral = tokens.contains { token in
+            guard case .number(_, let text) = token else { return false }
+            let lower = text.lowercased()
+            return lower.hasPrefix("0x") || lower.hasPrefix("0b") || lower.hasPrefix("0o")
+        }
+        return Result(value: value == 0 ? 0 : value, base: base, isTrivial: node.isTrivial && base == .decimal && !radixLiteral)
     }
 
     /// Strips a trailing ` in hex` / ` to binary` / ` as oct` / ` in dec`.
