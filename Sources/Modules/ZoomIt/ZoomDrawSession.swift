@@ -124,6 +124,7 @@ final class ZoomDrawSession {
     private var scrollAccumulator: CGFloat = 0
     private var blurred: CGImage?
     private var ending = false
+    private var closed = false
     private var stateObserver: Any?
     private let log = Log.for("zoomit")
 
@@ -193,14 +194,19 @@ final class ZoomDrawSession {
         state.drawing = false
         if startedAsZoom, settings.animateZoom, level > 1.01 {
             panLocked = false
-            animate(to: 1, duration: 0.25) { [weak self] in self?.close() }
+            // `frame()` closes once this finishes; input is ignored meanwhile so nothing replaces it.
+            animate(to: 1, duration: 0.25)
         } else {
             close()
         }
     }
 
-    /// Closes at once (module stopped).
+    /// Closes at once (module stopped). Idempotent.
     func close() {
+        guard !closed else { return }
+        closed = true
+        ending = true
+        animation = nil
         displayLink?.invalidate()
         displayLink = nil
         driver = nil
@@ -214,7 +220,7 @@ final class ZoomDrawSession {
 
     /// ⌃⌥2 or a left click in zoom mode: freeze the view and draw on it.
     func startDrawing() {
-        guard !state.drawing else { return }
+        guard !state.drawing, !ending else { return }
         animation = nil
         panLocked = true
         state.drawing = true
@@ -264,7 +270,11 @@ final class ZoomDrawSession {
     }
 
     private func frame() {
-        guard let a = animation else { displayLink?.isPaused = true; return }
+        guard let a = animation else {
+            displayLink?.isPaused = true
+            if ending { close() }
+            return
+        }
         let t = a.duration <= 0 ? 1 : (CACurrentMediaTime() - a.start) / a.duration
         level = ZoomMath.interpolate(from: a.from, to: a.to, progress: t)
         if !panLocked { pointer = currentPointer() }
@@ -273,6 +283,7 @@ final class ZoomDrawSession {
             animation = nil
             displayLink?.isPaused = true
             a.then?()
+            if ending { close() }
         }
     }
 
@@ -292,12 +303,14 @@ final class ZoomDrawSession {
     // MARK: Input
 
     func pointerMoved(_ p: CGPoint) {
+        guard !ending else { return }
         pointer = p
         if !state.drawing, !panLocked, animation == nil { updateVisible() }
         if state.tool == .eraser, state.drawing, NSEvent.pressedMouseButtons & 1 != 0 { erase(at: p) }
     }
 
     func mouseDown(_ p: CGPoint, flags: NSEvent.ModifierFlags) {
+        guard !ending else { return }
         if !state.drawing { startDrawing() }
         if crop != nil { crop?.start = p; crop?.current = p; annotationView.needsDisplay = true; return }
         commitText()
@@ -309,6 +322,7 @@ final class ZoomDrawSession {
     }
 
     func mouseDragged(_ p: CGPoint, flags: NSEvent.ModifierFlags) {
+        guard !ending else { return }
         pointer = p
         if crop?.start != nil { crop?.current = p; annotationView.needsDisplay = true; return }
         if state.tool == .eraser { erase(at: p); return }
@@ -328,6 +342,7 @@ final class ZoomDrawSession {
     }
 
     func mouseUp(_ p: CGPoint) {
+        guard !ending else { return }
         if let c = crop, let start = c.start {
             crop = nil
             annotationView.needsDisplay = true
@@ -343,12 +358,14 @@ final class ZoomDrawSession {
     }
 
     func rightClick() {
+        guard !ending else { return }
         if crop != nil { crop = nil; annotationView.needsDisplay = true; return }
         if state.drawing { stopDrawing() } else { end() }
     }
 
     /// Trackpads send many small deltas; one step per notch of travel.
     func scroll(_ dy: CGFloat) {
+        guard !ending else { return }
         scrollAccumulator += dy
         guard abs(scrollAccumulator) >= 1 else { return }
         adjust(up: scrollAccumulator > 0)
@@ -356,6 +373,7 @@ final class ZoomDrawSession {
     }
 
     func flagsChanged(_ flags: NSEvent.ModifierFlags) {
+        guard !ending else { return }
         guard let start = dragStart, let current = inProgress else { return }
         if case .pen = current.shape, effectiveTool(flags) == state.tool { return }
         if case .blur = current.shape { return }
@@ -370,6 +388,7 @@ final class ZoomDrawSession {
 
     /// Returns true when handled.
     func keyDown(_ event: NSEvent) -> Bool {
+        guard !ending else { return true }
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let command = flags.contains(.command)
         let shift = flags.contains(.shift)

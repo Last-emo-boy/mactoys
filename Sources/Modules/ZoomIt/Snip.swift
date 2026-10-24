@@ -18,6 +18,8 @@ final class SnipDictation {
     private var finalWaiter: CheckedContinuation<Void, Never>?
     private var isFinal = false
     private var cancelled = false
+    /// Set by `finish()` or `cancel()`: a setup still waiting on a permission prompt must not start the mic.
+    private var stopped = false
     private var tapInstalled = false
     private let log = Log.for("zoomit")
 
@@ -34,11 +36,11 @@ final class SnipDictation {
         let speech: SFSpeechRecognizerAuthorizationStatus = await withCheckedContinuation { c in
             SFSpeechRecognizer.requestAuthorization { c.resume(returning: $0) }
         }
-        guard !cancelled else { return }
+        guard !stopped else { return }
         guard speech == .authorized else { return unavailable("Speech recognition is turned off for MacToys") }
-        guard await AVCaptureDevice.requestAccess(for: .audio), !cancelled else {
-            return unavailable("Microphone access is turned off for MacToys")
-        }
+        let microphone = await AVCaptureDevice.requestAccess(for: .audio)
+        guard !stopped else { return }
+        guard microphone else { return unavailable("Microphone access is turned off for MacToys") }
         guard let recognizer = SFSpeechRecognizer(locale: Locale.current) ?? SFSpeechRecognizer(), recognizer.isAvailable else {
             return unavailable("Dictation isn't available")
         }
@@ -56,6 +58,7 @@ final class SnipDictation {
         guard format.channelCount > 0 else { return unavailable("No microphone found") }
         input.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in request.append(buffer) }
         tapInstalled = true
+        guard !stopped else { return }
         do {
             engine.prepare()
             try engine.start()
@@ -90,6 +93,7 @@ final class SnipDictation {
     /// Stops listening and waits up to `grace` seconds for the final words. `nil` when cancelled.
     func finish(grace: TimeInterval = 2.5) async -> String? {
         guard isActive else { return "" }
+        stopped = true
         onStatus?(.transcribing)
         stopAudio()
         request?.endAudio()
@@ -108,6 +112,7 @@ final class SnipDictation {
 
     func cancel() {
         cancelled = true
+        stopped = true
         stopAudio()
         task?.cancel()
         isActive = false

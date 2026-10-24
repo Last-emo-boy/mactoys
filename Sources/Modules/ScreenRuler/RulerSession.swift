@@ -194,9 +194,11 @@ final class RulerSession {
         }
         let displayID = overlay.screen.displayID
         let scale = overlay.screen.backingScaleFactor
-        Task { @MainActor [weak self] in
+        Task { @MainActor [weak self, weak overlay] in
             do {
                 try await capture.start(.display(displayID), fps: 15, scale: scale)
+                // The overlay may have closed while the stream was starting; nothing else would stop it.
+                if overlay?.live !== capture { capture.stop() }
             } catch {
                 self?.log.error("Continuous capture failed: \(error.localizedDescription, privacy: .public)")
             }
@@ -277,7 +279,12 @@ final class RulerSession {
 
     /// Returns true when handled.
     private func key(_ event: NSEvent) -> Bool {
+        // The monitor sees every MacToys window; only handle keys aimed at the ruler.
+        guard let window = event.window,
+              window === toolbar || overlays.contains(where: { $0.panel === window }) else { return false }
         let step = event.modifierFlags.contains(.shift) ? 10 : 1
+        let arrows: Set<Int> = [123, 124, 125, 126]
+        if arrows.contains(Int(event.keyCode)), model.tool == nil { return false }
         switch Int(event.keyCode) {
         case 53: end()                                                            // esc
         case 18: select(.bounds)                                                  // 1

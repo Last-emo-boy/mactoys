@@ -30,6 +30,10 @@ final class RecordingWriter: NSObject, SCStreamOutput, @unchecked Sendable {
     private let systemAudio: AVAssetWriterInput?
     private let microphone: AVAssetWriterInput?
     private var started = false
+    /// Set once the writer fails; later samples are dropped.
+    private var failed = false
+    /// Called once, on the writer's queue, when writing fails mid-recording.
+    var onFailure: (@Sendable (Error) -> Void)?
     private var lastVideoTime = CMTime.invalid
     /// `CACurrentMediaTime()` when `lastVideoTime` arrived, to extend a still screen to the stop time.
     private var lastArrival: CFTimeInterval = 0
@@ -68,7 +72,7 @@ final class RecordingWriter: NSObject, SCStreamOutput, @unchecked Sendable {
     }
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sample: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard sample.isValid else { return }
+        guard sample.isValid, !failed else { return }
         switch type {
         case .screen:
             guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sample, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
@@ -76,13 +80,17 @@ final class RecordingWriter: NSObject, SCStreamOutput, @unchecked Sendable {
                   sample.imageBuffer != nil else { return }
             let time = sample.presentationTimeStamp
             if !started {
-                guard writer.startWriting() else { return }
+                guard writer.startWriting() else { fail(); return }
                 writer.startSession(atSourceTime: time)
                 started = true
             }
-            if video.isReadyForMoreMediaData, video.append(sample) {
-                lastVideoTime = time
-                lastArrival = CACurrentMediaTime()
+            if video.isReadyForMoreMediaData {
+                if video.append(sample) {
+                    lastVideoTime = time
+                    lastArrival = CACurrentMediaTime()
+                } else if writer.status == .failed {
+                    fail()
+                }
             }
         case .audio:
             if started, let input = systemAudio, input.isReadyForMoreMediaData { input.append(sample) }
@@ -93,12 +101,17 @@ final class RecordingWriter: NSObject, SCStreamOutput, @unchecked Sendable {
         }
     }
 
+    private func fail() {
+        failed = true
+        onFailure?(writer.error ?? RecorderError.writerFailed("the encoder stopped"))
+    }
+
     /// Finishes the file. ScreenCaptureKit sends no frames while the screen is still, so the
     /// session is extended from the last frame to `stoppedAt` (a `CACurrentMediaTime()`).
     func finish(stoppedAt: CFTimeInterval, completion: @escaping @Sendable (Error?) -> Void) {
         queue.async { [self] in
-            guard started, writer.status == .writing else {
-                writer.cancelWriting()
+            guard started, !failed, writer.status == .writing else {
+                if writer.status == .writing { writer.cancelWriting() }
                 completion(writer.error ?? RecorderError.noFrames)
                 return
             }
@@ -156,7 +169,11 @@ final class ScreenRecorder: NSObject, SCStreamDelegate {
             scale = ScreenGeometry.screen(forAX: window.frame)?.backingScaleFactor ?? 2
             config.ignoreShadowsSingleWindow = true
         }
-        let factor = CGFloat(min(1, max(0.1, settings.recordScaling)))
+        var factor = CGFloat(min(1, max(0.1, settings.recordScaling)))
+        // Apple's H.264 encoders top out at 4096 pixels on a side; HEVC goes to 8192.
+        let limit: CGFloat = settings.videoCodec == .h264 ? 4096 : 8192
+        let longest = max(size.width, size.height) * scale * factor
+        if longest > limit { factor *= limit / longest }
         let width = Self.even(size.width * scale * factor), height = Self.even(size.height * scale * factor)
         let fps = min(60, max(5, settings.frameRate))
         config.width = width
@@ -182,6 +199,12 @@ final class ScreenRecorder: NSObject, SCStreamDelegate {
                                          width: width, height: height, codec: settings.videoCodec, fps: fps,
                                          systemAudio: settings.captureSystemAudio, microphone: mic,
                                          mono: settings.monoMicrophone)
+        writer.onFailure = { [weak self] error in
+            Task { @MainActor in
+                self?.log.error("Recording writer failed: \(error.localizedDescription, privacy: .public)")
+                self?.onInterrupted?()
+            }
+        }
         let stream = SCStream(filter: filter, configuration: config, delegate: self)
         try stream.addStreamOutput(writer, type: .screen, sampleHandlerQueue: writer.queue)
         if settings.captureSystemAudio { try stream.addStreamOutput(writer, type: .audio, sampleHandlerQueue: writer.queue) }

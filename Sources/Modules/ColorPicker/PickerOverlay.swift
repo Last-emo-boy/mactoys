@@ -192,7 +192,7 @@ final class PickerSession {
 
     /// Shows the overlays. Returns false when no capture could be converted.
     func begin(_ captures: [(NSScreen, CGImage)]) -> Bool {
-        for (index, (screen, image)) in captures.enumerated() {
+        for (screen, image) in captures {
             guard let pixels = ScreenPixels(image) else { continue }
             let panel = OverlayPanel(frame: screen.frame, interactive: true, acceptsKey: true, level: .screenSaver)
             panel.acceptsMouseMovedEvents = true
@@ -202,7 +202,8 @@ final class PickerSession {
             root.layer?.contents = pixels.image
             root.layer?.contentsGravity = .resize
             root.layer?.magnificationFilter = .nearest
-            let host = NSHostingView(rootView: LoupeOverlay(model: model, index: index))
+            // `screens` skips captures that couldn't be converted, so index by its count.
+            let host = NSHostingView(rootView: LoupeOverlay(model: model, index: screens.count))
             host.frame = root.bounds
             host.autoresizingMask = [.width, .height]
             root.addSubview(host)

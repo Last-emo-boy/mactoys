@@ -362,6 +362,8 @@ public final class ZoomItModule: ToyModule {
                 return
             }
             self.recordingBusy = false
+            // ZoomIt may have been turned off while a permission prompt held this start.
+            guard self.running else { self.stopRecording(); return }
             self.session?.state.isRecording = true
         }
     }

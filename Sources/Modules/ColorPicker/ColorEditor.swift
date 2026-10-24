@@ -13,6 +13,8 @@ final class ColorEditorModel {
     /// The color whose formats are shown; adjusting edits it, picking or selecting replaces it.
     var current: ColorValue
     var showAdjust = false
+    /// Owned here, not by the transient adjust popover, which closes when the panel is clicked.
+    @ObservationIgnored let colorPanel = ColorPanelBridge()
     @ObservationIgnored var onPick: () -> Void = {}
     @ObservationIgnored var onCopy: (String) -> Void = { _ in }
 
@@ -35,6 +37,11 @@ final class ColorEditorModel {
     }
 
     func copy(_ format: ColorFormat) { onCopy(value(format)) }
+
+    /// The system color panel, editing `current` live.
+    func openColorPanel() {
+        colorPanel.open(with: current) { [weak self] c in self?.current = c }
+    }
 
     /// Plain-text export of the history: one block per color, one line per enabled format.
     func exportText() -> String {
@@ -238,7 +245,8 @@ struct AdjustPanel: View {
     @State private var saturation: Double = 0
     @State private var brightness: Double = 0
     @State private var hex = ""
-    @State private var panelBridge = ColorPanelBridge()
+    /// The color the sliders last produced, so their own edits don't reload (and snap) them.
+    @State private var applied: ColorValue?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -248,7 +256,7 @@ struct AdjustPanel: View {
                     .font(.system(size: 12.5, design: .monospaced))
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 110)
-                    .onSubmit { if let c = ColorValue(hex: hex) { model.current = c; load() } }
+                    .onSubmit { if let c = ColorValue(hex: hex) { model.current = c } }
                 Spacer()
             }
             slider("Hue", value: $hue, range: 0...360, suffix: "°")
@@ -256,7 +264,7 @@ struct AdjustPanel: View {
             slider("Brightness", value: $brightness, range: 0...100, suffix: "%")
             HStack {
                 Button("Color Panel…") {
-                    panelBridge.open(with: model.current) { c in model.current = c; load() }
+                    model.openColorPanel()
                 }
                 Spacer()
                 Button("Add to History") {
@@ -269,6 +277,7 @@ struct AdjustPanel: View {
         .padding(16)
         .frame(width: 300)
         .onAppear(perform: load)
+        .onChange(of: model.current) { _, new in if new != applied { load() } }
     }
 
     private func slider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, suffix: String) -> some View {
@@ -292,8 +301,10 @@ struct AdjustPanel: View {
     }
 
     private func apply() {
-        model.current = ColorMath.fromHSV(hue: hue, saturation: saturation / 100, value: brightness / 100)
-        hex = model.current.hex
+        let c = ColorMath.fromHSV(hue: hue, saturation: saturation / 100, value: brightness / 100)
+        applied = c
+        model.current = c
+        hex = c.hex
     }
 }
 
@@ -301,15 +312,28 @@ struct AdjustPanel: View {
 @MainActor
 final class ColorPanelBridge: NSObject {
     private var onChange: ((ColorValue) -> Void)?
+    private var attached = false
 
     func open(with color: ColorValue, onChange: @escaping (ColorValue) -> Void) {
-        self.onChange = onChange
         let panel = NSColorPanel.shared
         panel.showsAlpha = false
+        panel.color = color.rgba.nsColor
+        self.onChange = onChange
+        attached = true
         panel.setTarget(self)
         panel.setAction(#selector(changed(_:)))
-        panel.color = color.rgba.nsColor
         panel.orderFront(nil)
+    }
+
+    /// Stops receiving changes and hides the panel (the editor closed).
+    func detach() {
+        onChange = nil
+        guard attached, NSColorPanel.sharedColorPanelExists else { return }
+        attached = false
+        let panel = NSColorPanel.shared
+        panel.setTarget(nil)
+        panel.setAction(nil)
+        panel.orderOut(nil)
     }
 
     @objc private func changed(_ sender: NSColorPanel) {
@@ -363,6 +387,6 @@ final class ColorEditorWindow: NSObject, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         model.showAdjust = false
-        if NSColorPanel.sharedColorPanelExists, NSColorPanel.shared.isVisible { NSColorPanel.shared.orderOut(nil) }
+        model.colorPanel.detach()
     }
 }
