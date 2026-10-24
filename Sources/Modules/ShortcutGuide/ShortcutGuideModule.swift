@@ -131,8 +131,8 @@ public final class ShortcutGuideModule: ToyModule {
             }
         case .keyDown:
             cancelHold()
-            // Opened by holding ⌘: a ⌘-shortcut (⌘Tab, ⌘C…) means the user moved on.
-            if controller.closesOnRelease, event.getIntegerValueField(.keyboardEventKeycode) != Int64(kVK_Escape) {
+            // Opened by holding ⌘ and not focused: any key (⌘Tab, ⌘W, esc) means the user moved on.
+            if controller.closesOnRelease, !controller.isKey {
                 DispatchQueue.main.async { [weak self] in self?.controller.close() }
             }
         default:

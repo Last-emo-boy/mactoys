@@ -30,7 +30,8 @@ final class TextExtractorController {
         previousApp = NSWorkspace.shared.frontmostApplication
         Task { [weak self] in
             let shots = await ScreenCapture.allScreens()
-            guard let self else { return }
+            // Cancelled (hotkey pressed again, module stopped) while capturing.
+            guard let self, self.starting else { return }
             self.starting = false
             guard !shots.isEmpty else {
                 HUD.show("The screen couldn't be captured", symbol: "exclamationmark.triangle")
@@ -76,6 +77,7 @@ final class TextExtractorController {
     }
 
     func cancel() {
+        starting = false
         close()
     }
 

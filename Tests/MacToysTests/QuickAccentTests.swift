@@ -70,9 +70,11 @@ import Testing
     @Test func spaceCyclesAndReleaseCommits() {
         var engine = AccentEngine()
         #expect(engine.keyDown(.e, candidates: 5, shift: false, at: 0) == (.pass, []))
-        // Activation after the input delay shows the toolbar at once with the first character.
-        #expect(engine.trigger(.space, shift: false, at: 0.5) == (.consume, [.show]))
+        // The toolbar opens once the activation key has been held for the input delay.
+        #expect(engine.trigger(.space, shift: false, at: 0.2) == (.consume, [.schedule(0.3)]))
         #expect(engine.selection == 0)
+        #expect(engine.timerFired(at: 0.4) == [])
+        #expect(engine.timerFired(at: 0.5) == [.show])
         #expect(engine.trigger(.space, shift: false, at: 0.6) == (.consume, [.select(1)]))
         #expect(engine.trigger(.space, shift: true, at: 0.7) == (.consume, [.select(0)]))
         #expect(engine.trigger(.left, shift: false, at: 0.8) == (.consume, [.select(4)]))
@@ -80,15 +82,13 @@ import Testing
         #expect(!engine.isArmed)
     }
 
-    @Test func earlyTriggerWaitsForTheInputDelay() {
+    @Test func cyclingBeforeTheToolbarOpensKeepsTheSelection() {
         var engine = AccentEngine()
         _ = engine.keyDown(.a, candidates: 3, shift: false, at: 0)
-        let (decision, outputs) = engine.trigger(.right, shift: false, at: 0.1)
-        #expect(decision == .consume)
-        #expect(outputs.count == 1)
-        guard case .schedule(let delay) = outputs.first else { Issue.record("expected a schedule"); return }
-        #expect(abs(delay - 0.2) < 0.0001)
-        #expect(engine.timerFired(at: 0.3) == [.show])
+        #expect(engine.trigger(.right, shift: false, at: 0.1) == (.consume, [.schedule(0.3)]))
+        #expect(engine.trigger(.right, shift: false, at: 0.2) == (.consume, []))
+        #expect(engine.selection == 1)
+        #expect(engine.timerFired(at: 0.4) == [.show])
         #expect(engine.isVisible)
     }
 
@@ -112,7 +112,8 @@ import Testing
     @Test func shiftHeldForUppercaseDoesNotReverse() {
         var engine = AccentEngine()
         _ = engine.keyDown(.e, candidates: 4, shift: true, at: 0)
-        #expect(engine.trigger(.space, shift: true, at: 0.4) == (.consume, [.show]))
+        _ = engine.trigger(.space, shift: true, at: 0.1)
+        #expect(engine.timerFired(at: 0.4) == [.show])
         #expect(engine.trigger(.space, shift: true, at: 0.5) == (.consume, [.select(1)]))
     }
 
@@ -171,18 +172,19 @@ import Testing
     @Test func escapeAndModifiersCancel() {
         var engine = AccentEngine()
         _ = engine.keyDown(.c, candidates: 2, shift: false, at: 0)
-        _ = engine.trigger(.space, shift: false, at: 0.4)
+        _ = engine.trigger(.space, shift: false, at: 0.1)
+        _ = engine.timerFired(at: 0.4)
         #expect(engine.cancel() == (.consume, [.hide]))
         #expect(engine.keyUp(.c, at: 0.6) == (.pass, []))
     }
 
-    @Test func repeatsAreSwallowedForLettersOnly() {
+    @Test func keyRepeatKeepsWorkingUntilAnActivationKey() {
         var engine = AccentEngine()
-        _ = engine.keyDown(.minus, candidates: 3, shift: false, at: 0)
-        #expect(!engine.swallowsRepeat(of: .minus))
-        _ = engine.trigger(.space, shift: false, at: 0.4)
-        #expect(engine.swallowsRepeat(of: .minus))
+        _ = engine.keyDown(.j, candidates: 0, shift: false, at: 0)
+        #expect(!engine.swallowsRepeat(of: .j))
         _ = engine.keyDown(.a, candidates: 3, shift: false, at: 1)
+        #expect(!engine.swallowsRepeat(of: .a))
+        _ = engine.trigger(.space, shift: false, at: 1.1)
         #expect(engine.swallowsRepeat(of: .a))
         #expect(!engine.swallowsRepeat(of: .b))
     }

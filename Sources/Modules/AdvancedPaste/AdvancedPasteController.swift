@@ -78,7 +78,7 @@ final class AdvancedPasteController {
     private func present(caret: CGRect?) {
         let s = settings.value
         let history = s.historyEnabled ? ClipboardHistory.shared.items : []
-        let session = PasteSession(item: ClipItem.current(), settings: s, history: history)
+        let session = PasteSession(input: AdvancedPasteTransforms.Input(pasteboard: .general), settings: s, history: history)
         self.session = session
 
         let panel = panel ?? FloatingPanel(size: CGSize(width: 440, height: 560))
@@ -225,7 +225,7 @@ final class AdvancedPasteController {
             session.state = .failed(action.requirement)
             return
         }
-        let original = settings.value.restoreClipboard ? ClipItem.current() : nil
+        let original = settings.value.restoreClipboard ? PasteboardSnapshot.capture() : nil
         session.state = .running(title: title, progress: nil)
         let preview = settings.value.customFormatPreview && (action.isAI || action == .imageToText)
         task = Task { [weak self] in
@@ -256,10 +256,10 @@ final class AdvancedPasteController {
 
     private func pastePreview() {
         guard let session, case .preview(_, let output) = session.state else { return }
-        finish(output, original: settings.value.restoreClipboard ? ClipItem.current() : nil)
+        finish(output, original: settings.value.restoreClipboard ? PasteboardSnapshot.capture() : nil)
     }
 
-    private func finish(_ output: AdvancedPasteTransforms.Output, original: ClipItem?) {
+    private func finish(_ output: AdvancedPasteTransforms.Output, original: PasteboardSnapshot?) {
         let app = targetApp
         session?.state = .idle
         closeWindow()
@@ -280,11 +280,12 @@ final class AdvancedPasteController {
         task = Task { [weak self] in
             defer { self?.task = nil }
             if useSelection { await Self.copySelection() }
-            guard let item = ClipItem.current() else {
+            let input = AdvancedPasteTransforms.Input(pasteboard: .general)
+            guard !input.isEmpty else {
                 HUD.show("The clipboard is empty", symbol: "doc.on.clipboard")
                 return
             }
-            let input = AdvancedPasteTransforms.Input(item)
+            let original = restore ? PasteboardSnapshot.capture() : nil
             guard action.accepts(input) else {
                 HUD.show(action.requirement, symbol: "exclamationmark.triangle")
                 return
@@ -293,7 +294,7 @@ final class AdvancedPasteController {
             do {
                 let output = try await AdvancedPasteTransforms.apply(action, to: input)
                 if paste {
-                    await self?.paste(output, original: restore ? item : nil, into: app)
+                    await self?.paste(output, original: original, into: app)
                 } else {
                     ClipboardHistory.shared.restore(output.clipItem)
                     HUD.show("Clipboard converted · \(title)", symbol: "doc.on.clipboard")
@@ -310,7 +311,7 @@ final class AdvancedPasteController {
     // MARK: Pasting
 
     /// Writes the result, returns focus to `app` and sends ⌘V; optionally puts the original back.
-    private func paste(_ output: AdvancedPasteTransforms.Output, original: ClipItem?, into app: NSRunningApplication?) async {
+    private func paste(_ output: AdvancedPasteTransforms.Output, original: PasteboardSnapshot?, into app: NSRunningApplication?) async {
         ClipboardHistory.shared.restore(output.clipItem)
         guard AXIsProcessTrusted() else {
             HUD.show("Copied · allow Accessibility to paste automatically", symbol: "exclamationmark.shield", duration: 2.5)
@@ -330,7 +331,7 @@ final class AdvancedPasteController {
         KeySynth.paste()
         if let original {
             try? await Task.sleep(for: .milliseconds(700))
-            ClipboardHistory.shared.restore(original)
+            original.restore()
         }
     }
 

@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Testing
 @testable import AdvancedPaste
@@ -323,5 +324,55 @@ import Testing
         #expect(loaded.prefs(.json).enabled == false)
         #expect(loaded.actions["transcode-to-m4a"] != nil)
         #expect(loaded.prefs(.plainText).shortcut == AdvancedPasteSettings().prefs(.plainText).shortcut)
+    }
+
+    // MARK: Pasteboard and window
+
+    @Test func inputReadsEveryFlavorAndSnapshotRoundTrips() async throws {
+        let pb = NSPasteboard(name: NSPasteboard.Name("mactoys.tests.\(UUID().uuidString)"))
+        defer { pb.releaseGlobally() }
+        pb.clearContents()
+        let item = NSPasteboardItem()
+        item.setString("a\tb", forType: .string)
+        item.setString("<table><tr><td>a</td><td>b</td></tr></table>", forType: .html)
+        item.setData(Data([0x89, 0x50, 0x4E, 0x47]), forType: .png)
+        item.setData(Data("private".utf8), forType: NSPasteboard.PasteboardType("com.example.private"))
+        pb.writeObjects([item])
+
+        let input = AdvancedPasteTransforms.Input(pasteboard: pb)
+        #expect(input.text == "a\tb")
+        #expect(input.html?.contains("<td>a</td>") == true)
+        #expect(input.image == Data([0x89, 0x50, 0x4E, 0x47]))
+        #expect(AdvancedPasteTransforms.Action.markdown.accepts(input) && AdvancedPasteTransforms.Action.pngFile.accepts(input))
+        #expect(ClipboardSummary(input).detail == "Rich text · HTML")
+
+        let snapshot = try #require(PasteboardSnapshot.capture(pb))
+        pb.clearContents()
+        pb.setString("replaced", forType: .string)
+        await MainActor.run { snapshot.restore(pb) }
+        #expect(pb.string(forType: .string) == "a\tb")
+        #expect(pb.data(forType: NSPasteboard.PasteboardType("com.example.private")) == Data("private".utf8))
+    }
+
+    @MainActor @Test func sessionNumbersActionsAndSkipsTheCurrentHistoryEntry() {
+        var settings = AdvancedPasteSettings()
+        settings.aiEnabled = true
+        settings.customActions = [CustomAction(name: "Shout", prompt: "Uppercase it"), CustomAction(name: "Off", prompt: "x", isEnabled: false)]
+        let history = [ClipItem(kind: .text, text: "hello"), ClipItem(kind: .text, text: "older")]
+        let session = PasteSession(input: .init(text: "hello"), settings: settings, history: history)
+        let titles = session.rows.map(\.title)
+        #expect(titles == ["Plain text", "Markdown", "JSON", ".txt file", "Shout", "older"])
+        #expect(session.row(number: 5)?.title == "Shout")
+        #expect(session.rows.last?.number == nil)
+        session.moveSelection(-1)
+        #expect(session.selectedRow?.title == "older")
+
+        settings.aiEnabled = false
+        settings.historyEnabled = false
+        settings.actions["markdown"]?.enabled = false
+        let plain = PasteSession(input: .init(text: "hello"), settings: settings, history: history)
+        #expect(plain.rows.map(\.title) == ["Plain text", "JSON", ".txt file"])
+        #expect(!plain.showsPrompt)
+        #expect(PasteSession(input: .init(), settings: settings, history: []).isEmpty)
     }
 }

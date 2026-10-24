@@ -33,7 +33,7 @@ struct QuickAccentSettingsView: View {
                     SliderRow("Hold duration", subtitle: "How long to hold the letter before the toolbar opens.",
                               value: $settings.value.holdDuration, in: 100...3000, step: 50) { "\(Int($0)) ms" }
                 } else {
-                    SliderRow("Input delay", subtitle: "How long the letter must be held before the activation key opens the toolbar. Shorter releases type normally, so fast typing isn't affected.",
+                    SliderRow("Input delay", subtitle: "How long the letter and the activation key must stay down before the toolbar opens. Quicker presses type normally, so fast typing isn't affected.",
                               value: $settings.value.inputDelay, in: 100...1000, step: 25) { "\(Int($0)) ms" }
                 }
                 Toggle(isOn: $settings.value.startFromLeft) {

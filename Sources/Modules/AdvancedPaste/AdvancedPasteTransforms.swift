@@ -56,7 +56,7 @@ public enum AdvancedPasteTransforms {
 
         public var symbol: String {
             switch self {
-            case .plainText: "textformat"
+            case .plainText: "text.alignleft"
             case .markdown: "number"
             case .json: "curlybraces"
             case .txtFile: "doc.text"
@@ -145,10 +145,24 @@ public enum AdvancedPasteTransforms {
         public init(_ item: ClipItem) {
             switch item.kind {
             case .files: self.init(files: item.files)
-            case .image: self.init(image: item.image)
+            case .image: self.init(text: item.text, image: item.image)
             default: self.init(text: item.text, html: item.html, rtf: item.rtf)
             }
         }
+
+        /// Everything a pasteboard offers at once, so a spreadsheet copy (HTML, RTF, text and an
+        /// image) can become Markdown, JSON or a .png alike. Copied files are taken on their own.
+        public init(pasteboard pb: NSPasteboard) {
+            if let urls = pb.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL],
+               !urls.isEmpty {
+                self.init(files: urls)
+                return
+            }
+            self.init(text: pb.string(forType: .string), html: pb.string(forType: .html), rtf: pb.data(forType: .rtf),
+                      image: pb.data(forType: .png) ?? pb.data(forType: .tiff))
+        }
+
+        public var isEmpty: Bool { !hasText && image == nil && files.isEmpty }
 
         /// Reads a file: text formats become text, HTML becomes html, images become image data,
         /// audio and video stay files (for transcoding).

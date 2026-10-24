@@ -133,6 +133,7 @@ public final class QuickAccentModule: ToyModule {
         timer?.cancel()
         timer = nil
         _ = engine.cancel()
+        swallowedUps = [false, false, false]
         toolbar.dispose()
         usage.flush()
     }
@@ -160,13 +161,27 @@ public final class QuickAccentModule: ToyModule {
     private func rebuildKeyTable() {
         var table = [AccentKey?](repeating: nil, count: 128)
         for code in UInt16(0)..<128 where !KeyCodes.isModifier(code) && KeyCodes.special[code] == nil {
-            if let ch = KeyCodes.character(for: code, shift: false) { table[Int(code)] = AccentKey(character: ch) }
+            guard let ch = KeyCodes.character(for: code, shift: false) else { continue }
+            if let key = AccentKey(character: ch) {
+                table[Int(code)] = key
+            } else if ch.unicodeScalars.contains(where: { !$0.isASCII }), ch.first?.isLetter == true {
+                // Cyrillic, Greek…: use the key's Latin position, as PowerToys does with virtual keys.
+                table[Int(code)] = Self.ansiPositions[Int(code)]
+            }
         }
         table[kVK_ANSI_KeypadMultiply] = .multiply
         table[kVK_ANSI_KeypadDivide] = .divide
         keyTable = table
         inputMethodActive = Self.isInputMethodActive()
     }
+
+    /// Letter keys of the US ANSI layout by virtual key code.
+    private static let ansiPositions: [Int: AccentKey] = [
+        kVK_ANSI_A: .a, kVK_ANSI_B: .b, kVK_ANSI_C: .c, kVK_ANSI_D: .d, kVK_ANSI_E: .e, kVK_ANSI_F: .f, kVK_ANSI_G: .g,
+        kVK_ANSI_H: .h, kVK_ANSI_I: .i, kVK_ANSI_J: .j, kVK_ANSI_K: .k, kVK_ANSI_L: .l, kVK_ANSI_M: .m, kVK_ANSI_N: .n,
+        kVK_ANSI_O: .o, kVK_ANSI_P: .p, kVK_ANSI_Q: .q, kVK_ANSI_R: .r, kVK_ANSI_S: .s, kVK_ANSI_T: .t, kVK_ANSI_U: .u,
+        kVK_ANSI_V: .v, kVK_ANSI_W: .w, kVK_ANSI_X: .x, kVK_ANSI_Y: .y, kVK_ANSI_Z: .z,
+    ]
 
     /// Input methods (Japanese, Chinese…) compose text themselves; Quick Accent stays out of their way.
     private static func isInputMethodActive() -> Bool {

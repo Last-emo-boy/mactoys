@@ -29,7 +29,6 @@ final class PasteSession {
     }
 
     let settings: AdvancedPasteSettings
-    private(set) var item: ClipItem?
     private(set) var input: AdvancedPasteTransforms.Input
     private(set) var summary: ClipboardSummary
     private(set) var rows: [Row] = []
@@ -38,26 +37,32 @@ final class PasteSession {
     var selection: Int = 0
     var state: State = .idle
 
-    init(item: ClipItem?, settings: AdvancedPasteSettings, history: [ClipItem]) {
+    init(input: AdvancedPasteTransforms.Input, settings: AdvancedPasteSettings, history: [ClipItem]) {
         self.settings = settings
         self.history = history
-        self.item = item
-        let input = item.map(AdvancedPasteTransforms.Input.init) ?? .init()
         self.input = input
         self.summary = ClipboardSummary(input)
         rebuildRows()
     }
 
     var showsPrompt: Bool { settings.aiEnabled && settings.showPromptBox }
-    var isEmpty: Bool { item == nil }
+    var isEmpty: Bool { input.isEmpty }
 
     /// Makes a history entry the content to transform.
-    func use(_ newItem: ClipItem) {
-        item = newItem
-        input = AdvancedPasteTransforms.Input(newItem)
+    func use(_ item: ClipItem) {
+        input = AdvancedPasteTransforms.Input(item)
         summary = ClipboardSummary(input)
         rebuildRows()
         selection = 0
+    }
+
+    /// Whether a history entry is what's being transformed (the newest entry usually is).
+    func isCurrent(_ entry: ClipItem) -> Bool {
+        switch entry.kind {
+        case .files: entry.files == input.files
+        case .image: !input.hasText && entry.image != nil && entry.image == input.image
+        default: input.files.isEmpty && entry.text != nil && entry.text == input.text
+        }
     }
 
     private func rebuildRows() {
@@ -77,7 +82,7 @@ final class PasteSession {
             }
         }
         if settings.historyEnabled {
-            for entry in history.prefix(12) where entry.id != item?.id {
+            for entry in history.prefix(12) where !isCurrent(entry) {
                 let symbol = entry.kind == .image ? "photo" : entry.kind == .files ? "doc"
                     : ClipboardSummary.textDetail(entry.text ?? "") == "Link" ? "link" : "doc.plaintext"
                 let title = entry.kind == .image ? "Image · " + entry.date.formatted(date: .abbreviated, time: .shortened) : entry.title

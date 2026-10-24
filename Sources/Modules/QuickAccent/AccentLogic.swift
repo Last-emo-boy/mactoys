@@ -125,9 +125,9 @@ public enum AccentLogic {
 
 /// The press–cycle–release state machine, free of events and UI so it can be tested.
 ///
-/// Trigger modes: hold a base key, press Space/←/→ (the activation key) to open the toolbar after
-/// the input delay, press again to cycle (⇧Space and ← go back), release the base key to type the
-/// selection. Releasing before the input delay is a false start: the swallowed activation keys are
+/// Trigger modes: hold a base key and press Space/←/→ (the activation key); if both stay down for the
+/// input delay the toolbar opens. Press again to cycle (⇧Space and ← go back), release the base key to
+/// type the selection. Releasing before the delay is a false start: the swallowed activation keys are
 /// typed again, as in fast typing ("e" + Space). Hold mode opens the toolbar after holding the key alone.
 public struct AccentEngine: Sendable {
     public enum Activation: String, Codable, CaseIterable, Sendable {
@@ -180,6 +180,7 @@ public struct AccentEngine: Sendable {
     /// An activation key was accepted (trigger modes) or the hold elapsed: the toolbar is open or about to be.
     public private(set) var isActive = false
     private var downAt: TimeInterval = 0
+    private var triggerAt: TimeInterval = 0
     private var shiftAtDown = false
     private var swallowed: [Trigger] = []
 
@@ -189,10 +190,11 @@ public struct AccentEngine: Sendable {
 
     public var isArmed: Bool { key != nil }
 
-    /// Whether held-key auto-repeat should be swallowed (letters don't repeat on macOS either,
-    /// and repeats would type extra letters under the toolbar).
+    /// Whether auto-repeat of the held key should be swallowed: once an activation key was pressed
+    /// (repeats would type under the toolbar), and in hold mode, where holding is the trigger.
+    /// Otherwise repeats pass, so holding a key to repeat it keeps working.
     public func swallowsRepeat(of key: AccentKey) -> Bool {
-        key == self.key && (isActive || config.activation == .hold || key.isLetter)
+        key == self.key && (isActive || config.activation == .hold)
     }
 
     /// A base key went down (not a repeat). `candidates` is how many characters it offers.
@@ -233,12 +235,8 @@ public struct AccentEngine: Sendable {
         swallowed.append(t)
         guard !isActive else { return (.consume, []) }
         isActive = true
-        let elapsed = time - downAt
-        if elapsed >= config.inputDelay {
-            isVisible = true
-            return (.consume, [.show])
-        }
-        return (.consume, [.schedule(config.inputDelay - elapsed)])
+        triggerAt = time
+        return (.consume, [.schedule(config.inputDelay)])
     }
 
     /// A scheduled timer fired.
@@ -251,7 +249,7 @@ public struct AccentEngine: Sendable {
             selection = nil
             return [.show]
         }
-        guard isActive, time - downAt >= config.inputDelay - 0.01 else { return [] }
+        guard isActive, time - triggerAt >= config.inputDelay - 0.01 else { return [] }
         isVisible = true
         return [.show]
     }

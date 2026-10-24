@@ -20,6 +20,8 @@ final class ShortcutGuideController {
     }
 
     var isOpen: Bool { panel != nil }
+    /// Has keyboard focus (opened by the shortcut, or the user clicked into it).
+    var isKey: Bool { panel?.isKeyWindow ?? false }
 
     func toggle() {
         if isOpen { close() } else { open(byHold: false) }
@@ -53,9 +55,17 @@ final class ShortcutGuideController {
         case .dark: .dark
         case .light: .light
         }
-        panel.setContent(ShortcutGuideView(model: model, dimOpacity: s.dimOpacity, scheme: scheme))
-        // A non-activating key panel: the app stays frontmost, so its menus (and ⌘ release) still apply.
-        panel.makeKeyAndOrderFront(nil)
+        let host = FirstMouseHostingView(rootView: ShortcutGuideView(model: model, dimOpacity: s.dimOpacity, scheme: scheme))
+        host.frame = CGRect(origin: .zero, size: screen.frame.size)
+        host.autoresizingMask = [.width, .height]
+        panel.contentView = host
+        if closesOnRelease {
+            // Held ⌘: keys keep going to the app (⌘W still closes its tab) and the guide closes.
+            panel.orderFrontRegardless()
+        } else {
+            // A non-activating key panel: the app stays frontmost while the guide takes the keyboard.
+            panel.makeKeyAndOrderFront(nil)
+        }
         self.panel = panel
         installKeyMonitor()
     }
@@ -126,4 +136,9 @@ final class ShortcutGuideController {
             }
         }
     }
+}
+
+/// Clicks work on the first press even though the panel isn't key or MacToys isn't active.
+private final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }

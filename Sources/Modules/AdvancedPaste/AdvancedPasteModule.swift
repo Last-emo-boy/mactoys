@@ -147,19 +147,17 @@ public final class AdvancedPasteModule: ToyModule {
         let settingsCopy = s
         return [
             PreviewScene("window", size: CGSize(width: 520, height: 640)) {
-                let session = PasteSession(item: ClipItem(kind: .text, text: csv), settings: settingsCopy, history: history)
+                let session = PasteSession(input: .init(text: csv), settings: settingsCopy, history: history)
                 session.selection = 2
                 return AnyView(AdvancedPasteView(session: session))
             },
             PreviewScene("result", size: CGSize(width: 520, height: 640)) {
-                let session = PasteSession(item: ClipItem(kind: .text, text: "their going too the libary tomorow"),
-                                           settings: settingsCopy, history: [])
+                let session = PasteSession(input: .init(text: "their going too the libary tomorow"), settings: settingsCopy, history: [])
                 session.state = .preview(title: "Fix grammar", output: .text("They're going to the library tomorrow."))
                 return AnyView(AdvancedPasteView(session: session))
             },
             PreviewScene("transcoding", size: CGSize(width: 520, height: 640)) {
-                let session = PasteSession(item: ClipItem(kind: .files, text: "/tmp/Keynote rehearsal.mov",
-                                                          files: [URL(fileURLWithPath: "/tmp/Keynote rehearsal.mov")]),
+                let session = PasteSession(input: .init(files: [URL(fileURLWithPath: "/tmp/Keynote rehearsal.mov")]),
                                            settings: settingsCopy, history: [])
                 session.state = .running(title: "Transcode to .mp4 (H.264/AAC)", progress: 0.42)
                 return AnyView(AdvancedPasteView(session: session))

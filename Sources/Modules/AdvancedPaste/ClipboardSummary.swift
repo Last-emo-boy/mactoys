@@ -35,14 +35,19 @@ struct ClipboardSummary: Equatable {
             self.init(symbol: kind.0, snippet: files[0].lastPathComponent, detail: kind.1)
             return
         }
-        if let image = input.image {
+        if !input.hasText, let image = input.image {
             self.init(symbol: "photo", snippet: "Image", detail: Self.imageDetail(image))
             return
         }
         let text = AdvancedPasteTransforms.plainText(input)
         let snippet = Self.snippet(text)
         if input.html != nil || input.rtf != nil {
-            self.init(symbol: "doc.richtext", snippet: snippet, detail: input.html != nil ? "Rich text · HTML" : "Rich text")
+            let detail: String = if case .delimited(_, let rows) = JSONConverter.detect(text) {
+                "Table · \(rows) row\(rows == 1 ? "" : "s")"
+            } else {
+                input.html != nil ? "Rich text · HTML" : "Rich text"
+            }
+            self.init(symbol: "doc.richtext", snippet: snippet, detail: detail)
             return
         }
         self.init(symbol: "doc.on.clipboard", snippet: snippet, detail: Self.textDetail(text))

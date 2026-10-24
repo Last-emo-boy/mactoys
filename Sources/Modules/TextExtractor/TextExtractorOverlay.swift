@@ -11,8 +11,6 @@ final class SelectionModel {
     private var last: CGPoint?
     var mode: TextExtractorSettings.Mode
     var language: String?
-    /// Set while recognition runs after the mouse is released.
-    var isRecognizing = false
 
     init(mode: TextExtractorSettings.Mode, language: String?) {
         self.mode = mode
@@ -89,13 +87,11 @@ struct TextExtractorOverlay<Background: View>: View {
     private var drag: some Gesture {
         DragGesture(minimumDistance: 0, coordinateSpace: .local)
             .onChanged { value in
-                guard !model.isRecognizing else { return }
                 if !model.isDragging { model.begin(at: value.startLocation) }
                 model.update(to: value.location, moving: NSEvent.modifierFlags.contains(.shift))
                 NSCursor.crosshair.set()
             }
             .onEnded { value in
-                guard !model.isRecognizing else { return }
                 if let rect = model.rect, rect.width >= 4 || rect.height >= 4 {
                     onFinish(rect, nil)
                 } else {
@@ -120,7 +116,7 @@ struct TextExtractorOverlay<Background: View>: View {
 
     private var hintBar: some View {
         HStack(spacing: 8) {
-            Text(model.isRecognizing ? "Reading text…" : model.isDragging ? "Release to copy" : "Drag over text · click a word")
+            Text(model.isDragging ? "Release to copy" : "Drag over text · click a word")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white)
                 .padding(.leading, 4)
