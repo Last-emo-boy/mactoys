@@ -123,6 +123,14 @@ struct Scanner {
     func stringEnd(_ rule: StringRule, contentStart j: Int) -> Int? {
         var k = j
         let close = Array(rule.close.utf8)
+        if rule.isCharLiteral, j < n, bytes[j] != 0x5C {
+            // One character (1–4 UTF-8 bytes) then the closing quote; otherwise it's a lifetime or a quote.
+            guard bytes[j] != close[0], bytes[j] != 0x0A else { return nil }
+            var len = 1
+            let lead = bytes[j]
+            if lead >= 0xF0 { len = 4 } else if lead >= 0xE0 { len = 3 } else if lead >= 0xC0 { len = 2 }
+            return matches(rule.close, at: j + len) ? j + len + close.count : nil
+        }
         let limit = rule.isCharLiteral ? min(n, j + 12) : n
         while k < limit {
             let b = bytes[k]

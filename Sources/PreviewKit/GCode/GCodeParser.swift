@@ -90,7 +90,7 @@ private struct ParseState {
         for g in gCodes { command(g) }
     }
 
-    /// A decimal number (sign, digits, fraction, exponent) starting at `i`.
+    /// A decimal number (sign, digits, fraction) starting at `i`.
     func number(_ b: UnsafeBufferPointer<UInt8>, _ start: Int, _ end: Int) -> (Double, Int)? {
         var i = start
         var negative = false
@@ -104,16 +104,7 @@ private struct ParseState {
             while i < end, b[i] >= 0x30, b[i] <= 0x39 { value += Double(b[i] - 0x30) * f; f *= 0.1; i += 1; digits += 1 }
         }
         guard digits > 0 else { return nil }
-        if i + 1 < end, b[i] == UInt8(ascii: "e") || b[i] == UInt8(ascii: "E"),
-           b[i + 1] == UInt8(ascii: "-") || b[i + 1] == UInt8(ascii: "+") || (b[i + 1] >= 0x30 && b[i + 1] <= 0x39) {
-            var j = i + 1
-            var expNeg = false
-            if b[j] == UInt8(ascii: "-") || b[j] == UInt8(ascii: "+") { expNeg = b[j] == UInt8(ascii: "-"); j += 1 }
-            var exp = 0
-            var expDigits = 0
-            while j < end, b[j] >= 0x30, b[j] <= 0x39 { exp = exp * 10 + Int(b[j] - 0x30); j += 1; expDigits += 1 }
-            if expDigits > 0 { value *= pow(10, Double(expNeg ? -exp : exp)); i = j }
-        }
+        // No exponents: in "Y5E3" the E is the extrusion word, not 5×10³.
         return (negative ? -value : value, i)
     }
 
