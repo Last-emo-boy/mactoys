@@ -167,9 +167,10 @@ public enum KeyCodes {
         return ansi[code] ?? "Key \(code)"
     }
 
-    /// The character a key produces on the current layout.
+    /// The character a key produces on the current ASCII-capable layout (so shortcuts read `` ` `` and `.`
+    /// even while a Chinese or Japanese input source is active).
     public static func character(for code: UInt16, shift: Bool) -> String? {
-        guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
+        guard let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
               let ptr = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData) else {
             return ansi[code]
         }
