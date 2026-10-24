@@ -35,7 +35,8 @@ public enum DateTokens {
         cal.locale = locale
         let c = cal.dateComponents([.year, .month, .day, .weekday, .hour, .minute, .second, .nanosecond], from: date)
         let year = c.year ?? 0, month = c.month ?? 1, day = c.day ?? 1, weekday = c.weekday ?? 1
-        let ms = min(999, (c.nanosecond ?? 0) / 1_000_000)
+        // Dates are doubles: 7 ms can come back as 6.999999 ms, so round to the microsecond first.
+        let ms = min(999, ((c.nanosecond ?? 0) + 500) / 1000 / 1000)
         func pad(_ v: Int, _ width: Int) -> String {
             let s = String(v)
             return s.count >= width ? s : String(repeating: "0", count: width - s.count) + s
