@@ -16,8 +16,10 @@ struct PeekItems: Equatable {
 
     /// "IMG_4822.HEIC — 3 of 6" (just the name for a single item).
     var title: String {
-        guard let current else { return "Peek" }
-        return count > 1 ? "\(current.lastPathComponent) — \(index + 1) of \(count)" : current.lastPathComponent
+        guard let current else { return String(localized: "Peek") }
+        guard count > 1 else { return current.lastPathComponent }
+        return String(localized: "\(current.lastPathComponent) — \(index + 1) of \(count)",
+                      comment: "Peek window title: file name — position of this file and number of files")
     }
 
     /// Next item, wrapping around at the end.

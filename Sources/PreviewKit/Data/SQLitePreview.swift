@@ -112,20 +112,27 @@ public enum SQLitePreview {
     /// A page with a table list on the left; each table's columns and rows are shown via `:target`
     /// anchors (no JavaScript), the first table by default.
     public static func page(_ tables: [Table], title: String, theme: PreviewTheme, rowLimit: Int = 200) -> String {
-        var nav = "<nav class=\"tables\"><div class=\"h\">\(tables.count) table\(tables.count == 1 ? "" : "s")</div>"
+        let heading = String(localized: "\(tables.count) tables", comment: "Database preview: heading of the list of tables")
+        var nav = "<nav class=\"tables\"><div class=\"h\">\(HTML.escape(heading))</div>"
         var sections = ""
         for (i, t) in tables.enumerated() {
             let id = "t\(i)"
             let count = t.rowCount.map { NumberFormatter.localizedString(from: NSNumber(value: $0), number: .decimal) } ?? "?"
             nav += "<a href=\"#\(id)\"><span>\(t.isView ? "◇" : "▦") \(HTML.escape(t.name))</span><em>\(count)</em></a>"
-            var s = "<section id=\"\(id)\"><h2>\(HTML.escape(t.name))\(t.isView ? " <small>view</small>" : "")</h2>"
+            let viewBadge = String(localized: "view", comment: "Database preview: marks a view (a saved query) rather than a table")
+            var s = "<section id=\"\(id)\"><h2>\(HTML.escape(t.name))\(t.isView ? " <small>\(HTML.escape(viewBadge))</small>" : "")</h2>"
             let shown = t.rows.count
-            s += "<p class=\"meta\">\(t.columns.count) columns · \(count) rows"
-            if let total = t.rowCount, total > shown { s += " · showing the first \(shown)" }
+            var meta = [String(localized: "\(t.columns.count) columns", comment: "Table preview: number of columns"),
+                        t.rowCount.map { String(localized: "\($0) rows", comment: "Table preview: number of rows") }
+                            ?? String(localized: "? rows", comment: "Database preview: the number of rows is unknown")]
+            if let total = t.rowCount, total > shown {
+                meta.append(String(localized: "showing the first \(shown) rows", comment: "Table preview: only the first rows are listed"))
+            }
+            s += "<p class=\"meta\">\(HTML.escape(meta.joined(separator: " · ")))"
             s += "</p><div class=\"grid-wrap\"><table class=\"grid\"><thead><tr><th class=\"n\"></th>"
             for c in t.columns {
                 let badge = c.primaryKey ? " 🔑" : ""
-                s += "<th title=\"\(HTML.escape(c.type))\">\(HTML.escape(c.name))\(badge)<br><small>\(HTML.escape(c.type.isEmpty ? "any" : c.type.lowercased()))</small></th>"
+                s += "<th title=\"\(HTML.escape(c.type))\">\(HTML.escape(c.name))\(badge)<br><small>\(HTML.escape(c.type.isEmpty ? String(localized: "any", comment: "Database preview: type of a column declared without a type") : c.type.lowercased()))</small></th>"
             }
             s += "</tr></thead><tbody>"
             for (r, row) in t.rows.enumerated() {
@@ -165,7 +172,8 @@ public enum SQLitePreview {
                      font: 11.5px ui-monospace, Menlo, monospace; color: var(--muted); }
         .empty { padding: 40px; color: var(--muted); }
         """
-        let main = tables.isEmpty ? "<main><div class=\"empty\">This database has no tables.</div></main>" : "<main>\(sections)</main>"
+        let empty = String(localized: "This database has no tables.")
+        let main = tables.isEmpty ? "<main><div class=\"empty\">\(HTML.escape(empty))</div></main>" : "<main>\(sections)</main>"
         return HTML.document(title: title, body: nav + main, theme: theme, extraCSS: css)
     }
 }

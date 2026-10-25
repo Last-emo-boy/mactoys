@@ -257,15 +257,18 @@ private struct ParseState {
     }
 
     mutating func finish() {
-        if path.estimatedTime == nil, let s = timeSeconds { path.estimatedTime = Self.duration(s) }
+        if path.estimatedTime == nil, let s = timeSeconds { path.estimatedTime = GCodeParser.duration(s) }
         if let hint = layerHint, path.layerCount == 0 || abs(hint - path.layerCount) > 1 { path.layerCount = hint }
     }
+}
 
-    static func duration(_ seconds: Double) -> String {
+extension GCodeParser {
+    /// "1h 2m" style, in the user's language: days–hours–minutes, hours–minutes, or minutes–seconds.
+    static func duration(_ seconds: Double, locale: Locale = .current) -> String {
         let total = Int(seconds.rounded())
-        let d = total / 86400, h = total % 86400 / 3600, m = total % 3600 / 60, s = total % 60
-        if d > 0 { return "\(d)d \(h)h \(m)m" }
-        if h > 0 { return "\(h)h \(m)m" }
-        return m > 0 ? "\(m)m \(s)s" : "\(s)s"
+        let units: Set<Duration.UnitsFormatStyle.Unit> = total >= 86400 ? [.days, .hours, .minutes]
+            : total >= 3600 ? [.hours, .minutes] : total >= 60 ? [.minutes, .seconds] : [.seconds]
+        return Duration.seconds(total).formatted(.units(allowed: units, width: .narrow, zeroValueUnits: .show(length: 1),
+                                                        fractionalPart: .hide(rounded: .down)).locale(locale))
     }
 }

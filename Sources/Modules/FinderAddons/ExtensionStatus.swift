@@ -18,10 +18,10 @@ struct ExtensionStatus: Equatable, Sendable {
 
     var title: String {
         switch state {
-        case .unknown: "Checking…"
-        case .notRegistered: "Not registered"
-        case .enabled: "Enabled"
-        case .disabled: "Turned off in System Settings"
+        case .unknown: String(localized: "Checking…", comment: "Quick Look extension status")
+        case .notRegistered: String(localized: "Not registered", comment: "Quick Look extension status: macOS doesn't know the extension")
+        case .enabled: String(localized: "Enabled", comment: "Quick Look extension status")
+        case .disabled: String(localized: "Turned off in System Settings", comment: "Quick Look extension status")
         }
     }
 

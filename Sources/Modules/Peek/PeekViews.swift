@@ -16,7 +16,7 @@ struct PeekWebView: NSViewRepresentable {
         let view = WKWebView(frame: .zero, configuration: config)
         view.navigationDelegate = context.coordinator
         view.allowsMagnification = true
-        view.setAccessibilityLabel("Preview")
+        view.setAccessibilityLabel(String(localized: "Preview", comment: "Accessibility label: the area showing the file's contents"))
         context.coordinator.load(html, into: view)
         return view
     }
@@ -123,12 +123,13 @@ struct PeekFolderView: View {
             Text(url.lastPathComponent).font(.system(size: 17, weight: .semibold)).lineLimit(2).multilineTextAlignment(.center)
             VStack(spacing: 6) {
                 HStack(spacing: 18) {
-                    stat(summary.files, "file", "files")
-                    stat(summary.folders, "folder", "folders")
+                    stat(summary.files, Text("Files", comment: "Folder summary: label under the number of files"))
+                    stat(summary.folders, Text("Folders", comment: "Folder summary: label under the number of subfolders"))
                     VStack(spacing: 2) {
                         Text(ByteCountFormatter.string(fromByteCount: summary.bytes, countStyle: .file))
                             .font(.system(size: 20, weight: .semibold).monospacedDigit())
-                        Text("total").font(.system(size: 11)).foregroundStyle(.secondary)
+                        Text("Total", comment: "Folder summary: label under the size of everything in the folder")
+                            .font(.system(size: 11)).foregroundStyle(.secondary)
                     }
                 }
                 if !summary.finished {
@@ -150,11 +151,13 @@ struct PeekFolderView: View {
         }
     }
 
-    private func stat(_ n: Int, _ one: String, _ many: String) -> some View {
+    /// A count with its label underneath. The label is a heading ("Files"), not a noun agreeing with
+    /// the number, so it reads right in every language without plural forms.
+    private func stat(_ n: Int, _ label: Text) -> some View {
         VStack(spacing: 2) {
             Text(NumberFormatter.localizedString(from: NSNumber(value: n), number: .decimal))
                 .font(.system(size: 20, weight: .semibold).monospacedDigit())
-            Text(n == 1 ? one : many).font(.system(size: 11)).foregroundStyle(.secondary)
+            label.font(.system(size: 11)).foregroundStyle(.secondary)
         }
     }
 }

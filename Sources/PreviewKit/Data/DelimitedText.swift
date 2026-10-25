@@ -87,10 +87,16 @@ public enum DelimitedText {
             html += "</tr>"
         }
         html += "</tbody></table></div>"
-        let name = d == "\t" ? "Tab" : (d == "," ? "Comma" : (d == ";" ? "Semicolon" : "Pipe"))
-        var notice = "\(body.count) row\(body.count == 1 ? "" : "s") · \(width) column\(width == 1 ? "" : "s") · \(name)-separated"
-        if more { notice += " · showing the first \(maxRows) rows" }
-        return HTML.document(title: title, body: "<div class=\"notice\">\(HTML.escape(notice))</div>" + html, theme: theme,
+        let separated = switch d {
+        case "\t": String(localized: "Tab-separated", comment: "Table preview: how the columns of a CSV/TSV file are separated")
+        case ",": String(localized: "Comma-separated", comment: "Table preview: how the columns of a CSV/TSV file are separated")
+        case ";": String(localized: "Semicolon-separated", comment: "Table preview: how the columns of a CSV/TSV file are separated")
+        default: String(localized: "Pipe-separated", comment: "Table preview: how the columns of a CSV/TSV file are separated")
+        }
+        var notice = [String(localized: "\(body.count) rows", comment: "Table preview: number of rows"),
+                      String(localized: "\(width) columns", comment: "Table preview: number of columns"), separated]
+        if more { notice.append(String(localized: "showing the first \(maxRows) rows", comment: "Table preview: only the first rows are listed")) }
+        return HTML.document(title: title, body: "<div class=\"notice\">\(HTML.escape(notice.joined(separator: " · ")))</div>" + html, theme: theme,
                              extraCSS: Styles.code + Styles.table)
     }
 }

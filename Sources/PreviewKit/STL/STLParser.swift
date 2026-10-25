@@ -27,15 +27,23 @@ public struct STLMesh: Sendable {
         return len > 0 ? n / len : SIMD3(0, 0, 1)
     }
 
+    /// Label of the model name row (Peek shows the file name instead).
+    public static var nameLabel: String { String(localized: "Name", comment: "3D model detail: the name stored in the file") }
+
     /// Summary rows for previews.
     public var summary: [(String, String)] {
-        var rows: [(String, String)] = [("Triangles", NumberFormatter.localizedString(from: NSNumber(value: triangleCount), number: .decimal)),
-                                        ("Format", isBinary ? "Binary STL" : "ASCII STL")]
+        let format = isBinary ? String(localized: "Binary STL", comment: "3D model file format") : String(localized: "ASCII STL", comment: "3D model file format")
+        var rows: [(String, String)] = [
+            (String(localized: "Triangles", comment: "3D model detail: number of triangles"),
+             NumberFormatter.localizedString(from: NSNumber(value: triangleCount), number: .decimal)),
+            (String(localized: "Format", comment: "3D model detail: file format"), format),
+        ]
         if let b = bounds {
             let d = b.max - b.min
-            rows.insert(("Size", String(format: "%.2f × %.2f × %.2f", d.x, d.y, d.z)), at: 0)
+            let n = { (v: Float) in Double(v).formatted(.number.precision(.fractionLength(2))) }
+            rows.insert((String(localized: "Size", comment: "Detail label: a file's size, or a model's width × depth × height"), "\(n(d.x)) × \(n(d.y)) × \(n(d.z))"), at: 0)
         }
-        if let name, !name.isEmpty { rows.append(("Name", name)) }
+        if let name, !name.isEmpty { rows.append((Self.nameLabel, name)) }
         return rows
     }
 }

@@ -13,8 +13,13 @@ struct FinderAddonsSettingsView: View {
         self.status = module.status
     }
 
-    private static let sizeChoices: [(String, Int)] = [("256 KB", 256), ("1 MB", 1024), ("5 MB", 5120), ("10 MB", 10_240),
-                                                         ("25 MB", 25_600), ("50 MB", 51_200), ("100 MB", 102_400)]
+    /// Size limits in KB.
+    private static let sizeChoices = [256, 1024, 5120, 10_240, 25_600, 51_200, 102_400]
+
+    /// "256 KB", "10 MB" in the user's language.
+    private static func sizeTitle(_ kb: Int) -> String {
+        ByteCountFormatter.string(fromByteCount: Int64(kb) * 1024, countStyle: .memory)
+    }
 
     var body: some View {
         SettingsPage(module: module) {
@@ -39,8 +44,7 @@ struct FinderAddonsSettingsView: View {
                     Text("Quick Look extensions").font(.system(size: 14, weight: .semibold))
                     StatusLine(title: "Previews", status: status.preview)
                     StatusLine(title: "Thumbnails", status: status.thumbnails)
-                    Text("Select a file in Finder and press Space to preview it; thumbnails appear as file icons. "
-                         + "The extensions also work while MacToys isn't running.")
+                    Text("Select a file in Finder and press Space to preview it; thumbnails appear as file icons. The extensions also work while MacToys isn't running.")
                         .font(.system(size: 11.5)).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -117,9 +121,9 @@ struct FinderAddonsSettingsView: View {
                 RowLabel("Format JSON and XML for reading", subtitle: "Re-indents the preview; the file itself is never changed")
             }
             Picker(selection: $settings.value.codeMaxFileSizeKB) {
-                ForEach(Self.sizeChoices, id: \.1) { Text($0.0).tag($0.1) }
-                if !Self.sizeChoices.contains(where: { $0.1 == settings.value.codeMaxFileSizeKB }) {
-                    Text("\(settings.value.codeMaxFileSizeKB) KB").tag(settings.value.codeMaxFileSizeKB)
+                ForEach(Self.sizeChoices, id: \.self) { Text(verbatim: Self.sizeTitle($0)).tag($0) }
+                if !Self.sizeChoices.contains(settings.value.codeMaxFileSizeKB) {
+                    Text(verbatim: Self.sizeTitle(settings.value.codeMaxFileSizeKB)).tag(settings.value.codeMaxFileSizeKB)
                 }
             } label: {
                 RowLabel("Maximum file size to preview", subtitle: "Larger text files show a notice instead")
@@ -188,16 +192,18 @@ struct FinderAddonsSettingsView: View {
 }
 
 private struct StatusLine: View {
-    let title: String
+    let title: LocalizedStringKey
     let status: ExtensionStatus
 
     var body: some View {
         HStack(spacing: 7) {
             Circle().fill(color).frame(width: 8, height: 8)
             Text(title).font(.system(size: 12, weight: .medium))
-            Text(status.title + (status.version.map { " · \($0)" } ?? "")).font(.system(size: 12)).foregroundStyle(.secondary)
+            Text(verbatim: status.title + (status.version.map { " · \($0)" } ?? "")).font(.system(size: 12)).foregroundStyle(.secondary)
             if status.paths.count > 1 {
-                Text("· \(status.paths.count) copies registered").font(.system(size: 12)).foregroundStyle(.orange)
+                Text(verbatim: "· " + String(localized: "\(status.paths.count) copies registered",
+                                             comment: "Quick Look extension status: several builds of MacToys registered the same extension"))
+                    .font(.system(size: 12)).foregroundStyle(.orange)
                     .help(status.paths.joined(separator: "\n"))
             }
         }
@@ -214,12 +220,12 @@ private struct StatusLine: View {
 }
 
 private struct Bullet: View {
-    let text: String
-    init(_ text: String) { self.text = text }
+    let text: LocalizedStringKey
+    init(_ text: LocalizedStringKey) { self.text = text }
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("•")
+            Text(verbatim: "•")
             Text(text).fixedSize(horizontal: false, vertical: true)
         }
     }

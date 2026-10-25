@@ -2,6 +2,7 @@ import AppKit
 import MacToysCore
 import PreviewKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Offscreen scenes of the Peek window (design 07) with sample files.
 @MainActor
@@ -16,8 +17,9 @@ enum PeekScenes {
                 if let photo = PreviewSamples.gradientImage(width: 1200, height: 800), let framed = matted(photo, in: CGSize(width: 1520, height: 950)) {
                     model.content = .image(framed, .dark)
                 }
-                model.fields = [PeekField(label: "Size", value: "4.2 MB"), PeekField(label: "Dimensions", value: "4032 × 3024"),
-                                PeekField(label: "Modified", value: "Today 21:10"), PeekField(label: "Type", value: "HEIF image")]
+                model.fields = [PeekField(label: PeekLabel.size, value: bytes(4_200_000)), .dimensions(4032, 3024),
+                                PeekField(label: PeekLabel.modified, value: sampleDate(daysAgo: 0, hour: 21, minute: 10)),
+                                PeekField(label: PeekLabel.type, value: UTType.heic.localizedDescription ?? "HEIF image")]
                 return AnyView(window(model))
             },
             PreviewScene("code", size: CGSize(width: 900, height: 640)) {
@@ -32,12 +34,23 @@ enum PeekScenes {
                 if let image = HTMLSnapshotter.snapshotBlocking(html: html, size: contentSize) {
                     model.content = .image(image, .dark)
                 }
-                model.fields = [PeekField(label: "Size", value: "1 KB"), PeekField(label: "Lines", value: "25"),
-                                PeekField(label: "Language", value: "Swift"), PeekField(label: "Modified", value: "Yesterday 18:42"),
-                                PeekField(label: "Type", value: "Swift Source")]
+                model.fields = [PeekField(label: PeekLabel.size, value: bytes(1_000)), PeekField(label: PeekLabel.lines, value: "25"),
+                                PeekField(label: PeekLabel.language, value: "Swift"),
+                                PeekField(label: PeekLabel.modified, value: sampleDate(daysAgo: 1, hour: 18, minute: 42)),
+                                PeekField(label: PeekLabel.type, value: UTType.swiftSource.localizedDescription ?? "Swift Source")]
                 return AnyView(window(model))
             },
         ]
+    }
+
+    private static func bytes(_ n: Int64) -> String { ByteCountFormatter.string(fromByteCount: n, countStyle: .file) }
+
+    /// A "Modified" value as the footer shows it ("Today 21:10"), in the user's language.
+    private static func sampleDate(daysAgo: Int, hour: Int, minute: Int) -> String {
+        let calendar = Calendar.current, now = Date()
+        let day = calendar.date(byAdding: .day, value: -daysAgo, to: now) ?? now
+        let date = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+        return PeekMetadata.relativeDate(date, now: now, calendar: calendar)
     }
 
     private static func sampleItems(_ names: [String], index: Int) -> PeekItems {
