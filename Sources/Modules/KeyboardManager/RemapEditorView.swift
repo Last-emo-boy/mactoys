@@ -14,7 +14,7 @@ final class RemapEditorWindow: NSObject, NSWindowDelegate {
                           styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                           backing: .buffered, defer: false)
         super.init()
-        window.title = "Keyboard Manager"
+        window.title = String(localized: "Keyboard Manager")
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.toolbarStyle = .unified
@@ -54,9 +54,10 @@ struct RemapEditorView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     chips
                     if !model.orphans.isEmpty {
-                        InfoBar(.warning, title: "Some keys can no longer be typed",
-                                message: model.orphans.map(\.name).joined(separator: ", ")
-                                    + " — no key produces them. Map another key to them if you need them.")
+                        let names = model.orphans.map(\.name).formatted(.list(type: .and, width: .narrow))
+                        InfoBar(.warning, title: Text("Some keys can no longer be typed"),
+                                message: Text("\(names) — no key produces them. Map another key to them if you need them.",
+                                              comment: "%@ is a list of key names"))
                     }
                     let visible = model.visible
                     let keys = visible.filter { $0.kind == .key }
@@ -117,23 +118,23 @@ struct RemapEditorView: View {
     private var chips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                chip("All", .all, count: model.remaps.count)
-                chip("Keys", .keys, count: model.count(.keys))
-                chip("Shortcuts", .shortcuts, count: model.count(.shortcuts))
+                chip(Text("All", comment: "Filter: every remap"), .all, count: model.remaps.count)
+                chip(Text("Keys", comment: "Filter: key remaps"), .keys, count: model.count(.keys))
+                chip(Text("Shortcuts", comment: "Filter: shortcut remaps"), .shortcuts, count: model.count(.shortcuts))
                 ForEach(model.apps, id: \.self) { app in
-                    chip(RemapFormatting.appName(app), .app(app), count: nil)
+                    chip(Text(verbatim: RemapFormatting.appName(app)), .app(app), count: nil)
                 }
-                chip("Global", .global, count: nil)
+                chip(Text("Global", comment: "Remap filter and scope: applies in every app"), .global, count: nil)
             }
         }
     }
 
-    private func chip(_ title: String, _ f: RemapEditorModel.Filter, count: Int?) -> some View {
+    private func chip(_ title: Text, _ f: RemapEditorModel.Filter, count: Int?) -> some View {
         let selected = model.filter == f
         return Button { model.filter = f } label: {
             HStack(spacing: 4) {
-                Text(title)
-                if let count { Text("\(count)").opacity(selected ? 0.9 : 0.6) }
+                title
+                if let count { Text(count, format: .number).opacity(selected ? 0.9 : 0.6) }
             }
             .font(.system(size: 12, weight: .medium))
             .padding(.horizontal, 11)
@@ -145,7 +146,7 @@ struct RemapEditorView: View {
         .buttonStyle(.plain)
     }
 
-    private func section(_ title: String, _ rows: [Remap]) -> some View {
+    private func section(_ title: LocalizedStringKey, _ rows: [Remap]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
             VStack(spacing: 0) {
@@ -163,10 +164,10 @@ struct RemapEditorView: View {
     private var emptyState: some View {
         VStack(spacing: 10) {
             Image(systemName: "keyboard").font(.system(size: 34)).foregroundStyle(.tertiary)
-            Text(model.remaps.isEmpty ? "No remaps yet" : "No remaps match").font(.headline)
-            Text(model.remaps.isEmpty
-                 ? "Remap a key (⇪ → esc, Right ⌘ → F18) or a shortcut (⌥⇧K → ⌘⇧K in Xcode, ⌃⌥E → your email address)."
-                 : "Try another filter or search.")
+            (model.remaps.isEmpty ? Text("No remaps yet") : Text("No remaps match")).font(.headline)
+            (model.remaps.isEmpty
+                ? Text("Remap a key (⇪ → esc, Right ⌘ → F18) or a shortcut (⌥⇧K → ⌘⇧K in Xcode, ⌃⌥E → your email address).")
+                : Text("Try another filter or search."))
                 .font(.system(size: 12)).foregroundStyle(.secondary).multilineTextAlignment(.center)
             if model.remaps.isEmpty {
                 HStack {
@@ -182,7 +183,8 @@ struct RemapEditorView: View {
     private var footer: some View {
         HStack(spacing: 10) {
             if model.selection.isEmpty {
-                Text("\(model.remaps.count) remap\(model.remaps.count == 1 ? "" : "s") · profile “\(model.profileName)” · app-specific remaps take precedence over global ones")
+                Text("\(model.remaps.count) remaps · profile “\(model.profileName)” · app-specific remaps take precedence over global ones",
+                     comment: "Number of remaps, then the profile name")
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             } else {
                 Text("\(model.selection.count) selected").font(.system(size: 11.5, weight: .medium))
@@ -216,12 +218,12 @@ struct RemapRow: View {
             Image(systemName: "arrow.right").font(.system(size: 11, weight: .medium)).foregroundStyle(.tertiary)
             target
             if let note = RemapFormatting.annotation(remap) {
-                Text(note).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
+                Text(verbatim: note).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 8)
             if hovering {
                 Button { model.edit(remap.id) } label: { Image(systemName: "pencil") }
-                    .buttonStyle(.borderless).help("Edit")
+                    .buttonStyle(.borderless).help(Text("Edit", comment: "Button: edit the remap"))
             }
             ScopeBadge(remap: remap)
         }
@@ -249,13 +251,13 @@ struct RemapRow: View {
         case .send:
             Keycaps(remap.action.combo?.keycaps ?? [])
         case .text:
-            Text("“\(remap.action.text ?? "")”").lineLimit(1)
+            Text(verbatim: RemapFormatting.actionSummary(remap.action)).lineLimit(1)
         case .run:
-            Text("Open \(RemapFormatting.programName(remap.action.run?.path ?? ""))").lineLimit(1)
+            Text(verbatim: RemapFormatting.actionSummary(remap.action)).lineLimit(1)
         case .openURL:
-            Text(remap.action.url ?? "").lineLimit(1).truncationMode(.middle)
+            Text(verbatim: remap.action.url ?? "").lineLimit(1).truncationMode(.middle)
         case .disable:
-            Text("Disabled").foregroundStyle(.secondary)
+            Text(verbatim: RemapFormatting.actionSummary(remap.action)).foregroundStyle(.secondary)
         }
     }
 }
@@ -265,7 +267,7 @@ struct ScopeBadge: View {
 
     var body: some View {
         let global = remap.isGlobal
-        Text(RemapFormatting.scope(remap))
+        Text(verbatim: RemapFormatting.scope(remap))
             .font(.system(size: 11, weight: .medium))
             .padding(.horizontal, 8)
             .frame(height: 20)

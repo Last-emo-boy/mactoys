@@ -19,10 +19,10 @@ public struct FindMyMouseSettings: Codable, Equatable, Sendable {
         case leftControlTwice, rightControlTwice, shake, shortcut
         public var title: String {
             switch self {
-            case .leftControlTwice: "Press Left ⌃ twice"
-            case .rightControlTwice: "Press Right ⌃ twice"
-            case .shake: "Shake the mouse"
-            case .shortcut: "Custom shortcut"
+            case .leftControlTwice: String(localized: "Press Left ⌃ twice", comment: "Find My Mouse activation: the left Control key")
+            case .rightControlTwice: String(localized: "Press Right ⌃ twice", comment: "Find My Mouse activation: the right Control key")
+            case .shake: String(localized: "Shake the mouse", comment: "Find My Mouse activation")
+            case .shortcut: String(localized: "Custom shortcut", comment: "Find My Mouse activation")
             }
         }
     }
@@ -55,9 +55,9 @@ public struct HighlighterSettings: Codable, Equatable, Sendable {
         case spotlight, circle, ripple
         public var title: String {
             switch self {
-            case .spotlight: "Spotlight"
-            case .circle: "Circle highlight"
-            case .ripple: "Ripple"
+            case .spotlight: String(localized: "Spotlight", comment: "Mouse Highlighter mode: dims the screen around the pointer")
+            case .circle: String(localized: "Circle highlight", comment: "Mouse Highlighter mode")
+            case .ripple: String(localized: "Ripple", comment: "Mouse Highlighter mode: rings spread out from each click")
             }
         }
     }
@@ -86,7 +86,13 @@ public struct HighlighterSettings: Codable, Equatable, Sendable {
 public struct MouseJumpSettings: Codable, Equatable, Sendable {
     public enum Style: String, Codable, CaseIterable, Sendable {
         case compact, bezelled, custom
-        public var title: String { rawValue.capitalized }
+        public var title: String {
+            switch self {
+            case .compact: String(localized: "Compact", comment: "Mouse Jump preview style")
+            case .bezelled: String(localized: "Bezelled", comment: "Mouse Jump preview style: displays drawn with a bezel")
+            case .custom: String(localized: "Custom", comment: "Mouse Jump preview style")
+            }
+        }
     }
 
     public var enabled = true
@@ -110,9 +116,9 @@ public struct CrosshairsSettings: Codable, Equatable, Sendable {
         case both, horizontal, vertical
         public var title: String {
             switch self {
-            case .both: "Vertical and horizontal"
-            case .horizontal: "Horizontal"
-            case .vertical: "Vertical"
+            case .both: String(localized: "Vertical and horizontal", comment: "Crosshairs orientation, CursorWrap mode")
+            case .horizontal: String(localized: "Horizontal", comment: "Crosshairs orientation: horizontal line only")
+            case .vertical: String(localized: "Vertical", comment: "Crosshairs orientation: vertical line only")
             }
         }
     }
@@ -144,9 +150,9 @@ public struct CursorWrapSettings: Codable, Equatable, Sendable {
         case both, vertical, horizontal
         public var title: String {
             switch self {
-            case .both: "Vertical and horizontal"
-            case .vertical: "Vertical only"
-            case .horizontal: "Horizontal only"
+            case .both: String(localized: "Vertical and horizontal", comment: "Crosshairs orientation, CursorWrap mode")
+            case .vertical: String(localized: "Vertical only", comment: "CursorWrap mode: wrap at the top and bottom edges")
+            case .horizontal: String(localized: "Horizontal only", comment: "CursorWrap mode: wrap at the left and right edges")
             }
         }
     }
@@ -155,9 +161,9 @@ public struct CursorWrapSettings: Codable, Equatable, Sendable {
         case always, holdingControl, holdingShift
         public var title: String {
             switch self {
-            case .always: "Always"
-            case .holdingControl: "While holding ⌃"
-            case .holdingShift: "While holding ⇧"
+            case .always: String(localized: "Always", comment: "CursorWrap activation")
+            case .holdingControl: String(localized: "While holding ⌃", comment: "Activation: only while the Control key is held")
+            case .holdingShift: String(localized: "While holding ⇧", comment: "Activation: only while the Shift key is held")
             }
         }
     }

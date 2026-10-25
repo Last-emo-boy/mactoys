@@ -114,13 +114,13 @@ public final class MouseWithoutBordersModule: ToyModule {
 
     func toggleEasyMouse() {
         settings.value.easyMouse.toggle()
-        HUD.show("Easy Mouse \(settings.value.easyMouse ? "on" : "off")", symbol: "cursorarrow.motionlines")
+        HUD.show(settings.value.easyMouse ? "Easy Mouse on" : "Easy Mouse off", symbol: "cursorarrow.motionlines")
     }
 
     /// Connects to another Mac using its key (and, optionally, its address).
     func connect(key: String, host: String) -> String? {
         guard SecurityKey.normalize(key) != nil else {
-            return "Security keys have at least 16 letters and digits."
+            return String(localized: "Security keys have at least 16 letters and digits.")
         }
         setSecurityKey(key)
         let h = host.trimmingCharacters(in: .whitespaces)
@@ -150,7 +150,8 @@ public final class MouseWithoutBordersModule: ToyModule {
             return MachineMatrixView.Tile(
                 id: slot.id, name: isMe ? MWBSystem.computerName : (info?.name ?? slot.name), status: status(of: slot.id),
                 isThisMac: isMe, isActive: activeMachine == slot.id,
-                detail: isMe ? (Subnet.localIPv4Addresses().first ?? "This Mac") : (controller?.network.address(of: slot.id) ?? status(of: slot.id).title),
+                detail: isMe ? (Subnet.localIPv4Addresses().first ?? String(localized: "This Mac"))
+                    : (controller?.network.address(of: slot.id) ?? status(of: slot.id).title),
                 displayCount: isMe ? NSScreen.screens.count : (info?.displays.count ?? 0))
         }
     }
@@ -177,7 +178,8 @@ public final class MouseWithoutBordersModule: ToyModule {
                         isOn: { [weak self] in self?.settings.value.easyMouse ?? false },
                         detail: { [weak self] in
                             let n = self?.connectedCount ?? 0
-                            return n == 0 ? "No other Macs connected" : "\(n) other Mac\(n == 1 ? "" : "s") connected"
+                            return n == 0 ? String(localized: "No other Macs connected")
+                                : String(localized: "\(n) other Macs connected", comment: "Number of connected Macs besides this one")
                         },
                         perform: { [weak self] in self?.toggleEasyMouse() }),
             QuickAction(id: "mwb.reconnect", title: "Reconnect Macs", symbol: "arrow.triangle.2.circlepath", tint: .orange,

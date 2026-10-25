@@ -174,9 +174,13 @@ public final class MouseUtilitiesModule: ToyModule {
         var list: [ShortcutBinding] = []
         if s.findMyMouse.enabled {
             switch s.findMyMouse.activation {
-            case .leftControlTwice: list.append(ShortcutBinding("Find My Mouse", keys: s.findMyMouse.requireCommand ? ["⌘", "Left ⌃", "×2"] : ["Left ⌃", "×2"]))
-            case .rightControlTwice: list.append(ShortcutBinding("Find My Mouse", keys: s.findMyMouse.requireCommand ? ["⌘", "Right ⌃", "×2"] : ["Right ⌃", "×2"]))
-            case .shake: list.append(ShortcutBinding("Find My Mouse", keys: ["Shake mouse"]))
+            case .leftControlTwice, .rightControlTwice:
+                let control = s.findMyMouse.activation == .leftControlTwice
+                    ? String(localized: "Left ⌃", comment: "Keycap: the left Control key")
+                    : String(localized: "Right ⌃", comment: "Keycap: the right Control key")
+                list.append(ShortcutBinding("Find My Mouse", keys: (s.findMyMouse.requireCommand ? ["⌘"] : []) + [control, "×2"]))
+            case .shake:
+                list.append(ShortcutBinding("Find My Mouse", keys: [String(localized: "Shake mouse", comment: "Keycap-style hint: shake the mouse to activate")]))
             case .shortcut: list.append(ShortcutBinding("Find My Mouse", s.findMyMouse.shortcut))
             }
         }

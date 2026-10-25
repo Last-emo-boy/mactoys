@@ -16,9 +16,11 @@ struct RemapSheet: View {
         VStack(spacing: 0) {
             Form {
                 Section {
-                    Picker("Remap", selection: kindBinding) {
-                        Text("A key").tag(Remap.Kind.key)
-                        Text("A shortcut").tag(Remap.Kind.shortcut)
+                    Picker(selection: kindBinding) {
+                        Text("A key", comment: "Remap kind: remap a single key").tag(Remap.Kind.key)
+                        Text("A shortcut", comment: "Remap kind: remap a shortcut").tag(Remap.Kind.shortcut)
+                    } label: {
+                        Text("Remap", comment: "Picker label (verb): remap a key or a shortcut")
                     }
                     .pickerStyle(.segmented)
                 }
@@ -34,7 +36,7 @@ struct RemapSheet: View {
                         }
                     }
                 }
-                Section("Do this") {
+                Section {
                     Picker("Action", selection: actionKindBinding) {
                         Text("Send a key or shortcut").tag(RemapAction.Kind.send)
                         Text("Type text").tag(RemapAction.Kind.text)
@@ -43,6 +45,8 @@ struct RemapSheet: View {
                         Text("Disable the key").tag(RemapAction.Kind.disable)
                     }
                     actionFields
+                } header: {
+                    Text("Do this", comment: "Remap sheet section: what the remap does")
                 }
                 if remap.kind == .key { tapAloneSection } else { matchSection }
                 scopeSection
@@ -51,7 +55,7 @@ struct RemapSheet: View {
             Divider()
             HStack {
                 if let error = remap.validationError {
-                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                    Label { Text(verbatim: error) } icon: { Image(systemName: "exclamationmark.triangle.fill") }
                         .font(.system(size: 11.5)).foregroundStyle(.orange).lineLimit(2)
                 }
                 Spacer()
@@ -74,12 +78,12 @@ struct RemapSheet: View {
             Text("Record a single key (a modifier on its own works too) or a shortcut. Use the list for media keys.")
                 .font(.system(size: 11)).foregroundStyle(.secondary)
         case .text:
-            TextField("Text", text: textBinding, axis: .vertical)
+            TextField(text: textBinding, axis: .vertical) { Text("Text", comment: "Field: the text the remap types") }
                 .lineLimit(2...6)
         case .run:
             runFields
         case .openURL:
-            TextField("URL, URI or path", text: urlBinding, prompt: Text("https://… · mailto:… · ~/Documents/notes.txt"))
+            TextField("URL, URI or path", text: urlBinding, prompt: Text(verbatim: "https://… · mailto:… · ~/Documents/notes.txt"))
         case .disable:
             Text("The key does nothing.").foregroundStyle(.secondary)
         }
@@ -88,25 +92,25 @@ struct RemapSheet: View {
     @ViewBuilder private var runFields: some View {
         LabeledContent("App or program") {
             HStack {
-                TextField("", text: runBinding(\.path), prompt: Text("/Applications/Notes.app"))
+                TextField(text: runBinding(\.path), prompt: Text(verbatim: "/Applications/Notes.app")) { EmptyView() }
                 Button("Choose…") { choose(\.path, directories: false) }
             }
         }
-        TextField("Arguments", text: runBinding(\.arguments), prompt: Text("--new-window \"~/My Folder\""))
+        TextField("Arguments", text: runBinding(\.arguments), prompt: Text(verbatim: "--new-window \"~/My Folder\""))
         LabeledContent("Start in") {
             HStack {
-                TextField("", text: runBinding(\.workingDirectory), prompt: Text("Programs only"))
+                TextField(text: runBinding(\.workingDirectory), prompt: Text("Programs only")) { EmptyView() }
                 Button("Choose…") { choose(\.workingDirectory, directories: true) }
             }
         }
         Picker("If it’s already running", selection: runBinding(\.ifRunning)) {
-            ForEach(RunSpec.IfRunning.allCases, id: \.self) { Text($0.title).tag($0) }
+            ForEach(RunSpec.IfRunning.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
         }
         Picker("Visibility", selection: runBinding(\.visibility)) {
-            ForEach(RunSpec.Visibility.allCases, id: \.self) { Text($0.title).tag($0) }
+            ForEach(RunSpec.Visibility.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
         }
         Picker("Run as", selection: runBinding(\.elevation)) {
-            ForEach(RunSpec.Elevation.allCases, id: \.self) { Text($0.title).tag($0) }
+            ForEach(RunSpec.Elevation.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
         }
         .disabled((remap.action.run?.path ?? "").hasSuffix(".app"))
     }
@@ -127,7 +131,8 @@ struct RemapSheet: View {
                         Text("Toggles Caps Lock").tag(Key?.none)
                     }
                     ForEach(KeyCatalog.canonicalModifierKey, id: \.1) { mod, code in
-                        Text("Acts as \(mod.symbols.joined())").tag(Key?.some(.keyboard(code)))
+                        Text("Acts as \(mod.symbols.joined())", comment: "When held: the key acts as this modifier; %@ is its symbol, such as ⌃")
+                            .tag(Key?.some(.keyboard(code)))
                     }
                 }
             }
@@ -143,7 +148,7 @@ struct RemapSheet: View {
     }
 
     private var scopeSection: some View {
-        Section("Where") {
+        Section {
             Picker("Apply in", selection: Binding(
                 get: { remap.apps.isEmpty ? 0 : 1 },
                 set: { if $0 == 0 { remap.apps = [] } else if remap.apps.isEmpty { addFrontmostCandidate() } })) {
@@ -154,15 +159,15 @@ struct RemapSheet: View {
             if !remap.apps.isEmpty {
                 ForEach(remap.apps, id: \.self) { id in
                     HStack {
-                        Text(RemapFormatting.appName(id))
-                        Text(id).font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                        Text(verbatim: RemapFormatting.appName(id))
+                        Text(verbatim: id).font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
                         Spacer()
                         Button { remap.apps.removeAll { $0 == id } } label: { Image(systemName: "minus.circle.fill") }
                             .buttonStyle(.borderless)
                     }
                 }
                 HStack {
-                    TextField("Bundle identifier", text: $newApp, prompt: Text("com.apple.dt.Xcode"))
+                    TextField("Bundle identifier", text: $newApp, prompt: Text(verbatim: "com.apple.dt.Xcode"))
                         .onSubmit(addTypedApp)
                     Button("Add", action: addTypedApp).disabled(newApp.trimmingCharacters(in: .whitespaces).isEmpty)
                     Menu("Running apps") {
@@ -176,6 +181,8 @@ struct RemapSheet: View {
                     Button("Choose…", action: chooseApp)
                 }
             }
+        } header: {
+            Text("Where", comment: "Remap sheet section: the apps the remap applies in")
         }
     }
 

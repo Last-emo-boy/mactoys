@@ -8,16 +8,16 @@ public enum MWBStatus: String, Codable, Sendable {
 
     public var title: String {
         switch self {
-        case .notConnected: "Not connected"
-        case .resolving: "Resolving"
-        case .connecting: "Connecting"
-        case .handshaking: "Handshaking"
-        case .connected: "Connected"
-        case .error: "Error"
-        case .closed: "Closed"
-        case .invalidKey: "Invalid security key"
-        case .timeout: "Timed out"
-        case .sendError: "Send error"
+        case .notConnected: String(localized: "Not connected", comment: "Mouse Without Borders connection state")
+        case .resolving: String(localized: "Resolving", comment: "Connection state: looking up the other Mac's address")
+        case .connecting: String(localized: "Connecting", comment: "Mouse Without Borders connection state")
+        case .handshaking: String(localized: "Handshaking", comment: "Connection state: checking the security key with the other Mac")
+        case .connected: String(localized: "Connected", comment: "Mouse Without Borders connection state")
+        case .error: String(localized: "Error", comment: "Mouse Without Borders connection state: the connection failed")
+        case .closed: String(localized: "Closed", comment: "Mouse Without Borders connection state: the connection was closed")
+        case .invalidKey: String(localized: "Invalid security key", comment: "Mouse Without Borders connection state")
+        case .timeout: String(localized: "Timed out", comment: "Mouse Without Borders connection state")
+        case .sendError: String(localized: "Send error", comment: "Connection state: sending data to the other Mac failed")
         }
     }
 

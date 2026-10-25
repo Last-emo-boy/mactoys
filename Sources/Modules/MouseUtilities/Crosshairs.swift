@@ -55,7 +55,7 @@ final class Crosshairs {
     func toggle() {
         guard isActive || ensureAccessibility() else { return }
         setActive(!isActive)
-        HUD.show("Crosshairs \(isActive ? "on" : "off")", symbol: "scope")
+        HUD.show(isActive ? "Crosshairs on" : "Crosshairs off", symbol: "scope")
     }
 
     /// Re-evaluates visibility (called when Auto Hide Cursor hides or shows the pointer).
