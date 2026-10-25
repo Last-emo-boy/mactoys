@@ -10,6 +10,11 @@
                                         --pseudo adds an "eo" pseudo-language that wraps every
                                         localized string in ⟦…⟧ so unlocalized text stands out
   scripts/i18n.py languages             languages to declare in CFBundleLocalizations
+  scripts/i18n.py export-chunks <lang> <dir> [--size N] [--all] [--plural-only]
+                                        untranslated strings in numbered chunks with short ids:
+                                        <dir>/chunk-001.json = [{"id", "en", "comment"?, "plural"?}]
+  scripts/i18n.py import-chunks <lang> <dir>
+                                        merge <dir>/chunk-NNN.<lang>.json = {"id": "text" | {"one": …, "other": …}}
 
 The source of truth is Resources/Localization/*.xcstrings (String Catalogs, editable in Xcode).
 The compiler extracts keys from string literals passed to LocalizedStringKey, LocalizedStringResource
@@ -202,6 +207,55 @@ def compile_(resources, use_pseudo=False):
         (resources / f"{lang}.lproj").mkdir(exist_ok=True)
 
 
+def export_chunks(lang, folder, size=200, include_all=False, plural_only=False):
+    data = load(CATALOG)
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    items, ids = [], {}
+    for key, entry in sorted(data["strings"].items()):
+        if not entry.get("shouldTranslate", True) or not key.strip():
+            continue
+        # Keys with nothing but placeholders, symbols and digits ("$", "%lld%%", "⌘ %@") stay as they are.
+        if not re.search(r"[^\W\d_]", SPEC.sub("", key)):
+            continue
+        has_int = any(c in ("lld", "llu") for _, c in specs(key))
+        if plural_only and not has_int:
+            continue
+        if not include_all and lang in entry.get("localizations", {}):
+            continue
+        i = str(len(ids) + 1)
+        ids[i] = key
+        item = {"id": i, "en": source_text(key, entry)}
+        if entry.get("comment"):
+            item["comment"] = entry["comment"]
+        if has_int:
+            item["plural"] = True
+        items.append(item)
+    for n in range(0, len(items), size):
+        save(folder / f"chunk-{n // size + 1:03}.json", items[n:n + size])
+    save(folder / "ids.json", ids)
+    print(f"exported {len(items)} strings for {lang} into {(len(items) + size - 1) // size} chunks in {folder}")
+
+
+def import_chunks(lang, folder):
+    folder = Path(folder)
+    ids = load(folder / "ids.json")
+    merged = {}
+    for f in sorted(folder.glob(f"chunk-*.{lang}.json")):
+        for i, value in load(f).items():
+            if i in ids:
+                merged[ids[i]] = value
+            else:
+                print(f"  ! {f.name}: unknown id {i}")
+    tmp = Path(tempfile.mkdtemp()) / "merged.json"
+    save(tmp, merged)
+    missing = len(ids) - len(merged)
+    status = import_(lang, tmp)
+    if missing:
+        print(f"  {missing} of {len(ids)} strings have no translation yet")
+    return status
+
+
 def languages():
     print(" ".join(LANGUAGES))
 
@@ -224,6 +278,11 @@ def main(argv):
         compile_(argv[2], use_pseudo="--pseudo" in argv)
     elif cmd == "languages":
         languages()
+    elif cmd == "export-chunks":
+        size = int(argv[argv.index("--size") + 1]) if "--size" in argv else 200
+        export_chunks(argv[2], argv[3], size=size, include_all="--all" in argv, plural_only="--plural-only" in argv)
+    elif cmd == "import-chunks":
+        return import_chunks(argv[2], argv[3])
     else:
         print(__doc__)
         return 1
