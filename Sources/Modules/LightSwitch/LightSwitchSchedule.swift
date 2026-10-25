@@ -211,6 +211,7 @@ enum LightSwitchSchedule {
         let f = DateFormatter()
         f.calendar = calendar
         f.timeZone = calendar.timeZone
+        f.locale = calendar.locale ?? .autoupdatingCurrent
         f.setLocalizedDateFormatFromTemplate(calendar.isDate(next, inSameDayAs: now) ? "jmm" : "EEEjmm")
         let when = f.string(from: next)
         switch (plan.appearance.opposite, mode == .sunsetToSunrise) {

@@ -156,12 +156,15 @@ import Testing
     }
 
     @Test func describesNextChange() {
-        let cal = Self.calendar("UTC")
+        var cal = Self.calendar("UTC")
+        cal.locale = Locale(identifier: "en_GB")  // 24-hour clock, whatever the machine's region
         let now = Self.local("UTC", 2026, 10, 24, 15, 0)
         let plan = SchedulePlan(appearance: .light, periodStart: now, nextChange: Self.local("UTC", 2026, 10, 24, 18, 2))
         let text = LightSwitchSchedule.describeNext(plan: plan, mode: .sunsetToSunrise, now: now, calendar: cal)
-        #expect(text.hasPrefix("Dark at sunset · "))
-        #expect(text.contains("18") && text.contains("02"))
+        #expect(text == "Dark at sunset · 18:02")
+        cal.locale = Locale(identifier: "en_US")  // 12-hour clock; ICU puts a narrow no-break space before PM
+        let us = LightSwitchSchedule.describeNext(plan: plan, mode: .sunsetToSunrise, now: now, calendar: cal)
+        #expect(us.contains("6:02") && us.hasSuffix("PM"))
         #expect(LightSwitchSchedule.describeNext(plan: nil, mode: .off, now: now) == "Schedule off")
         #expect(LightSwitchSchedule.describeNext(plan: SchedulePlan(appearance: .light, periodStart: now, nextChange: nil),
                                                  mode: .sunsetToSunrise, now: now) == "Light all day")

@@ -2,6 +2,7 @@ import CoreGraphics
 import CoreText
 import Foundation
 import Testing
+import Vision
 @testable import TextExtractor
 
 @Suite struct TextExtractorTests {
@@ -112,7 +113,15 @@ import Testing
         return ctx.makeImage()
     }
 
-    @Test func recognizesRenderedText() throws {
+    /// Whether Vision can run text recognition here at all, asked with a bare request so a bug in
+    /// `TextRecognizer` still fails the test. Virtualized macOS CI runners throw from `perform`.
+    static let visionReadsText: Bool = {
+        guard let image = render(["OK"], size: CGSize(width: 200, height: 100)) else { return false }
+        return (try? VNImageRequestHandler(cgImage: image).perform([VNRecognizeTextRequest()])) != nil
+    }()
+
+    @Test(.enabled(if: visionReadsText, "Vision text recognition can't run on this machine (virtualized CI runner)"))
+    func recognizesRenderedText() throws {
         let image = try #require(Self.render(["Invoice 2048", "Total due 12.50"]))
         let boxes = try TextRecognizer.recognize(image, options: .init(language: "en-US", words: true))
         let text = TextLayout.lines(boxes)
