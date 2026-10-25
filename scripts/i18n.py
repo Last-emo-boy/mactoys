@@ -137,6 +137,10 @@ def import_(lang, path, catalog=CATALOG):
             problems.append(f"unknown key: {key!r}")
             continue
         src = source_text(key, entry)
+        # Plural variations can only follow one number; with several (e.g. "%1$lld of %2$lld items")
+        # xcstringstool can't tell which one, so keep the general form.
+        if isinstance(value, dict) and sum(c in ("lld", "llu") for _, c in specs(key)) > 1:
+            value = value.get("other") or next(iter(value.values()))
         forms = value if isinstance(value, dict) else {"other": value}
         bad = False
         for form, text in forms.items():

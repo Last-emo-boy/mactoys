@@ -445,49 +445,394 @@
       "comment": "Advanced Paste: %@ is the action that is running"
     },
     "%lld JSON null values became empty strings.": {
-      "comment": "null is a JSON value, keep it as is"
+      "comment": "null is a JSON value, keep it as is",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld JSON null value became an empty string."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld JSON null values became empty strings."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld apps": {
-      "comment": "Workspace summary: number of apps"
+      "comment": "Workspace summary: number of apps",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld app"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld apps"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld arguments": {
-      "comment": "How many arguments a calculator function takes"
+      "comment": "How many arguments a calculator function takes",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld argument"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld arguments"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld backups": {
-      "comment": "Number of hosts file backups"
+      "comment": "Number of hosts file backups",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld backup"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld backups"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld characters typed with Quick Accent.": {},
-    "%lld colors": {},
+    "%lld characters typed with Quick Accent.": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld character typed with Quick Accent."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld characters typed with Quick Accent."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld colors": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld color"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld colors"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld columns": {
-      "comment": "Table preview: number of columns"
+      "comment": "Table preview: number of columns",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld column"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld columns"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld commands": {},
+    "%lld commands": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld command"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld commands"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld connected": {},
     "%lld copies registered": {
-      "comment": "Quick Look extension status: several builds of MacToys registered the same extension"
+      "comment": "Quick Look extension status: several builds of MacToys registered the same extension",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld copy registered"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld copies registered"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld crop windows open": {},
+    "%lld crop windows open": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld crop window open"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld crop windows open"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld days": {
-      "comment": "Age of hosts file backups"
+      "comment": "Age of hosts file backups",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld differences": {
-      "comment": "Number of differences between two property lists"
+      "comment": "Number of differences between two property lists",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld difference"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld differences"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld disabled": {
       "comment": "Number of disabled hosts entries"
     },
     "%lld displays": {
-      "comment": "Workspace summary: number of displays"
+      "comment": "Workspace summary: number of displays",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld display"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld displays"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld displays ready": {
-      "comment": "Power Display: number of connected displays"
+      "comment": "Power Display: number of connected displays",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld display ready"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld displays ready"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld entries": {
-      "comment": "Number of entries in a PATH-like list\nNumber of hosts entries"
+      "comment": "Number of entries in a PATH-like list\nNumber of hosts entries",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entry"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entries"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld entries, shared by Command Palette and Run": {},
+    "%lld entries, shared by Command Palette and Run": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entry, shared by Command Palette and Run"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entries, shared by Command Palette and Run"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld files": {
-      "comment": "Clipboard preview: number of copied files\nFile Locksmith: number of files a process has open"
+      "comment": "Clipboard preview: number of copied files\nFile Locksmith: number of files a process has open",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld file"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld files"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld formulae · updated %@": {
       "comment": "First a number of Homebrew packages, then when, e.g. '2 days ago'",
@@ -519,9 +864,50 @@
       "comment": "PowerRename footer: items whose new name is not a valid file name"
     },
     "%lld items": {
-      "comment": "Clipboard history: number of saved entries\nHow many items: results on a page, or entries in a folder\nNumber of items in a property list dictionary or array"
+      "comment": "Clipboard history: number of saved entries\nHow many items: results on a page, or entries in a folder\nNumber of items in a property list dictionary or array",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld items"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld items could not be restored": {},
+    "%lld items could not be restored": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld item could not be restored"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld items could not be restored"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld key remaps and %lld shortcut remaps in “%@”. Tap-alone keys, chords, text, apps and URLs are all edited in the Keyboard Manager window.": {
       "comment": "Number of key remaps, number of shortcut remaps, then the profile name",
       "localizations": {
@@ -535,7 +921,27 @@
     },
     "%lld languages with line numbers — Swift, C, Python, Rust, Go, shell…": {},
     "%lld lines": {
-      "comment": "How many lines a command printed"
+      "comment": "How many lines a command printed",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld line"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lines"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld linked": {
       "comment": "Number of displays whose brightness is linked"
@@ -649,7 +1055,27 @@
     },
     "%lld on the Files page; fewer in the main search": {},
     "%lld other Macs connected": {
-      "comment": "Number of connected Macs besides this one"
+      "comment": "Number of connected Macs besides this one",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld other Mac connected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld other Macs connected"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld pinned in %lld apps": {
       "comment": "%1$lld pinned shortcuts in %2$lld apps",
@@ -662,12 +1088,95 @@
         }
       }
     },
-    "%lld processes": {},
-    "%lld processes of other users weren’t checked.": {},
-    "%lld providers": {
-      "comment": "How many providers returned results"
+    "%lld processes": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld process"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld processes"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld recent texts are kept for each field.": {},
+    "%lld processes of other users weren’t checked.": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld process of another user wasn’t checked."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld processes of other users weren’t checked."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld providers": {
+      "comment": "How many providers returned results",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld provider"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld providers"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld recent texts are kept for each field.": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld recent text is kept for each field."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld recent texts are kept for each field."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld remaps · %@": {
       "comment": "Quick action detail: number of enabled remaps, then the active profile name",
       "localizations": {
@@ -694,21 +1203,164 @@
       "comment": "PowerRename footer: items whose new name is taken, so a number like (2) is added"
     },
     "%lld rows": {
-      "comment": "Table preview: number of rows"
+      "comment": "Table preview: number of rows",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld row"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld rows"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld saved texts": {},
+    "%lld saved texts": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld saved text"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld saved texts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld selected": {},
-    "%lld shortcuts read from the menu bar": {},
+    "%lld shortcuts read from the menu bar": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld shortcut read from the menu bar"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld shortcuts read from the menu bar"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld tables": {
-      "comment": "Database preview: heading of the list of tables"
+      "comment": "Database preview: heading of the list of tables",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld table"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld tables"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld variables applied": {
-      "comment": "Environment Variables status"
+      "comment": "Environment Variables status",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld variable applied"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld variables applied"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld windows": {
-      "comment": "Always On Top: what was unpinned, shown after “Unpinned ·”"
+      "comment": "Always On Top: what was unpinned, shown after “Unpinned ·”",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld window"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld windows"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "%lld windows couldn't be placed": {},
+    "%lld windows couldn't be placed": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld window couldn't be placed"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld windows couldn't be placed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld with duplicate hosts": {
       "comment": "Number of hosts entries with duplicate host names"
     },
@@ -950,7 +1602,28 @@
         }
       }
     },
-    "After %lld seconds": {},
+    "After %lld seconds": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "After %lld second"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "After %lld seconds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "After a resolution, arrangement or Dock size change": {},
     "After pinned": {
       "comment": "Recent items: shown after the pinned items"
@@ -1612,7 +2285,27 @@
       "comment": "Character reference: %@ is the character that was copied"
     },
     "Copied %lld lines": {
-      "comment": "Text Extractor copied several lines of text"
+      "comment": "Text Extractor copied several lines of text",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Copied %lld line"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Copied %lld lines"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Copied text": {},
     "Copied · Accessibility permission needed to paste": {},
@@ -1915,7 +2608,27 @@
     },
     "Delete %@": {},
     "Delete %lld entries?": {
-      "comment": "Confirmation: number of hosts entries to delete"
+      "comment": "Confirmation: number of hosts entries to delete",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld entry?"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld entries?"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Delete Entry": {},
     "Delete backups older than": {},
@@ -2136,7 +2849,28 @@
       "comment": "Key name"
     },
     "Eject All Disks": {},
-    "Ejected %lld disks": {},
+    "Ejected %lld disks": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ejected %lld disk"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ejected %lld disks"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Ellipse (hold Tab)": {
       "comment": "Drawing tool and its key (the Tab key)"
     },
@@ -2890,7 +3624,27 @@
     "Key remapping on": {},
     "Key remapping paused": {},
     "Key/value · %lld keys": {
-      "comment": "Clipboard preview: key=value text and its number of keys"
+      "comment": "Clipboard preview: key=value text and its number of keys",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Key/value · %lld key"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Key/value · %lld keys"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Keyboard": {
       "comment": "System Settings pane; use the name macOS shows"
@@ -4067,7 +4821,27 @@
     "Power state": {},
     "PowerRename": {},
     "PowerRename · %lld items": {
-      "comment": "PowerRename window title with the number of listed items"
+      "comment": "PowerRename window title with the number of listed items",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PowerRename · %lld item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PowerRename · %lld items"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Prefer the embedded slicer thumbnail": {},
     "Preferences are shown read-only. Open one as a document to edit and write it back.": {},
@@ -4348,7 +5122,28 @@
     "Renamed": {
       "comment": "PowerRename column: the new name"
     },
-    "Renamed %lld items": {},
+    "Renamed %lld items": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Renamed %lld item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Renamed %lld items"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Renamed %lld of %lld · %lld failed": {
       "comment": "PowerRename result: renamed count, of planned count, then the failed count",
       "localizations": {
@@ -4384,7 +5179,27 @@
       "comment": "Grab And Move: the gesture that resizes a window"
     },
     "Resize %lld images": {
-      "comment": "Image Resizer window title"
+      "comment": "Image Resizer window title",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Resize %lld image"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Resize %lld images"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Resize Finder Selection": {},
     "Resize Images": {},
@@ -4457,7 +5272,27 @@
     "Restore options on launch": {},
     "Restore the original size of windows when unsnapping": {},
     "Restored %lld names": {
-      "comment": "PowerRename undo result: number of items given back their old name"
+      "comment": "PowerRename undo result: number of items given back their old name",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Restored %lld name"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Restored %lld names"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Restored %lld · %lld could not be restored": {
       "comment": "PowerRename undo result: restored count, then the count that failed",
@@ -5156,7 +5991,27 @@
       "comment": "Text Extractor mode: rows and columns separated by tabs"
     },
     "Table · %lld rows": {
-      "comment": "Clipboard preview: a copied table and its number of data rows"
+      "comment": "Clipboard preview: a copied table and its number of data rows",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Table · %lld row"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Table · %lld rows"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Tables": {
       "comment": "Peek footer: number of tables in a database"
@@ -5207,10 +6062,50 @@
     "Text or regular expression": {},
     "Text size": {},
     "Text · %lld lines": {
-      "comment": "Clipboard preview: plain text and its line count"
+      "comment": "Clipboard preview: plain text and its line count",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Text · %lld line"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Text · %lld lines"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Text · %lld words": {
-      "comment": "Clipboard preview: plain text and its word count"
+      "comment": "Clipboard preview: plain text and its word count",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Text · %lld word"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Text · %lld words"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "The AI provider rejected the API key (%lld). %@": {
       "comment": "%1$lld is the HTTP status code, %2$@ the provider's own error message",
@@ -5275,7 +6170,27 @@
     "The image could not be drawn": {},
     "The image could not be read.": {},
     "The index is up to date (%lld formulae).": {
-      "comment": "Homebrew database; formulae are Homebrew packages"
+      "comment": "Homebrew database; formulae are Homebrew packages",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The index is up to date (%lld formula)."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The index is up to date (%lld formulae)."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "The key does nothing.": {},
     "The lines before the first entry. Lines that aren't comments are kept as they are; new entries go below these when placement is Top.": {},
@@ -6308,7 +7223,27 @@
       "comment": "Awake status, after the mode: 'Indefinitely · screen stays on'"
     },
     "showing the first %lld rows": {
-      "comment": "Table preview: only the first rows are listed"
+      "comment": "Table preview: only the first rows are listed",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "showing the first %lld row"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "showing the first %lld rows"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "stretch": {
       "comment": "Image Resizer size summary (lowercase): distort to the exact size"
