@@ -729,7 +729,8 @@ final class ZoomDrawSession {
     private func save(_ rep: NSBitmapImageRep) {
         let savePanel = NSSavePanel()
         savePanel.allowedContentTypes = [.png, .jpeg]
-        savePanel.nameFieldStringValue = "ZoomIt \(Self.stamp()).png"
+        savePanel.nameFieldStringValue = String(localized: "ZoomIt \(Self.stamp())",
+                                                comment: "Default file name of a saved screenshot; %@ is the date and time") + ".png"
         savePanel.directoryURL = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first
         panel.orderOut(nil)
         toolbar?.orderOut(nil)
@@ -752,10 +753,16 @@ final class ZoomDrawSession {
         }
     }
 
+    /// "2026-10-25 at 14.03.12" for file names (no colons, which Finder shows as slashes).
     static func stamp() -> String {
+        let now = Date()
         let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
-        return f.string(from: Date())
+        f.dateFormat = "yyyy-MM-dd"
+        let date = f.string(from: now)
+        f.dateFormat = "HH.mm.ss"
+        let time = f.string(from: now)
+        return String(localized: "\(date) at \(time)",
+                      comment: "Date and time in a default file name, e.g. 2026-10-25 at 14.03.12; the first %@ is the date, the second the time")
     }
 
     // MARK: Toolbar and cursor

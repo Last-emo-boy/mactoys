@@ -14,9 +14,9 @@ public enum ColorPickerActivation: String, Codable, CaseIterable, Sendable, Iden
     public var id: String { rawValue }
     public var title: String {
         switch self {
-        case .openEditor: "Open editor"
-        case .pickThenEditor: "Pick a color, then open editor"
-        case .pickOnly: "Only pick a color"
+        case .openEditor: String(localized: "Open editor", comment: "Color Picker activation behavior")
+        case .pickThenEditor: String(localized: "Pick a color, then open editor")
+        case .pickOnly: String(localized: "Only pick a color")
         }
     }
 }
@@ -27,9 +27,9 @@ public enum ColorPickerClick: String, Codable, CaseIterable, Sendable, Identifia
     public var id: String { rawValue }
     public var title: String {
         switch self {
-        case .pickThenEditor: "Pick a color and open editor"
-        case .pickAndClose: "Pick a color and close"
-        case .close: "Close"
+        case .pickThenEditor: String(localized: "Pick a color and open editor")
+        case .pickAndClose: String(localized: "Pick a color and close")
+        case .close: String(localized: "Close", comment: "Color Picker mouse action: close the picker without picking")
         }
     }
 }

@@ -142,11 +142,11 @@ public enum RulerUnit: String, Codable, CaseIterable, Sendable, Identifiable {
     public var id: String { rawValue }
     public var title: String {
         switch self {
-        case .none: "Show only pixels"
-        case .points: "Points (device-independent)"
-        case .inches: "Inches"
-        case .centimeters: "Centimeters"
-        case .millimeters: "Millimeters"
+        case .none: String(localized: "Show only pixels")
+        case .points: String(localized: "Points (device-independent)", comment: "Unit of measurement")
+        case .inches: String(localized: "Inches")
+        case .centimeters: String(localized: "Centimeters")
+        case .millimeters: String(localized: "Millimeters")
         }
     }
     public var abbreviation: String {
@@ -156,6 +156,16 @@ public enum RulerUnit: String, Codable, CaseIterable, Sendable, Identifiable {
         case .inches: "in"
         case .centimeters: "cm"
         case .millimeters: "mm"
+        }
+    }
+
+    /// The Foundation unit, so labels show the locale's own symbol; nil for pixels and points.
+    var length: UnitLength? {
+        switch self {
+        case .none, .points: nil
+        case .inches: .inches
+        case .centimeters: .centimeters
+        case .millimeters: .millimeters
         }
     }
 }
@@ -194,11 +204,12 @@ public struct DisplayMetrics: Equatable, Sendable {
 /// Measurement text for labels and the clipboard.
 public enum MeasurementText {
     /// `"236 × 250 px"`, `"236 px"` …; with an extra unit a second line such as `"118 × 125 pt"`.
-    public static func label(width: Int?, height: Int?, extra: RulerUnit, metrics: DisplayMetrics) -> String {
-        var text = join(width.map(Double.init), height.map(Double.init), unit: .none, metrics: metrics) + " px"
-        if extra != .none {
-            text += "\n" + join(width.map(Double.init), height.map(Double.init), unit: extra, metrics: metrics) + " " + extra.abbreviation
-        }
+    /// Numbers and the inch / centimeter / millimeter symbols follow `locale`.
+    public static func label(width: Int?, height: Int?, extra: RulerUnit, metrics: DisplayMetrics,
+                             locale: Locale = .autoupdatingCurrent) -> String {
+        let pixels = [width, height].compactMap { $0 }.map(Double.init)
+        var text = line(pixels, unit: .none, metrics: metrics, locale: locale)
+        if extra != .none { text += "\n" + line(pixels, unit: extra, metrics: metrics, locale: locale) }
         return text
     }
 
@@ -207,19 +218,29 @@ public enum MeasurementText {
         [width, height].compactMap { $0 }.map(String.init).joined(separator: " × ")
     }
 
-    private static func join(_ w: Double?, _ h: Double?, unit: RulerUnit, metrics: DisplayMetrics) -> String {
-        [w, h].compactMap { $0 }.map { number(metrics.convert($0, to: unit)) }.joined(separator: " × ")
+    /// The values joined with " × ", the unit after the last one.
+    private static func line(_ pixels: [Double], unit: RulerUnit, metrics: DisplayMetrics, locale: Locale) -> String {
+        let values = pixels.map { metrics.convert($0, to: unit) }
+        var parts = values.dropLast().map { number($0, locale: locale) }
+        if let last = values.last {
+            if let length = unit.length {
+                let style = Measurement<UnitLength>.FormatStyle(width: .abbreviated, locale: locale, usage: .asProvided,
+                                                                numberFormatStyle: numberStyle(last, locale: locale))
+                parts.append(Measurement(value: last, unit: length).formatted(style))
+            } else {
+                parts.append(number(last, locale: locale) + " " + unit.abbreviation)
+            }
+        }
+        return parts.joined(separator: " × ")
     }
 
     /// Four significant digits like `%.4g`, never in exponent form for screen-sized values.
-    public static func number(_ v: Double) -> String {
-        if v == v.rounded() && abs(v) < 1e7 { return String(Int(v)) }
-        let digits = max(0, 3 - Int(floor(log10(abs(v)))))
-        var s = String(format: "%.\(digits)f", v)
-        if s.contains(".") {
-            while s.hasSuffix("0") { s.removeLast() }
-            if s.hasSuffix(".") { s.removeLast() }
-        }
-        return s
+    public static func number(_ v: Double, locale: Locale = .autoupdatingCurrent) -> String {
+        v.formatted(numberStyle(v, locale: locale))
+    }
+
+    private static func numberStyle(_ v: Double, locale: Locale) -> FloatingPointFormatStyle<Double> {
+        let digits = v == v.rounded() ? 0 : max(0, 3 - Int(floor(log10(abs(v)))))
+        return FloatingPointFormatStyle<Double>(locale: locale).precision(.fractionLength(0...digits)).grouping(.never)
     }
 }

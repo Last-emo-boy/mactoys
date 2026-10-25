@@ -14,9 +14,10 @@ enum RecorderError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .noFrames: "Nothing was recorded."
-        case .notFound: "The display or window is no longer available."
-        case .writerFailed(let why): "The recording couldn’t be written: \(why)"
+        case .noFrames: String(localized: "Nothing was recorded.")
+        case .notFound: String(localized: "The display or window is no longer available.")
+        case .writerFailed(let why):
+            String(localized: "The recording couldn’t be written: \(why)", comment: "%@ is the reason, e.g. “the encoder stopped”")
         }
     }
 }
@@ -103,7 +104,8 @@ final class RecordingWriter: NSObject, SCStreamOutput, @unchecked Sendable {
 
     private func fail() {
         failed = true
-        onFailure?(writer.error ?? RecorderError.writerFailed("the encoder stopped"))
+        onFailure?(writer.error ?? RecorderError.writerFailed(String(localized: "the encoder stopped",
+                                                                       comment: "Reason a recording couldn’t be written")))
     }
 
     /// Finishes the file. ScreenCaptureKit sends no frames while the screen is still, so the
@@ -119,7 +121,8 @@ final class RecordingWriter: NSObject, SCStreamOutput, @unchecked Sendable {
             let tail = CMTime(seconds: max(0, stoppedAt - lastArrival), preferredTimescale: 600)
             writer.endSession(atSourceTime: CMTimeAdd(lastVideoTime, tail))
             writer.finishWriting { [writer] in
-                completion(writer.status == .completed ? nil : (writer.error ?? RecorderError.writerFailed("unknown error")))
+                completion(writer.status == .completed ? nil : (writer.error ?? RecorderError.writerFailed(String(localized: "unknown error",
+                                                                                   comment: "Reason a recording couldn’t be written"))))
             }
         }
     }
@@ -258,7 +261,8 @@ enum GIFExporter {
         generator.maximumSize = CGSize(width: natural.width * scale, height: natural.height * scale)
         let count = max(1, Int(duration * Double(fps)))
         guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.gif.identifier as CFString, count, nil) else {
-            throw RecorderError.writerFailed("GIF destination")
+            throw RecorderError.writerFailed(String(localized: "the GIF file couldn’t be created",
+                                                    comment: "Reason a recording couldn’t be written"))
         }
         CGImageDestinationSetProperties(destination, [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFLoopCount: 0]] as CFDictionary)
         let frame = [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFDelayTime: 1.0 / Double(fps)]] as CFDictionary
@@ -267,7 +271,9 @@ enum GIFExporter {
             let image = try await generator.image(at: time).image
             CGImageDestinationAddImage(destination, image, frame)
         }
-        guard CGImageDestinationFinalize(destination) else { throw RecorderError.writerFailed("GIF encoding") }
+        guard CGImageDestinationFinalize(destination) else {
+            throw RecorderError.writerFailed(String(localized: "the GIF couldn’t be encoded", comment: "Reason a recording couldn’t be written"))
+        }
     }
 }
 
@@ -286,7 +292,7 @@ struct RecordingIndicator: View {
         GlassPanel(cornerRadius: 14) {
             HStack(spacing: 9) {
                 Color.clear.frame(width: 9, height: 9)
-                Text(model.elapsed).font(.system(size: 12.5, weight: .semibold, design: .monospaced)).monospacedDigit()
+                Text(verbatim: model.elapsed).font(.system(size: 12.5, weight: .semibold, design: .monospaced)).monospacedDigit()
                     .foregroundStyle(.white)
                 Button(action: stop) {
                     Image(systemName: "stop.fill").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)

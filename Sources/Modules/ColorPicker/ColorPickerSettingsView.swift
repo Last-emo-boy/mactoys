@@ -36,7 +36,7 @@ struct ColorPickerSettingsView: View {
                 clickPicker("Right click", $settings.value.rightClick)
                 Picker(selection: $settings.value.magnifierCells) {
                     ForEach(LoupeZoom.steps.reversed(), id: \.self) { n in
-                        Text(String(format: "%.1f×", LoupeView.diameter / CGFloat(n))).tag(n)
+                        Text(verbatim: "\(Double(LoupeView.diameter / CGFloat(n)).formatted(.number.precision(.fractionLength(1))))×").tag(n)
                     }
                 } label: {
                     RowLabel("Initial magnification", subtitle: "Scroll while picking to change it.")
@@ -44,7 +44,7 @@ struct ColorPickerSettingsView: View {
             }
             Section("Editor") {
                 Picker(selection: $settings.value.defaultFormat) {
-                    ForEach(settings.value.formats) { Text($0.name).tag($0.name) }
+                    ForEach(settings.value.formats) { Text(verbatim: $0.name).tag($0.name) }
                 } label: {
                     RowLabel("Default color format", subtitle: "Used when a picked color is copied.")
                 }
@@ -67,12 +67,13 @@ struct ColorPickerSettingsView: View {
                 }
                 Button("Add Custom Format…") {
                     editingIsNew = true
-                    editing = ColorFormat(name: uniqueName("Custom"), format: ColorFormat.newFormatTemplate)
+                    editing = ColorFormat(name: uniqueCustomName(), format: ColorFormat.newFormatTemplate)
                 }
             } header: {
                 Text("Color formats")
             } footer: {
-                Text("Turned-off formats are hidden in the editor. Sample values show #FF5F4A.")
+                Text("Turned-off formats are hidden in the editor. Sample values show \(sampleColor.hex).",
+                     comment: "%@ is a hex color value, e.g. #FF5F4A")
                     .font(.system(size: 11.5)).foregroundStyle(.secondary)
             }
         }
@@ -96,7 +97,7 @@ struct ColorPickerSettingsView: View {
         })
     }
 
-    private func clickPicker(_ title: String, _ binding: Binding<ColorPickerClick>) -> some View {
+    private func clickPicker(_ title: LocalizedStringKey, _ binding: Binding<ColorPickerClick>) -> some View {
         Picker(title, selection: binding) {
             ForEach(ColorPickerClick.allCases) { Text($0.title).tag($0) }
         }
@@ -126,11 +127,15 @@ struct ColorPickerSettingsView: View {
         }
     }
 
-    private func uniqueName(_ base: String) -> String {
+    /// "Custom 1", "Custom 2", … (the first one not taken).
+    private func uniqueCustomName() -> String {
         let names = Set(settings.value.formats.map(\.name))
+        func name(_ n: Int) -> String {
+            String(localized: "Custom \(n)", comment: "Default name of a new custom color format; the number makes it unique")
+        }
         var n = 1
-        while names.contains("\(base) \(n)") { n += 1 }
-        return "\(base) \(n)"
+        while names.contains(name(n)) { n += 1 }
+        return name(n)
     }
 }
 
@@ -148,8 +153,8 @@ struct FormatSettingsRow: View {
     var body: some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(format.name)
-                Text(ColorFormatter.format(sampleColor, format.format))
+                Text(verbatim: format.name)
+                Text(verbatim: ColorFormatter.format(sampleColor, format.format))
                     .font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer()
@@ -180,14 +185,27 @@ struct FormatEditor: View {
     @State private var name = ""
     @State private var template = ""
 
+    /// Parameter codes (verbatim) and what they stand for.
     private static let reference: [(String, String)] = [
-        ("%Re %Gr %Bl %Al", "red, green, blue, alpha"), ("%Cy %Ma %Ye %Bk", "cyan, magenta, yellow, black key"),
-        ("%Hu", "hue"), ("%Si %Sl %Sb", "saturation (HSI, HSL, HSB)"), ("%Br %Va %In", "brightness, value, intensity"),
-        ("%Hn %Ll", "hue and lightness (natural)"), ("%Lc %Ca %Cb", "CIE lightness, chromaticity A and B"),
-        ("%Wh %Bn", "whiteness, blackness"), ("%Xv %Yv %Zv", "CIE X, Y, Z"), ("%Lo %Oa %Ob %Oc %Oh", "Oklab / Oklch"),
-        ("%Dv %Dr", "decimal value (BGR, RGB)"), ("%Na %Cs", "color name, CSS color name"),
+        ("%Re %Gr %Bl %Al", String(localized: "red, green, blue, alpha", comment: "Color format parameters")),
+        ("%Cy %Ma %Ye %Bk", String(localized: "cyan, magenta, yellow, black key", comment: "Color format parameters (CMYK)")),
+        ("%Hu", String(localized: "hue", comment: "Color format parameter")),
+        ("%Si %Sl %Sb", String(localized: "saturation (HSI, HSL, HSB)", comment: "Color format parameters")),
+        ("%Br %Va %In", String(localized: "brightness, value, intensity", comment: "Color format parameters")),
+        ("%Hn %Ll", String(localized: "hue and lightness (natural)", comment: "Color format parameters (NCol)")),
+        ("%Lc %Ca %Cb", String(localized: "CIE lightness, chromaticity A and B", comment: "Color format parameters (CIELAB)")),
+        ("%Wh %Bn", String(localized: "whiteness, blackness", comment: "Color format parameters (HWB)")),
+        ("%Xv %Yv %Zv", String(localized: "CIE X, Y, Z", comment: "Color format parameters (CIE XYZ)")),
+        ("%Lo %Oa %Ob %Oc %Oh", "Oklab / Oklch"),
+        ("%Dv %Dr", String(localized: "decimal value (BGR, RGB)", comment: "Color format parameters")),
+        ("%Na %Cs", String(localized: "color name, CSS color name", comment: "Color format parameters")),
     ]
-    private static let formatters = "After %Re %Gr %Bl %Al: b byte (default), h/H hex digit, x/X two hex digits, f float 0.##, F float .## — e.g. %ReX. After other values: i integer, p percent (%Lop%)."
+    private static let formatters: String = {
+        let rgba = "%Re %Gr %Bl %Al", example = "%ReX", percent = "%Lop%"
+        return String(
+            localized: "After \(rgba): b byte (default), h/H hex digit, x/X two hex digits, f float 0.##, F float .## — e.g. \(example). After other values: i integer, p percent (\(percent)).",
+            comment: "Color format reference. Each %@ is one or more parameter codes. Keep the letters b, h/H, x/X, f, F, i, p and the patterns 0.## and .## unchanged: they are format codes.")
+    }()
 
     private var nameTaken: Bool { name != original.name && existingNames.contains(name) }
 
@@ -198,7 +216,7 @@ struct FormatEditor: View {
                 TextField("Name", text: $name)
                 TextField("Format", text: $template).font(.system(size: 12.5, design: .monospaced))
                 LabeledContent("Preview") {
-                    Text(ColorFormatter.format(sampleColor, template)).font(.system(size: 12.5, design: .monospaced))
+                    Text(verbatim: ColorFormatter.format(sampleColor, template)).font(.system(size: 12.5, design: .monospaced))
                         .textSelection(.enabled)
                 }
             }
@@ -208,12 +226,12 @@ struct FormatEditor: View {
                 Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 4) {
                     ForEach(Self.reference, id: \.0) { row in
                         GridRow {
-                            Text(row.0).font(.system(size: 11.5, design: .monospaced))
-                            Text(row.1).font(.system(size: 11.5)).foregroundStyle(.secondary)
+                            Text(verbatim: row.0).font(.system(size: 11.5, design: .monospaced))
+                            Text(verbatim: row.1).font(.system(size: 11.5)).foregroundStyle(.secondary)
                         }
                     }
                 }
-                Text(Self.formatters).font(.system(size: 11.5)).foregroundStyle(.secondary)
+                Text(verbatim: Self.formatters).font(.system(size: 11.5)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true).padding(.top, 6)
             }
             .frame(height: 170)

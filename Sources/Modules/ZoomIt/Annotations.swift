@@ -9,15 +9,15 @@ public enum DrawTool: String, CaseIterable, Sendable, Identifiable {
 
     public var title: String {
         switch self {
-        case .pen: "Pen"
-        case .highlighter: "Highlighter (⇧ + color key)"
-        case .line: "Line (hold ⇧)"
-        case .rectangle: "Rectangle (hold ⌃)"
-        case .ellipse: "Ellipse (hold Tab)"
-        case .arrow: "Arrow (hold ⌃⇧)"
-        case .text: "Text (T, ⇧T right-aligned)"
-        case .blur: "Blur pen (X)"
-        case .eraser: "Eraser"
+        case .pen: String(localized: "Pen", comment: "Drawing tool")
+        case .highlighter: String(localized: "Highlighter (⇧ + color key)", comment: "Drawing tool and its key")
+        case .line: String(localized: "Line (hold ⇧)", comment: "Drawing tool and its key")
+        case .rectangle: String(localized: "Rectangle (hold ⌃)", comment: "Drawing tool and its key")
+        case .ellipse: String(localized: "Ellipse (hold Tab)", comment: "Drawing tool and its key (the Tab key)")
+        case .arrow: String(localized: "Arrow (hold ⌃⇧)", comment: "Drawing tool and its key")
+        case .text: String(localized: "Text (T, ⇧T right-aligned)", comment: "Drawing tool and its keys (T is the letter key)")
+        case .blur: String(localized: "Blur pen (X)", comment: "Drawing tool and its key (X is the letter key)")
+        case .eraser: String(localized: "Eraser", comment: "Drawing tool")
         }
     }
 

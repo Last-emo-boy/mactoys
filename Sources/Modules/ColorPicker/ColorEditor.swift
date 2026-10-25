@@ -113,9 +113,9 @@ struct ColorEditorView: View {
     private var header: some View {
         HStack(spacing: 8) {
             if model.settings.value.showColorName {
-                Text(ColorNames.name(for: model.current)).font(.system(size: 13, weight: .semibold))
+                Text(verbatim: ColorNames.displayName(for: model.current)).font(.system(size: 13, weight: .semibold))
             }
-            Text(model.current.hex).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+            Text(verbatim: model.current.hex).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
             Spacer()
             Button { model.showAdjust.toggle() } label: { Image(systemName: "slider.horizontal.3") }
                 .buttonStyle(.borderless)
@@ -149,7 +149,7 @@ struct ColorEditorView: View {
     private func exportHistory() {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.plainText]
-        panel.nameFieldStringValue = "Colors.txt"
+        panel.nameFieldStringValue = String(localized: "Colors", comment: "Default file name (without extension) for exported color history") + ".txt"
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
             MainActor.assumeIsolated {
@@ -194,7 +194,7 @@ struct ShadeBar: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture { if i == 2 { model.showAdjust = true } else { model.choose(c) } }
-                    .help(i == 2 ? "Adjust" : c.hex)
+                    .help(i == 2 ? Text("Adjust", comment: "Tooltip: open the hue/saturation/brightness adjust panel") : Text(verbatim: c.hex))
             }
         }
         .frame(height: 56)
@@ -210,11 +210,11 @@ struct FormatRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(name)
+            Text(verbatim: name)
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .frame(width: 60, alignment: .leading)
-            Text(value)
+            Text(verbatim: value)
                 .font(.system(size: 12.5, design: .monospaced))
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -259,9 +259,11 @@ struct AdjustPanel: View {
                     .onSubmit { if let c = ColorValue(hex: hex) { model.current = c } }
                 Spacer()
             }
-            slider("Hue", value: $hue, range: 0...360, suffix: "°")
-            slider("Saturation", value: $saturation, range: 0...100, suffix: "%")
-            slider("Brightness", value: $brightness, range: 0...100, suffix: "%")
+            slider("Hue", value: $hue, range: 0...360) {
+                Measurement(value: $0.rounded(), unit: UnitAngle.degrees).formatted(.measurement(width: .narrow, usage: .asProvided))
+            }
+            slider("Saturation", value: $saturation, range: 0...100) { ($0 / 100).formatted(.percent.precision(.fractionLength(0))) }
+            slider("Brightness", value: $brightness, range: 0...100) { ($0 / 100).formatted(.percent.precision(.fractionLength(0))) }
             HStack {
                 Button("Color Panel…") {
                     model.openColorPanel()
@@ -280,12 +282,13 @@ struct AdjustPanel: View {
         .onChange(of: model.current) { _, new in if new != applied { load() } }
     }
 
-    private func slider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, suffix: String) -> some View {
+    private func slider(_ title: LocalizedStringKey, value: Binding<Double>, range: ClosedRange<Double>,
+                        format: (Double) -> String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Text(title).font(.system(size: 11.5, weight: .medium))
                 Spacer()
-                Text("\(Int(value.wrappedValue.rounded()))\(suffix)").font(.system(size: 11).monospacedDigit())
+                Text(verbatim: format(value.wrappedValue)).font(.system(size: 11).monospacedDigit())
                     .foregroundStyle(.secondary)
             }
             Slider(value: Binding(get: { value.wrappedValue }, set: { value.wrappedValue = $0; apply() }), in: range)
@@ -359,7 +362,7 @@ final class ColorEditorWindow: NSObject, NSWindowDelegate {
             let w = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 580, height: 420),
                              styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                              backing: .buffered, defer: false)
-            w.title = "Color Picker"
+            w.title = String(localized: "Color Picker")
             w.titleVisibility = .hidden
             w.titlebarAppearsTransparent = true
             w.isMovableByWindowBackground = true

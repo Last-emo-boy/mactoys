@@ -127,12 +127,16 @@ public final class ZoomItModule: ToyModule {
                         shortcut: s.snipShortcut) { [weak self] in self?.startSnip(save: false) },
             QuickAction(id: "zoomit.livezoom", title: "Live Zoom", symbol: "magnifyingglass.circle.fill", tint: .red,
                         shortcut: s.liveZoomShortcut, isOn: { [weak self] in self?.liveZoom != nil },
-                        detail: { "Magnified, still clickable" }) { [weak self] in self?.toggleLiveZoom() },
+                        detail: { String(localized: "Magnified, still clickable", comment: "Live Zoom: what the mode does") }) { [weak self] in self?.toggleLiveZoom() },
             QuickAction(id: "zoomit.record", title: "Record Screen", symbol: "record.circle", tint: .red,
                         shortcut: s.recordShortcut, isOn: { [weak self] in self?.recorder.isRecording ?? false },
                         detail: { [weak self] in
-                            guard let self, self.recorder.isRecording else { return "Full screen · \(s.recordFormat.title)" }
-                            return "Recording · \(self.indicatorModel.elapsed)"
+                            guard let self, self.recorder.isRecording else {
+                                return String(localized: "Full screen · \(s.recordFormat.title)",
+                                              comment: "Record Screen action when idle; %@ is the file format, e.g. MP4")
+                            }
+                            return String(localized: "Recording · \(self.indicatorModel.elapsed)",
+                                          comment: "Record Screen action while recording; %@ is the elapsed time, e.g. 01:24")
                         }) { [weak self] in self?.record(.fullScreen) },
             QuickAction(id: "zoomit.demotype", title: "DemoType", symbol: "keyboard", tint: .red,
                         shortcut: s.demoTypeShortcut) { [weak self] in self?.typeNextSegment() },
@@ -399,7 +403,8 @@ public final class ZoomItModule: ToyModule {
         let ext = s.recordFormat == .gif ? "gif" : movie.pathExtension
         let panel = NSSavePanel()
         panel.allowedContentTypes = [s.recordFormat == .gif ? .gif : s.recordFormat == .mp4 ? .mpeg4Movie : .quickTimeMovie]
-        panel.nameFieldStringValue = "ZoomIt Recording \(ZoomDrawSession.stamp()).\(ext)"
+        panel.nameFieldStringValue = String(localized: "ZoomIt Recording \(ZoomDrawSession.stamp())",
+                                            comment: "Default file name of a saved recording; %@ is the date and time") + "." + ext
         panel.directoryURL = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask).first
         panel.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 2)
         NSApp.activate()

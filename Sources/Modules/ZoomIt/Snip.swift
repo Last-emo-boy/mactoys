@@ -37,15 +37,19 @@ final class SnipDictation {
             SFSpeechRecognizer.requestAuthorization { c.resume(returning: $0) }
         }
         guard !stopped else { return }
-        guard speech == .authorized else { return unavailable("Speech recognition is turned off for MacToys") }
+        guard speech == .authorized else { return unavailable(String(localized: "Speech recognition is turned off for MacToys")) }
         let microphone = await AVCaptureDevice.requestAccess(for: .audio)
         guard !stopped else { return }
-        guard microphone else { return unavailable("Microphone access is turned off for MacToys") }
+        guard microphone else { return unavailable(String(localized: "Microphone access is turned off for MacToys")) }
         guard let recognizer = SFSpeechRecognizer(locale: Locale.current) ?? SFSpeechRecognizer(), recognizer.isAvailable else {
-            return unavailable("Dictation isn't available")
+            return unavailable(String(localized: "Dictation isn't available"))
         }
         guard recognizer.supportsOnDeviceRecognition else {
-            return unavailable("On-device dictation isn't available for \(recognizer.locale.localizedString(forIdentifier: recognizer.locale.identifier) ?? "this language")")
+            guard let language = recognizer.locale.localizedString(forIdentifier: recognizer.locale.identifier) else {
+                return unavailable(String(localized: "On-device dictation isn't available for this language"))
+            }
+            return unavailable(String(localized: "On-device dictation isn't available for \(language)",
+                                      comment: "%@ is a language name, e.g. English (United States)"))
         }
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.requiresOnDeviceRecognition = true
@@ -55,7 +59,7 @@ final class SnipDictation {
 
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
-        guard format.channelCount > 0 else { return unavailable("No microphone found") }
+        guard format.channelCount > 0 else { return unavailable(String(localized: "No microphone found")) }
         input.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in request.append(buffer) }
         tapInstalled = true
         guard !stopped else { return }
@@ -64,7 +68,7 @@ final class SnipDictation {
             try engine.start()
         } catch {
             log.error("Dictation audio failed: \(error.localizedDescription, privacy: .public)")
-            return unavailable("The microphone couldn’t be started")
+            return unavailable(String(localized: "The microphone couldn’t be started"))
         }
         task = recognizer.recognitionTask(with: request) { [weak self] result, error in
             let text = result?.bestTranscription.formattedString
@@ -246,7 +250,8 @@ final class SnipController {
     private func saveToFile(_ image: CGImage, text: String?) {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.png, .jpeg]
-        panel.nameFieldStringValue = "Snip \(ZoomDrawSession.stamp()).png"
+        panel.nameFieldStringValue = String(localized: "Snip \(ZoomDrawSession.stamp())",
+                                            comment: "Default file name of a saved snip; %@ is the date and time") + ".png"
         panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
         NSApp.activate()
         panel.begin { [weak self] response in

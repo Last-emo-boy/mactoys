@@ -48,16 +48,17 @@ struct BreakTimerView: View {
 
     private var card: some View {
         VStack(spacing: 6) {
-            Text(model.expired ? "Break over" : "Break")
+            (model.expired ? Text("Break over", comment: "Break timer card title after the time ran out")
+                           : Text("Break", comment: "Break timer card title: a pause during a presentation"))
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.65))
                 .kerning(0.3)
-            Text(model.text)
+            Text(verbatim: model.text)
                 .font(.system(size: 64, weight: .bold, design: .monospaced))
                 .monospacedDigit()
                 .foregroundStyle(model.expired ? Color(red: 1, green: 0.42, blue: 0.38) : .white)
                 .contentTransition(.numericText())
-            Text("↑ ↓ adjust · H hide · Esc to end")
+            Text("↑ ↓ adjust · H hide · Esc to end", comment: "Break timer key hints; H is the letter key")
                 .font(.system(size: 11.5, weight: .medium))
                 .foregroundStyle(.white.opacity(0.55))
         }

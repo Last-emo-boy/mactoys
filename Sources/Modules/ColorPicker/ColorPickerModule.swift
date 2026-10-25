@@ -268,7 +268,7 @@ struct PickerPreview: View {
             LoupeView(patch: pixels?.patch(centerX: Int(point.x), centerY: Int(point.y), size: 13), cells: 13,
                       color: color, label: color.hex, name: nil)
                 .position(point)
-            ColorChip(color: color, label: color.hex, name: ColorNames.name(for: color))
+            ColorChip(color: color, label: color.hex, name: ColorNames.displayName(for: color))
                 .position(x: point.x, y: point.y + LoupeView.diameter / 2 + 26)
         }
         .frame(width: 760, height: 470)

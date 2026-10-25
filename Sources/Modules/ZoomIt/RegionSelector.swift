@@ -27,9 +27,9 @@ struct DictationBadge: View {
                     .foregroundStyle(status == .listening ? Color.red : .white.opacity(0.8))
                     .symbolEffect(.pulse, isActive: status == .listening)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title(status)).font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
+                    Text(verbatim: title(status)).font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
                     if !model.text.isEmpty {
-                        Text(model.text).font(.system(size: 12.5)).foregroundStyle(.white).lineLimit(3)
+                        Text(verbatim: model.text).font(.system(size: 12.5)).foregroundStyle(.white).lineLimit(3)
                     }
                 }
             }
@@ -52,9 +52,9 @@ struct DictationBadge: View {
 
     private func title(_ s: DictationBadgeModel.Status) -> String {
         switch s {
-        case .preparing: "Preparing…"
-        case .listening: "Listening…"
-        case .transcribing: "Transcribing — Esc to cancel"
+        case .preparing: String(localized: "Preparing…", comment: "Snip dictation: getting the microphone ready")
+        case .listening: String(localized: "Listening…", comment: "Snip dictation: recording speech")
+        case .transcribing: String(localized: "Transcribing — Esc to cancel", comment: "Snip dictation: turning speech into text")
         case .unavailable(let why): why
         }
     }

@@ -19,8 +19,10 @@ struct ZoomItSettingsView: View {
                     }
                     Spacer()
                     Button("Zoom") { module.toggleZoom() }
-                    Button("Draw") { module.draw() }
-                    Button("Break") { module.toggleBreak() }
+                    Button { module.draw() } label: { Text("Draw", comment: "Button: start drawing on the screen") }
+                    Button { module.toggleBreak() } label: {
+                        Text("Break", comment: "Break timer card title: a pause during a presentation")
+                    }
                 }
             }
         } content: {
@@ -43,7 +45,7 @@ struct ZoomItSettingsView: View {
                 RowLabel("Smooth the zoomed image", subtitle: "Off shows crisp pixels.")
             }
             SliderRow("Initial magnification", value: $settings.value.initialZoom, in: 1.25...4, step: 0.25,
-                      format: { String(format: "%.2g×", $0) })
+                      format: Self.magnification)
         }
     }
 
@@ -54,19 +56,20 @@ struct ZoomItSettingsView: View {
             Picker("Pen color", selection: $settings.value.penColor) {
                 ForEach(PenColor.allCases) { Text($0.title).tag($0) }
             }
-            SliderRow("Pen width", value: $settings.value.penWidth, in: 1...30, step: 1, format: { "\(Int($0)) pt" })
+            SliderRow("Pen width", value: $settings.value.penWidth, in: 1...30, step: 1, format: Self.points)
             Toggle(isOn: $settings.value.showToolbar) {
                 RowLabel("Show the drawing toolbar", subtitle: "Colors, tools, undo and boards at the top of the screen.")
             }
             Picker(selection: $settings.value.textFont) {
-                Text("System").tag("")
-                ForEach(Self.fontFamilies, id: \.self) { Text($0).tag($0) }
+                Text("System", comment: "Text font: the system font").tag("")
+                ForEach(Self.fontFamilies, id: \.self) { Text(verbatim: $0).tag($0) }
             } label: {
                 RowLabel("Text font", subtitle: "For text typed with T. Scroll or ↑ ↓ while typing to resize.")
             }
-            SliderRow("Text size", value: $settings.value.textSize, in: 12...120, step: 2, format: { "\(Int($0)) pt" })
-            RowLabel("Keys while drawing",
-                     subtitle: "R G B Y O P colors (⇧ highlighter) · X blur · hold ⇧ line, ⌃ rectangle, Tab ellipse, ⌃⇧ arrow · T text · ⌘Z undo · E erase all · W whiteboard · K blackboard · Space centers the pointer · ⌘C copy, ⌘S save (⇧ to crop)")
+            SliderRow("Text size", value: $settings.value.textSize, in: 12...120, step: 2, format: Self.points)
+            RowLabel(title: Text("Keys while drawing"),
+                     subtitle: Text("R G B Y O P colors (⇧ highlighter) · X blur · hold ⇧ line, ⌃ rectangle, Tab ellipse, ⌃⇧ arrow · T text · ⌘Z undo · E erase all · W whiteboard · K blackboard · Space centers the pointer · ⌘C copy, ⌘S save (⇧ to crop)",
+                                    comment: "Single capital letters are the keys to press (R G B Y O P, X, T, E, W, K); keep them. Tab and Space are the keys of that name."))
         }
     }
 
@@ -75,15 +78,17 @@ struct ZoomItSettingsView: View {
             ShortcutRow("Start break timer", subtitle: "Press again to hide or show it while it keeps running.",
                         shortcut: $settings.value.breakShortcut)
             Stepper(value: $settings.value.breakMinutes, in: 1...99, step: 1) {
-                RowLabel("Timer", subtitle: "\(Int(settings.value.breakMinutes)) minutes · ↑ ↓ adjust while it runs")
+                RowLabel(title: Text("Timer", comment: "Break timer length"),
+                         subtitle: Text("\(Self.minutes(settings.value.breakMinutes)) · ↑ ↓ adjust while it runs",
+                                        comment: "%@ is the break length, e.g. 10 minutes"))
             }
             Toggle(isOn: $settings.value.showElapsedAfterExpiry) { RowLabel("Show time elapsed after expiration") }
             Toggle(isOn: $settings.value.playSoundOnExpiry) { RowLabel("Play sound on expiration") }
             if settings.value.playSoundOnExpiry {
                 Picker("Alarm sound", selection: $settings.value.expirySound) {
-                    ForEach(Self.systemSounds, id: \.self) { Text($0).tag($0) }
+                    ForEach(Self.systemSounds, id: \.self) { Text(verbatim: $0).tag($0) }
                     if settings.value.expirySound.hasPrefix("/") {
-                        Text((settings.value.expirySound as NSString).lastPathComponent).tag(settings.value.expirySound)
+                        Text(verbatim: (settings.value.expirySound as NSString).lastPathComponent).tag(settings.value.expirySound)
                     }
                 }
                 LabeledContent("Alarm sound file") {
@@ -91,7 +96,7 @@ struct ZoomItSettingsView: View {
                 }
             }
             SliderRow("Timer opacity", value: $settings.value.timerOpacity, in: 0.1...1, step: 0.05,
-                      format: { "\(Int(($0 * 100).rounded()))%" })
+                      format: { $0.formatted(.percent.precision(.fractionLength(0))) })
             Picker("Timer position", selection: $settings.value.timerPosition) {
                 ForEach(TimerPosition.allCases) { Text($0.title).tag($0) }
             }
@@ -103,7 +108,7 @@ struct ZoomItSettingsView: View {
             if settings.value.breakBackground == .image {
                 LabeledContent {
                     HStack {
-                        Text(settings.value.backgroundImagePath.isEmpty ? "None" : (settings.value.backgroundImagePath as NSString).lastPathComponent)
+                        Self.fileName(settings.value.backgroundImagePath)
                             .foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                         Button("Choose…") { choose([.image]) { settings.value.backgroundImagePath = $0 } }
                     }
@@ -118,7 +123,7 @@ struct ZoomItSettingsView: View {
             ShortcutRow("Live Zoom toggle", subtitle: "A magnified, live view you can keep working in. ⌃⌥= and ⌃⌥- change the level.",
                         shortcut: $settings.value.liveZoomShortcut)
             SliderRow("Live Zoom magnification", value: $settings.value.liveZoomLevel, in: 1.25...4, step: 0.25,
-                      format: { String(format: "%.2g×", $0) })
+                      format: Self.magnification)
         }
     }
 
@@ -137,10 +142,10 @@ struct ZoomItSettingsView: View {
                 }
             }
             SliderRow("Scaling", subtitle: "Of the screen's native resolution.", value: $settings.value.recordScaling,
-                      in: 0.1...1, step: 0.05, format: { String(format: "%.2f", $0) })
+                      in: 0.1...1, step: 0.05, format: Self.scaling)
             if settings.value.recordFormat == .gif {
                 SliderRow("GIF scaling", value: $settings.value.gifScaling, in: 0.1...1, step: 0.05,
-                          format: { String(format: "%.2f", $0) })
+                          format: Self.scaling)
             }
             Picker("Frame rate", selection: $settings.value.frameRate) {
                 ForEach([15, 24, 30, 60], id: \.self) { Text("\($0) fps").tag($0) }
@@ -150,10 +155,11 @@ struct ZoomItSettingsView: View {
             Toggle(isOn: $settings.value.captureMicrophone) { RowLabel("Capture audio input", subtitle: "Needs Microphone access.") }
             if settings.value.captureMicrophone {
                 Picker("Microphone", selection: $settings.value.microphoneID) {
-                    Text("Default").tag("")
-                    ForEach(Self.microphones, id: \.uniqueID) { Text($0.localizedName).tag($0.uniqueID) }
+                    Text("Default", comment: "Microphone: the system default input").tag("")
+                    ForEach(Self.microphones, id: \.uniqueID) { Text(verbatim: $0.localizedName).tag($0.uniqueID) }
                 }
-                Toggle(isOn: $settings.value.monoMicrophone) { RowLabel("Mono", subtitle: "Mix the microphone to one channel.") }
+                Toggle(isOn: $settings.value.monoMicrophone) { RowLabel(title: Text("Mono", comment: "Audio: one channel"),
+                                                                                 subtitle: Text("Mix the microphone to one channel.")) }
             }
         }
     }
@@ -171,8 +177,11 @@ struct ZoomItSettingsView: View {
             if settings.value.snipDictation {
                 Toggle(isOn: $settings.value.dictateEverySnip) { RowLabel("Listen on every snip") }
                 LabeledContent {
-                    TextField("", text: $settings.value.dictationPrefix, prompt: Text("e.g. Note:"))
-                        .frame(width: 180)
+                    TextField(text: $settings.value.dictationPrefix, prompt: Text("e.g. Note:")) {
+                        Text("Text before the dictation")
+                    }
+                    .labelsHidden()
+                    .frame(width: 180)
                 } label: { RowLabel("Text before the dictation") }
             }
         }
@@ -185,12 +194,14 @@ struct ZoomItSettingsView: View {
             ShortcutRow("Previous segment", shortcut: $settings.value.demoTypeBackShortcut)
             LabeledContent {
                 HStack {
-                    Text(settings.value.demoTypeFile.isEmpty ? "None" : (settings.value.demoTypeFile as NSString).lastPathComponent)
+                    Self.fileName(settings.value.demoTypeFile)
                         .foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                     Button("Choose…") { choose([.plainText, .text]) { settings.value.demoTypeFile = $0 } }
                 }
             } label: {
-                RowLabel("Input file", subtitle: "Segments end at [end]. Also: [enter] [up] [down] [left] [right] [pause:n] [paste]…[/paste]. Clipboard text starting with [start] is used instead.")
+                RowLabel(title: Text("Input file"),
+                         subtitle: Text("Segments end at [end]. Also: [enter] [up] [down] [left] [right] [pause:n] [paste]…[/paste]. Clipboard text starting with [start] is used instead.",
+                                        comment: "Keep the bracketed tags such as [end], [pause:n] and [paste] unchanged: they are DemoType script commands."))
             }
             SliderRow("Typing speed", subtitle: "Larger is faster.", value: $settings.value.typingSpeed, in: 10...100)
             Toggle(isOn: $settings.value.userDriven) {
@@ -200,6 +211,25 @@ struct ZoomItSettingsView: View {
     }
 
     // MARK: Helpers
+
+    /// A chosen file's name, or "None".
+    private static func fileName(_ path: String) -> Text {
+        path.isEmpty ? Text("None", comment: "No file chosen") : Text(verbatim: (path as NSString).lastPathComponent)
+    }
+
+    /// "2×", "1.5×" (two significant digits, in the locale's number format).
+    private static func magnification(_ v: Double) -> String {
+        "\(v.formatted(.number.precision(.significantDigits(1...2))))×"
+    }
+
+    private static func points(_ v: Double) -> String { "\(Int(v).formatted()) pt" }
+
+    private static func scaling(_ v: Double) -> String { v.formatted(.number.precision(.fractionLength(2))) }
+
+    /// "10 minutes", in the user's language.
+    private static func minutes(_ m: Double) -> String {
+        Duration.seconds(Int(m) * 60).formatted(.units(allowed: [.minutes], width: .wide))
+    }
 
     private func choose(_ types: [UTType], _ done: @escaping (String) -> Void) {
         let panel = NSOpenPanel()

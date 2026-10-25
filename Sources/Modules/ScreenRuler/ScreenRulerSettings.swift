@@ -9,10 +9,10 @@ public enum RulerTool: String, Codable, CaseIterable, Sendable, Identifiable {
 
     public var title: String {
         switch self {
-        case .bounds: "Bounds"
-        case .spacing: "Spacing"
-        case .horizontal: "Horizontal spacing"
-        case .vertical: "Vertical spacing"
+        case .bounds: String(localized: "Bounds", comment: "Screen Ruler tool: measure a dragged box")
+        case .spacing: String(localized: "Spacing", comment: "Screen Ruler tool: measure the space between edges")
+        case .horizontal: String(localized: "Horizontal spacing")
+        case .vertical: String(localized: "Vertical spacing")
         }
     }
 
@@ -35,7 +35,7 @@ public enum RulerDefaultMode: String, Codable, CaseIterable, Sendable, Identifia
     case none, bounds, spacing, horizontal, vertical
     public var id: String { rawValue }
     public var tool: RulerTool? { RulerTool(rawValue: rawValue) }
-    public var title: String { tool?.title ?? "None" }
+    public var title: String { tool?.title ?? String(localized: "None", comment: "Screen Ruler default mode: no tool selected") }
 }
 
 public struct ScreenRulerSettings: Codable, Equatable, Sendable {
