@@ -225,24 +225,67 @@ enum MCCS {
     static let orientation: UInt8 = 0xAA
     static let powerMode: UInt8 = 0xD6
 
+    /// Shown in Settings › VCP capabilities (localized).
     static let featureNames: [UInt8: String] = [
-        0x02: "New control value", 0x04: "Restore factory defaults", 0x05: "Restore brightness and contrast",
-        0x06: "Restore geometry", 0x08: "Restore color defaults", 0x0B: "Color temperature increment",
-        0x0C: "Color temperature request", 0x10: "Brightness", 0x12: "Contrast", 0x14: "Select color preset",
-        0x16: "Video gain: red", 0x18: "Video gain: green", 0x1A: "Video gain: blue", 0x1E: "Auto setup",
-        0x20: "Horizontal position", 0x30: "Vertical position", 0x52: "Active control", 0x56: "Horizontal moiré",
-        0x59: "6-axis saturation: red", 0x5A: "6-axis saturation: yellow", 0x5B: "6-axis saturation: green",
-        0x5C: "6-axis saturation: cyan", 0x5D: "6-axis saturation: blue", 0x5E: "6-axis saturation: magenta",
-        0x60: "Input source", 0x62: "Audio speaker volume", 0x6C: "Video black level: red",
-        0x6E: "Video black level: green", 0x70: "Video black level: blue", 0x72: "Gamma", 0x86: "Display scaling",
-        0x87: "Sharpness", 0x8A: "Color saturation", 0x8D: "Audio mute", 0x90: "Hue", 0x9B: "6-axis hue: red",
-        0x9C: "6-axis hue: yellow", 0x9D: "6-axis hue: green", 0x9E: "6-axis hue: cyan", 0x9F: "6-axis hue: blue",
-        0xA0: "6-axis hue: magenta", 0xAA: "Screen orientation", 0xAC: "Horizontal frequency",
-        0xAE: "Vertical frequency", 0xB2: "Flat panel sub-pixel layout", 0xB6: "Display technology type",
-        0xC0: "Display usage time", 0xC6: "Application enable key", 0xC8: "Display controller type",
-        0xC9: "Display firmware level", 0xCA: "OSD", 0xCC: "OSD language", 0xD6: "Power mode",
-        0xDC: "Display mode", 0xDF: "VCP version", 0xE0: "Manufacturer specific",
+        0x02: String(localized: "New control value", comment: "Monitor control (MCCS VCP) feature"),
+        0x04: String(localized: "Restore factory defaults", comment: "Monitor control (MCCS VCP) feature"),
+        0x05: String(localized: "Restore brightness and contrast", comment: "Monitor control (MCCS VCP) feature"),
+        0x06: String(localized: "Restore geometry", comment: "Monitor control (MCCS VCP) feature"),
+        0x08: String(localized: "Restore color defaults", comment: "Monitor control (MCCS VCP) feature"),
+        0x0B: String(localized: "Color temperature increment", comment: "Monitor control (MCCS VCP) feature"),
+        0x0C: String(localized: "Color temperature request", comment: "Monitor control (MCCS VCP) feature"),
+        0x10: String(localized: "Brightness", comment: "Monitor control (MCCS VCP) feature"),
+        0x12: String(localized: "Contrast", comment: "Monitor control (MCCS VCP) feature"),
+        0x14: String(localized: "Select color preset", comment: "Monitor control (MCCS VCP) feature"),
+        0x16: String(localized: "Video gain: red", comment: "Monitor control (MCCS VCP) feature"),
+        0x18: String(localized: "Video gain: green", comment: "Monitor control (MCCS VCP) feature"),
+        0x1A: String(localized: "Video gain: blue", comment: "Monitor control (MCCS VCP) feature"),
+        0x1E: String(localized: "Auto setup", comment: "Monitor control (MCCS VCP) feature"),
+        0x20: String(localized: "Horizontal position", comment: "Monitor control (MCCS VCP) feature"),
+        0x30: String(localized: "Vertical position", comment: "Monitor control (MCCS VCP) feature"),
+        0x52: String(localized: "Active control", comment: "Monitor control (MCCS VCP) feature"),
+        0x56: String(localized: "Horizontal moiré", comment: "Monitor control (MCCS VCP) feature"),
+        0x59: String(localized: "6-axis saturation: red", comment: "Monitor control (MCCS VCP) feature"),
+        0x5A: String(localized: "6-axis saturation: yellow", comment: "Monitor control (MCCS VCP) feature"),
+        0x5B: String(localized: "6-axis saturation: green", comment: "Monitor control (MCCS VCP) feature"),
+        0x5C: String(localized: "6-axis saturation: cyan", comment: "Monitor control (MCCS VCP) feature"),
+        0x5D: String(localized: "6-axis saturation: blue", comment: "Monitor control (MCCS VCP) feature"),
+        0x5E: String(localized: "6-axis saturation: magenta", comment: "Monitor control (MCCS VCP) feature"),
+        0x60: String(localized: "Input source", comment: "Monitor control (MCCS VCP) feature"),
+        0x62: String(localized: "Audio speaker volume", comment: "Monitor control (MCCS VCP) feature"),
+        0x6C: String(localized: "Video black level: red", comment: "Monitor control (MCCS VCP) feature"),
+        0x6E: String(localized: "Video black level: green", comment: "Monitor control (MCCS VCP) feature"),
+        0x70: String(localized: "Video black level: blue", comment: "Monitor control (MCCS VCP) feature"),
+        0x72: String(localized: "Gamma", comment: "Monitor control (MCCS VCP) feature"),
+        0x86: String(localized: "Display scaling", comment: "Monitor control (MCCS VCP) feature"),
+        0x87: String(localized: "Sharpness", comment: "Monitor control (MCCS VCP) feature"),
+        0x8A: String(localized: "Color saturation", comment: "Monitor control (MCCS VCP) feature"),
+        0x8D: String(localized: "Audio mute", comment: "Monitor control (MCCS VCP) feature"),
+        0x90: String(localized: "Hue", comment: "Monitor control (MCCS VCP) feature"),
+        0x9B: String(localized: "6-axis hue: red", comment: "Monitor control (MCCS VCP) feature"),
+        0x9C: String(localized: "6-axis hue: yellow", comment: "Monitor control (MCCS VCP) feature"),
+        0x9D: String(localized: "6-axis hue: green", comment: "Monitor control (MCCS VCP) feature"),
+        0x9E: String(localized: "6-axis hue: cyan", comment: "Monitor control (MCCS VCP) feature"),
+        0x9F: String(localized: "6-axis hue: blue", comment: "Monitor control (MCCS VCP) feature"),
+        0xA0: String(localized: "6-axis hue: magenta", comment: "Monitor control (MCCS VCP) feature"),
+        0xAA: String(localized: "Screen orientation", comment: "Monitor control (MCCS VCP) feature"),
+        0xAC: String(localized: "Horizontal frequency", comment: "Monitor control (MCCS VCP) feature"),
+        0xAE: String(localized: "Vertical frequency", comment: "Monitor control (MCCS VCP) feature"),
+        0xB2: String(localized: "Flat panel sub-pixel layout", comment: "Monitor control (MCCS VCP) feature"),
+        0xB6: String(localized: "Display technology type", comment: "Monitor control (MCCS VCP) feature"),
+        0xC0: String(localized: "Display usage time", comment: "Monitor control (MCCS VCP) feature"),
+        0xC6: String(localized: "Application enable key", comment: "Monitor control (MCCS VCP) feature"),
+        0xC8: String(localized: "Display controller type", comment: "Monitor control (MCCS VCP) feature"),
+        0xC9: String(localized: "Display firmware level", comment: "Monitor control (MCCS VCP) feature"),
+        0xCA: String(localized: "OSD", comment: "Monitor control (MCCS VCP) feature"),
+        0xCC: String(localized: "OSD language", comment: "Monitor control (MCCS VCP) feature"),
+        0xD6: String(localized: "Power mode", comment: "Monitor control (MCCS VCP) feature"),
+        0xDC: String(localized: "Display mode", comment: "Monitor control (MCCS VCP) feature"),
+        0xDF: String(localized: "VCP version", comment: "Monitor control (MCCS VCP) feature"),
+        0xE0: String(localized: "Manufacturer specific", comment: "Monitor control (MCCS VCP) feature"),
     ]
+
+    // Value names below are English: the command line prints them. `localizedName` is the UI's version.
 
     static let inputSourceNames: [UInt16: String] = [
         0x01: "VGA 1", 0x02: "VGA 2", 0x03: "DVI 1", 0x04: "DVI 2", 0x05: "Composite 1", 0x06: "Composite 2",
@@ -263,7 +306,35 @@ enum MCCS {
     ]
 
     static func featureName(_ code: UInt8) -> String {
-        featureNames[code] ?? (code >= 0xE0 ? "Manufacturer specific" : "Unknown")
+        if let name = featureNames[code] { return name }
+        if code >= 0xE0 { return String(localized: "Manufacturer specific", comment: "Monitor control (MCCS VCP) feature") }
+        return String(localized: "Unknown", comment: "Monitor control (MCCS VCP) feature without a known name")
+    }
+
+    /// The English name of a discrete value (command line), or nil when MCCS doesn't name it.
+    static func name(_ feature: DisplayFeature, _ value: UInt16) -> String? {
+        switch feature {
+        case .inputSource: inputSourceNames[value]
+        case .colorTemperature: colorPresetNames[value]
+        case .powerState: powerModeNames[value]
+        default: nil
+        }
+    }
+
+    /// `name` for the UI: words are localized; input names ("HDMI 1"), sRGB and kelvin values stay as they are.
+    static func localizedName(_ feature: DisplayFeature, _ value: UInt16) -> String? {
+        switch (feature, value) {
+        case (.colorTemperature, 0x02): String(localized: "Display native", comment: "Monitor color preset")
+        case (.colorTemperature, 0x0B): String(localized: "User 1", comment: "Monitor color preset defined by the user")
+        case (.colorTemperature, 0x0C): String(localized: "User 2", comment: "Monitor color preset defined by the user")
+        case (.colorTemperature, 0x0D): String(localized: "User 3", comment: "Monitor color preset defined by the user")
+        case (.powerState, 0x01): String(localized: "On", comment: "Monitor power mode")
+        case (.powerState, 0x02): String(localized: "Standby", comment: "Monitor power mode")
+        case (.powerState, 0x03): String(localized: "Suspend", comment: "Monitor power mode")
+        case (.powerState, 0x04): String(localized: "Off (DPM)", comment: "Monitor power mode: off through Display Power Management")
+        case (.powerState, 0x05): String(localized: "Off (power button)", comment: "Monitor power mode: as if the power button was pressed")
+        default: name(feature, value)
+        }
     }
 
     static func hex(_ v: Int) -> String { String(format: "0x%02X", v) }

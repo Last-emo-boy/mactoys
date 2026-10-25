@@ -164,6 +164,11 @@ enum CNFUpdater {
         var errorDescription: String? { message }
     }
 
+    /// `Result.source` (kept in English in the settings file) as shown in the UI.
+    static func sourceTitle(_ source: String) -> String {
+        source == "Homebrew cache" ? String(localized: "Homebrew cache", comment: "Where the Homebrew database was read from") : source
+    }
+
     static func update(knownDigest: String?, destination: URL = CNFPaths.index) async throws -> Result {
         do {
             return try await download(knownDigest: knownDigest, destination: destination)
@@ -173,7 +178,8 @@ enum CNFUpdater {
                 try write(text, to: destination)
                 return Result(formulae: CNFIndex.formulaCount(text), source: "Homebrew cache", digest: nil, unchanged: false)
             }
-            throw Failure(message: "Couldn't download the Homebrew database (\(error.localizedDescription)) and there's no local Homebrew copy.")
+            throw Failure(message: String(localized: "Couldn't download the Homebrew database (\(error.localizedDescription)) and there's no local Homebrew copy.",
+                                          comment: "The placeholder is why the download failed"))
         }
     }
 
@@ -182,8 +188,8 @@ enum CNFUpdater {
         manifestRequest.setValue("application/vnd.oci.image.manifest.v1+json", forHTTPHeaderField: "Accept")
         manifestRequest.setValue(anonymousAuth, forHTTPHeaderField: "Authorization")
         let (manifestData, manifestResponse) = try await URLSession.shared.data(for: manifestRequest)
-        guard (manifestResponse as? HTTPURLResponse)?.statusCode == 200 else { throw Failure(message: "manifest request failed") }
-        guard let digest = layerDigest(manifestData) else { throw Failure(message: "unexpected manifest") }
+        guard (manifestResponse as? HTTPURLResponse)?.statusCode == 200 else { throw Failure(message: String(localized: "manifest request failed", comment: "Homebrew database download error; a manifest describes the download")) }
+        guard let digest = layerDigest(manifestData) else { throw Failure(message: String(localized: "unexpected manifest", comment: "Homebrew database download error; a manifest describes the download")) }
         if digest == knownDigest, let text = try? String(contentsOf: destination, encoding: .utf8), CNFIndex.looksValid(text) {
             try FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: destination.path)
             return Result(formulae: CNFIndex.formulaCount(text), source: "GitHub Packages", digest: digest, unchanged: true)
@@ -191,9 +197,9 @@ enum CNFUpdater {
         var blobRequest = URLRequest(url: URL(string: "\(registry)/blobs/\(digest)")!, timeoutInterval: 60)
         blobRequest.setValue(anonymousAuth, forHTTPHeaderField: "Authorization")
         let (blob, blobResponse) = try await URLSession.shared.data(for: blobRequest)
-        guard (blobResponse as? HTTPURLResponse)?.statusCode == 200 else { throw Failure(message: "download failed") }
+        guard (blobResponse as? HTTPURLResponse)?.statusCode == 200 else { throw Failure(message: String(localized: "download failed", comment: "Homebrew database download error")) }
         let text = String(decoding: blob, as: UTF8.self)
-        guard CNFIndex.looksValid(text) else { throw Failure(message: "the download doesn't look like executables.txt") }
+        guard CNFIndex.looksValid(text) else { throw Failure(message: String(localized: "the download doesn't look like executables.txt", comment: "executables.txt is a file name")) }
         try write(text, to: destination)
         return Result(formulae: CNFIndex.formulaCount(text), source: "GitHub Packages", digest: digest, unchanged: false)
     }

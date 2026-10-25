@@ -23,12 +23,12 @@ enum DisplayFeature: String, Codable, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .brightness: "Brightness"
-        case .contrast: "Contrast"
-        case .volume: "Volume"
-        case .inputSource: "Input"
-        case .colorTemperature: "Color temperature"
-        case .powerState: "Power"
+        case .brightness: String(localized: "Brightness")
+        case .contrast: String(localized: "Contrast")
+        case .volume: String(localized: "Volume")
+        case .inputSource: String(localized: "Input", comment: "Monitor input source")
+        case .colorTemperature: String(localized: "Color temperature")
+        case .powerState: String(localized: "Power", comment: "Monitor power state")
         }
     }
 
@@ -85,6 +85,7 @@ struct MonitorSnapshot: Sendable, Identifiable {
     var name: String
     var displayID: CGDirectDisplayID
     var kind: MonitorKind
+    /// English, for the command line ("DDC/CI · DisplayPort"); `transportTitle` for the UI.
     var transport: String
     var capabilities: DDCCapabilities?
     var readings: [DisplayFeature: FeatureReading]
@@ -92,8 +93,20 @@ struct MonitorSnapshot: Sendable, Identifiable {
     var options: [DisplayFeature: [UInt16]]
     /// Degrees, read-only (macOS has no public API to rotate a display).
     var rotation: Int
+    /// `name` is the "Display 2" fallback: macOS gave no name.
+    var isUnnamed = false
 
     var supported: [DisplayFeature] { DisplayFeature.allCases.filter { readings[$0] != nil } }
+
+    /// `transport`, localized.
+    var transportTitle: String {
+        switch kind {
+        case .builtIn: String(localized: "Built-in", comment: "How a display is connected")
+        case .appleNative: String(localized: "Apple display", comment: "How a display is connected")
+        case .ddc: transport   // protocol and port names
+        case .unsupported: String(localized: "Not supported", comment: "How a display is connected: MacToys can't control it")
+        }
+    }
 }
 
 /// Discovers displays and reads or writes their controls. Synchronous and not thread-safe:
@@ -151,7 +164,10 @@ final class DisplayEngine: @unchecked Sendable {
                 probe(channel, capabilities: maxCompatibility ? nil : caps, into: &snapshot)
                 newEndpoints[id] = Endpoint(displayID: d.id, kind: .ddc, channel: channel)
             }
-            if snapshot.name.isEmpty { snapshot.name = "Display \(index + 1)" }
+            if snapshot.name.isEmpty {
+                snapshot.name = "Display \(index + 1)"
+                snapshot.isUnnamed = true
+            }
             result.append(snapshot)
         }
         endpoints = newEndpoints

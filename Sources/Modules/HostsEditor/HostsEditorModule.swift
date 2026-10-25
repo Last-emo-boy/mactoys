@@ -36,7 +36,7 @@ public final class HostsEditorModule: ToyModule {
             w.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
             w.toolbar = NSToolbar(identifier: "hosts")
             w.toolbarStyle = .unified
-            w.title = "Hosts File Editor"
+            w.title = String(localized: "Hosts File Editor")
             w.setContentSize(NSSize(width: 940, height: 560))
             w.minSize = NSSize(width: 720, height: 380)
             w.isReleasedWhenClosed = false
@@ -109,8 +109,8 @@ struct HostsSettingsView: View {
                     RowLabel("Show a warning at startup", subtitle: "Reminds you that hosts entries change name resolution for every app.")
                 }
                 Picker(selection: $s.value.placement) {
-                    Text("Top").tag(HostsDocument.Placement.top)
-                    Text("Bottom").tag(HostsDocument.Placement.bottom)
+                    Text("Top", comment: "Placement of new hosts entries").tag(HostsDocument.Placement.top)
+                    Text("Bottom", comment: "Placement of new hosts entries").tag(HostsDocument.Placement.bottom)
                 } label: {
                     RowLabel("Placement of new entries", subtitle: "Top puts them after the header comments; bottom at the end of the file.")
                 }
@@ -135,14 +135,15 @@ struct HostsSettingsView: View {
                 .disabled(!s.value.backupsEnabled)
                 if s.value.retention != .never {
                     Stepper(value: $s.value.backupCount, in: 1...100) {
-                        RowLabel(s.value.retention == .count ? "Backups to keep" : "Always keep the newest",
-                                 subtitle: "\(s.value.backupCount) backup\(s.value.backupCount == 1 ? "" : "s")")
+                        RowLabel(title: s.value.retention == .count ? Text("Backups to keep") : Text("Always keep the newest"),
+                                 subtitle: Text("\(s.value.backupCount) backups", comment: "Number of hosts file backups"))
                     }
                     .disabled(!s.value.backupsEnabled)
                 }
                 if s.value.retention == .ageAndCount {
                     Stepper(value: $s.value.backupDays, in: 1...365) {
-                        RowLabel("Delete backups older than", subtitle: "\(s.value.backupDays) day\(s.value.backupDays == 1 ? "" : "s")")
+                        RowLabel(title: Text("Delete backups older than"),
+                                 subtitle: Text("\(s.value.backupDays) days", comment: "Age of hosts file backups"))
                     }
                     .disabled(!s.value.backupsEnabled)
                 }

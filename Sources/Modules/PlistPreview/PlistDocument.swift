@@ -12,9 +12,9 @@ enum PlistFormat: String, Codable, CaseIterable {
     var title: String {
         switch self {
         case .xml: "XML"
-        case .binary: "Binary"
+        case .binary: String(localized: "Binary", comment: "Property list file format")
         case .json: "JSON"
-        case .openStep: "OpenStep (read-only)"
+        case .openStep: String(localized: "OpenStep (read-only)", comment: "Property list file format; OpenStep is a name")
         }
     }
 }
@@ -44,7 +44,7 @@ enum PlistCodec {
             var nulls = 0
             return (PlistNode.from(json, nulls: &nulls), .json, nulls)
         } catch {
-            throw Failure(message: "This isn't a property list (XML, binary or OpenStep) or JSON file.")
+            throw Failure(message: String(localized: "This isn't a property list (XML, binary or OpenStep) or JSON file."))
         }
     }
 
@@ -52,7 +52,7 @@ enum PlistCodec {
         switch format {
         case .json:
             guard root.isJSONCompatible else {
-                throw Failure(message: "JSON can't hold dates, data or non-finite numbers. Save as XML or binary instead.")
+                throw Failure(message: String(localized: "JSON can't hold dates, data or non-finite numbers. Save as XML or binary instead."))
             }
             return try JSONSerialization.data(withJSONObject: root.propertyList,
                                               options: [.prettyPrinted, .sortedKeys, .fragmentsAllowed, .withoutEscapingSlashes])
@@ -106,11 +106,16 @@ final class PlistDocument {
     static func open(_ url: URL) throws -> PlistDocument {
         let attrs = try FileManager.default.attributesOfItem(atPath: url.path)
         if let size = attrs[.size] as? NSNumber, size.intValue > 64 * 1024 * 1024 {
-            throw PlistCodec.Failure(message: "\(url.lastPathComponent) is larger than 64 MB.")
+            let limit = ByteCountFormatter.string(fromByteCount: 64 * 1024 * 1024, countStyle: .memory)
+            throw PlistCodec.Failure(message: String(localized: "\(url.lastPathComponent) is larger than \(limit).",
+                                                     comment: "First a file name, then a size such as '64 MB'"))
         }
         let (root, format, nulls) = try PlistCodec.decode(try Data(contentsOf: url))
         let doc = PlistDocument(root: root, fileURL: url, format: format, domain: domainGuess(for: url))
-        if nulls > 0 { doc.message = Message(kind: .warning, text: "\(nulls) JSON null value\(nulls == 1 ? "" : "s") became empty strings.") }
+        if nulls > 0 {
+            doc.message = Message(kind: .warning, text: String(localized: "\(nulls) JSON null values became empty strings.",
+                                                               comment: "null is a JSON value, keep it as is"))
+        }
         return doc
     }
 
@@ -129,7 +134,12 @@ final class PlistDocument {
     var displayName: String {
         if let fileURL { return fileURL.lastPathComponent }
         if let domain { return domain }
-        return "Untitled.plist"
+        return Self.untitledName
+    }
+
+    /// The file name of a new document: "Untitled.plist".
+    static var untitledName: String {
+        String(localized: "Untitled", comment: "Name of a new, unsaved document (a file name without extension)") + ".plist"
     }
 
     var isDirty: Bool { root != savedRoot }
@@ -175,7 +185,8 @@ final class PlistDocument {
     func rename(_ id: UUID, to key: String) -> Bool {
         guard let parent = root.parent(of: id), parent.type == .dictionary else { return false }
         if parent.children?.contains(where: { $0.id != id && $0.key == key }) == true {
-            message = Message(kind: .error, text: "“\(key)” is already used in this dictionary.")
+            message = Message(kind: .error, text: String(localized: "“\(key)” is already used in this dictionary.",
+                                                         comment: "The placeholder is a property list key"))
             return false
         }
         change { $0.modify(id) { $0.key = key } }
@@ -187,11 +198,22 @@ final class PlistDocument {
     func setValue(_ id: UUID, text: String) -> Bool {
         guard let node = root.node(id) else { return false }
         guard let value = node.parsed(text) else {
-            message = Message(kind: .error, text: "“\(text)” isn't a valid \(node.type.title.lowercased()).")
+            message = Message(kind: .error, text: Self.invalidValueMessage(text, type: node.type))
             return false
         }
         change { $0.modify(id) { $0.value = value } }
         return true
+    }
+
+    private static func invalidValueMessage(_ text: String, type: PlistType) -> String {
+        switch type {
+        case .number: String(localized: "“\(text)” isn't a valid number.", comment: "The placeholder is what the user typed")
+        case .boolean: String(localized: "“\(text)” isn't a valid boolean.", comment: "The placeholder is what the user typed")
+        case .date: String(localized: "“\(text)” isn't a valid date.", comment: "The placeholder is what the user typed")
+        case .data: String(localized: "“\(text)” isn't valid data.", comment: "The placeholder is what the user typed; data is raw bytes in hex")
+        default: String(localized: "“\(text)” isn't a valid \(type.title) value.",
+                        comment: "First what the user typed, then a property list type such as 'String'")
+        }
     }
 
     func setValue(_ id: UUID, _ value: PlistNode.Value) {
@@ -270,7 +292,7 @@ final class PlistDocument {
 
     /// Saves in the document's format (OpenStep files become XML).
     func save() throws {
-        guard let url = fileURL else { throw PlistCodec.Failure(message: "Choose where to save first.") }
+        guard let url = fileURL else { throw PlistCodec.Failure(message: String(localized: "Choose where to save first.")) }
         try write(to: url, format: format == .openStep ? .xml : format)
     }
 
@@ -281,7 +303,7 @@ final class PlistDocument {
         self.format = format
         savedRoot = root
         differences = nil
-        message = Message(kind: .success, text: "Saved as \(format.title).")
+        message = Message(kind: .success, text: String(localized: "Saved as \(format.title).", comment: "The placeholder is a file format, e.g. 'XML'"))
         log.info("saved \(url.path, privacy: .public)")
     }
 
@@ -305,7 +327,7 @@ final class PlistDocument {
         } else if let domain {
             other = try DefaultsDomains.export(domain)
         } else {
-            throw PlistCodec.Failure(message: "This document hasn't been saved yet.")
+            throw PlistCodec.Failure(message: String(localized: "This document hasn't been saved yet."))
         }
         differences = PlistDiff.diff(other, root)
     }
@@ -313,15 +335,18 @@ final class PlistDocument {
     /// Imports the document into a defaults domain (`defaults import`), replacing that domain.
     func writeToDefaults(domain: String) throws {
         guard root.type == .dictionary else {
-            throw PlistCodec.Failure(message: "Only a dictionary can be written to a defaults domain.")
+            throw PlistCodec.Failure(message: String(localized: "Only a dictionary can be written to a defaults domain."))
         }
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent("mactoys-defaults-\(UUID().uuidString).plist")
         defer { try? FileManager.default.removeItem(at: temp) }
         try PlistCodec.encode(root, as: .xml).write(to: temp)
         let r = Shell.run("/usr/bin/defaults", ["import", domain, temp.path])
-        guard r.ok else { throw PlistCodec.Failure(message: r.stderr.isEmpty ? "defaults import failed" : r.stderr) }
+        guard r.ok else {
+            throw PlistCodec.Failure(message: r.stderr.isEmpty ? String(localized: "defaults import failed", comment: "defaults import is a command") : r.stderr)
+        }
         self.domain = domain
-        message = Message(kind: .success, text: "Wrote \(root.children?.count ?? 0) keys to \(domain).")
+        message = Message(kind: .success, text: String(localized: "Wrote \(root.children?.count ?? 0) keys to \(domain).",
+                                                       comment: "First a number of keys, then a defaults domain such as com.apple.dock"))
         log.info("imported into defaults domain \(domain, privacy: .public)")
     }
 }
@@ -338,7 +363,8 @@ enum DefaultsDomains {
     static func export(_ domain: String) throws -> PlistNode {
         let r = Shell.run("/usr/bin/defaults", ["export", domain, "-"])
         guard r.ok, let data = r.stdout.data(using: .utf8) else {
-            throw PlistCodec.Failure(message: r.stderr.isEmpty ? "Couldn't read \(domain)." : r.stderr)
+            throw PlistCodec.Failure(message: r.stderr.isEmpty ? String(localized: "Couldn't read \(domain).", comment: "The placeholder is a defaults domain")
+                                         : r.stderr)
         }
         return try PlistCodec.decode(data).0
     }

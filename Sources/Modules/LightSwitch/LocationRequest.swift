@@ -10,8 +10,10 @@ final class LocationRequest: NSObject, CLLocationManagerDelegate {
         var errorDescription: String? {
             switch self {
             case .denied:
-                "Location access is off for MacToys. Allow it in System Settings › Privacy & Security › Location Services, or enter coordinates."
-            case .unavailable(let message): "Couldn't find your location: \(message)"
+                String(localized: "Location access is off for MacToys. Allow it in System Settings › Privacy & Security › Location Services, or enter coordinates.")
+            case .unavailable(let message):
+                String(localized: "Couldn't find your location: \(message)",
+                       comment: "Light Switch error; the placeholder is the Location Services error message")
             }
         }
     }

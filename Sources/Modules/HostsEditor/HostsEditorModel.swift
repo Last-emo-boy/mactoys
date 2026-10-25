@@ -100,7 +100,8 @@ final class HostsEditorModel {
             loaded = true
             changedOnDisk = false
         } catch {
-            message = Message(kind: .error, title: "Couldn't read \(path)", text: error.localizedDescription)
+            message = Message(kind: .error, title: String(localized: "Couldn't read \(path)", comment: "The placeholder is a file path"),
+                              text: error.localizedDescription)
             log.error("read hosts: \(error.localizedDescription, privacy: .public)")
         }
         if settings.value.pingOnOpen { pingAll() }
@@ -217,7 +218,9 @@ final class HostsEditorModel {
     func save() {
         guard !saving, isDirty else { return }
         if let (entry, issues) = blockingIssues.first {
-            message = Message(kind: .error, title: "Fix \(entry.address) \(entry.hostsText) first",
+            message = Message(kind: .error,
+                              title: String(localized: "Fix \(entry.address) \(entry.hostsText) first",
+                                            comment: "Hosts can't be saved: first an IP address, then its host names"),
                               text: issues.map(\.message).joined(separator: " · "))
             return
         }
@@ -241,10 +244,14 @@ final class HostsEditorModel {
             // Keep ids (and with them selection and pings) for unchanged positions.
             document = Self.carryIDs(from: document, to: reread)
             changedOnDisk = false
-            message = Message(kind: .success, title: "Saved", text: backup.map { "DNS cache flushed. Backup: \($0)" } ?? "DNS cache flushed.")
+            message = Message(kind: .success, title: String(localized: "Saved", comment: "The hosts file was saved"),
+                              text: backup.map { String(localized: "DNS cache flushed. Backup: \($0)", comment: "The placeholder is a backup file name") }
+                                  ?? String(localized: "DNS cache flushed."))
             log.info("hosts saved")
         case .failure(let f):
-            message = Message(kind: f.cancelled ? .info : .error, title: f.cancelled ? "Not saved" : "Failed to save hosts file", text: f.message)
+            message = Message(kind: f.cancelled ? .info : .error,
+                              title: f.cancelled ? String(localized: "Not saved") : String(localized: "Failed to save hosts file"),
+                              text: f.message)
             log.error("save hosts: \(f.message, privacy: .public)")
         }
     }
@@ -311,7 +318,8 @@ enum HostsWriter {
         do {
             try Data(text.utf8).write(to: temp, options: .atomic)
         } catch {
-            return .failure(Failure(message: "Couldn't write a temporary file: \(error.localizedDescription)"))
+            return .failure(Failure(message: String(localized: "Couldn't write a temporary file: \(error.localizedDescription)",
+                                                    comment: "The placeholder is the system's error message")))
         }
         defer { try? fm.removeItem(at: temp) }
 
@@ -326,16 +334,19 @@ enum HostsWriter {
                 try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: dest.path)
                 backupName = name
             } catch {
-                return .failure(Failure(message: "Couldn't back up the hosts file, so it wasn't changed: \(error.localizedDescription)"))
+                return .failure(Failure(message: String(localized: "Couldn't back up the hosts file, so it wasn't changed: \(error.localizedDescription)",
+                                                        comment: "The placeholder is the system's error message")))
             }
         }
 
         // `cat >` keeps the file's owner, mode and inode; then flush the resolver caches.
         let command = "/bin/cat \(Shell.quote(temp.path)) > \(Shell.quote(path)) && /usr/bin/dscacheutil -flushcache; /usr/bin/killall -HUP mDNSResponder 2>/dev/null; true"
         do {
-            _ = try Privileged.run(command, prompt: "MacToys wants to save changes to the hosts file.")
+            _ = try Privileged.run(command, prompt: String(localized: "MacToys wants to save changes to the hosts file.",
+                                                           comment: "Shown in the administrator password prompt"))
         } catch let error as AppleScript.Failure {
-            return .failure(Failure(message: error.code == -128 ? "Saving was cancelled." : error.message, cancelled: error.code == -128))
+            return .failure(Failure(message: error.code == -128 ? String(localized: "Saving was cancelled.") : error.message,
+                                    cancelled: error.code == -128))
         } catch {
             return .failure(Failure(message: error.localizedDescription))
         }

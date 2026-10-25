@@ -110,8 +110,12 @@ public final class CommandNotFoundModule: ToyModule {
                 let result = try await CNFUpdater.update(knownDigest: known)
                 settings.update { $0.lastDigest = result.digest; $0.lastSource = result.source }
                 if !quiet {
-                    state.message = (.success, result.unchanged ? "The index is up to date (\(result.formulae) formulae)."
-                                     : "Updated from \(result.source): \(result.formulae) formulae.")
+                    let source = CNFUpdater.sourceTitle(result.source)
+                    state.message = (.success, result.unchanged
+                                     ? String(localized: "The index is up to date (\(result.formulae) formulae).",
+                                              comment: "Homebrew database; formulae are Homebrew packages")
+                                     : String(localized: "Updated from \(source): \(result.formulae) formulae.",
+                                              comment: "First a source such as GitHub Packages, then a number of Homebrew packages"))
                 }
                 log.info("index updated from \(result.source, privacy: .public)")
             } catch {
@@ -127,7 +131,7 @@ public final class CommandNotFoundModule: ToyModule {
 
     func install() {
         guard let helper = CNFPaths.helper() else {
-            state.message = (.error, "Couldn't find MacToys.app's command-line helper. Move MacToys to /Applications or ~/Applications and try again.")
+            state.message = (.error, String(localized: "Couldn't find MacToys.app's command-line helper. Move MacToys to /Applications or ~/Applications and try again."))
             return
         }
         edit { CNFShell.block.insert(CNFShell.handlerLines(helper: helper), into: $0) }
@@ -158,11 +162,13 @@ public final class CommandNotFoundModule: ToyModule {
             } else {
                 try Data(updated.utf8).write(to: zshrc)
             }
+            let path = zshrc.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")
             state.message = (.success, CNFShell.block.contains(updated)
-                             ? "Installed. Open a new terminal window (or run exec zsh) to use it."
-                             : "Removed from \(zshrc.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")).")
+                             ? String(localized: "Installed. Open a new terminal window (or run exec zsh) to use it.", comment: "exec zsh is a command")
+                             : String(localized: "Removed from \(path).", comment: "The placeholder is a file path"))
         } catch {
-            state.message = (.error, "Couldn't edit \(zshrc.path): \(error.localizedDescription)")
+            state.message = (.error, String(localized: "Couldn't edit \(zshrc.path): \(error.localizedDescription)",
+                                            comment: "First a file path, then the system's error message"))
         }
         refreshStatus()
     }
@@ -203,8 +209,10 @@ struct CNFSettingsView: View {
                     Image(systemName: state.installed ? "checkmark.seal.fill" : "terminal")
                         .font(.system(size: 22)).foregroundStyle(state.installed ? .green : .secondary).frame(width: 30)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(state.installed ? "Installed in zsh" : "Not installed").font(.system(size: 14, weight: .semibold))
-                        Text(state.zshrc.map { "Managed block in \($0.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))" } ?? "Checking…")
+                        (state.installed ? Text("Installed in zsh") : Text("Not installed", comment: "The zsh handler isn't installed"))
+                            .font(.system(size: 14, weight: .semibold))
+                        (state.zshrc.map { Text("Managed block in \($0.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))",
+                                                comment: "The placeholder is a file path such as ~/.zshrc") } ?? Text("Checking…"))
                             .font(.system(size: 12)).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -221,8 +229,8 @@ struct CNFSettingsView: View {
         } content: {
             if let m = state.message {
                 Section {
-                    InfoBar(m.kind, title: m.kind == .error ? "Something went wrong" : "Done", message: m.text,
-                            actionTitle: "Dismiss") { state.message = nil }
+                    InfoBar(m.kind, title: m.kind == .error ? Text("Something went wrong") : Text("Done"), message: Text(verbatim: m.text),
+                            actionTitle: Text("Dismiss")) { state.message = nil }
                 }
             }
             if state.installed && state.installedHelper != nil && state.currentHelper != nil && state.installedHelper != state.currentHelper {
@@ -236,15 +244,17 @@ struct CNFSettingsView: View {
             Section("Status") {
                 LabeledContent {
                     if let brew = state.brewPath {
-                        Text(brew).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+                        Text(verbatim: brew).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
                     } else {
                         Link("Get Homebrew", destination: URL(string: "https://brew.sh")!)
                     }
                 } label: {
-                    RowLabel("Homebrew", subtitle: state.brewPath == nil ? "Not found. Suggestions still work; install Homebrew to use them." : "Found")
+                    RowLabel(title: Text(verbatim: "Homebrew"),
+                             subtitle: state.brewPath == nil ? Text("Not found. Suggestions still work; install Homebrew to use them.")
+                                 : Text("Found", comment: "Homebrew is installed"))
                 }
                 LabeledContent {
-                    Text(state.installedHelper ?? state.currentHelper ?? "Not found")
+                    ((state.installedHelper ?? state.currentHelper).map { Text(verbatim: $0) } ?? Text("Not found", comment: "The helper tool wasn't found"))
                         .font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.secondary)
                         .lineLimit(1).truncationMode(.middle).frame(maxWidth: 320, alignment: .trailing)
                 } label: {
@@ -263,25 +273,28 @@ struct CNFSettingsView: View {
                         Button("Update Index") { module.updateIndex() }.disabled(state.updating)
                     }
                 } label: {
-                    RowLabel("Homebrew executables database", subtitle: indexSubtitle)
+                    RowLabel(title: Text("Homebrew executables database"), subtitle: Text(verbatim: indexSubtitle))
                 }
                 Toggle(isOn: $s.value.autoUpdate) {
-                    RowLabel("Update automatically every week", subtitle: "Downloads Homebrew's published executables.txt (about 350 KB).")
+                    RowLabel(title: Text("Update automatically every week"),
+                             subtitle: Text("Downloads Homebrew's published executables.txt (about \(ByteCountFormatter.string(fromByteCount: 350_000, countStyle: .file))).",
+                                            comment: "executables.txt is a file name; the placeholder is a size such as '350 KB'"))
                 }
             }
 
             Section("Try a command") {
                 HStack(spacing: 8) {
-                    Text("$").font(.system(size: 13, design: .monospaced)).foregroundStyle(.secondary)
-                    TextField("Command", text: $tryCommand, prompt: Text("wget"))
+                    Text(verbatim: "$").font(.system(size: 13, design: .monospaced)).foregroundStyle(.secondary)
+                    TextField("Command", text: $tryCommand, prompt: Text(verbatim: "wget"))
                         .labelsHidden()
                         .textFieldStyle(.roundedBorder)
                         .font(.system(size: 13, design: .monospaced))
                         .frame(maxWidth: 240)
                 }
                 let found = CommandNotFound.suggestions(for: tryCommand.trimmingCharacters(in: .whitespaces))
-                Text(CommandNotFound.message(for: tryCommand.trimmingCharacters(in: .whitespaces), suggestions: found,
-                                             brewInstalled: state.brewPath != nil))
+                // What zsh prints in Terminal, which stays English like the rest of the command-line output.
+                Text(verbatim: CommandNotFound.message(for: tryCommand.trimmingCharacters(in: .whitespaces), suggestions: found,
+                                                       brewInstalled: state.brewPath != nil))
                     .font(.system(size: 12, design: .monospaced))
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -299,8 +312,14 @@ struct CNFSettingsView: View {
     }
 
     private var indexSubtitle: String {
-        guard let date = state.indexDate, state.indexFormulae > 0 else { return "Not downloaded yet." }
+        guard let date = state.indexDate, state.indexFormulae > 0 else { return String(localized: "Not downloaded yet.") }
         let age = date.formatted(.relative(presentation: .named))
-        return "\(state.indexFormulae) formulae · updated \(age)\(s.value.lastSource.map { " from \($0)" } ?? "")"
+        let count = state.indexFormulae
+        guard let source = s.value.lastSource.map(CNFUpdater.sourceTitle) else {
+            return String(localized: "\(count) formulae · updated \(age)",
+                          comment: "First a number of Homebrew packages, then when, e.g. '2 days ago'")
+        }
+        return String(localized: "\(count) formulae · updated \(age) from \(source)",
+                      comment: "A number of Homebrew packages, when (e.g. '2 days ago'), then a source such as GitHub Packages")
     }
 }

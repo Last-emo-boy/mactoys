@@ -68,9 +68,9 @@ enum WheelTarget: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .off: "Off"
-        case .primary: "Primary display"
-        case .all: "All displays"
+        case .off: String(localized: "Off", comment: "Menu bar mouse wheel: does nothing")
+        case .primary: String(localized: "Primary display", comment: "Menu bar mouse wheel changes the brightness of")
+        case .all: String(localized: "All displays", comment: "Menu bar mouse wheel changes the brightness of")
         }
     }
 }
@@ -97,21 +97,22 @@ struct PowerDisplaySettings: Codable, Equatable {
 
     func prefs(_ id: String) -> MonitorPrefs { monitors[id] ?? MonitorPrefs() }
 
-    /// The display name for a discrete value: custom mapping (monitor first, then global), then MCCS.
+    /// The display name for a discrete value: custom mapping (monitor first, then global), then MCCS
+    /// in English (command line).
     func valueName(_ feature: DisplayFeature, _ value: UInt16, monitor: String?) -> String {
+        customName(feature, value, monitor: monitor) ?? MCCS.name(feature, value) ?? MCCS.hex(Int(value))
+    }
+
+    /// `valueName` for the UI, with MCCS names localized.
+    func localizedValueName(_ feature: DisplayFeature, _ value: UInt16, monitor: String?) -> String {
+        customName(feature, value, monitor: monitor) ?? MCCS.localizedName(feature, value) ?? MCCS.hex(Int(value))
+    }
+
+    private func customName(_ feature: DisplayFeature, _ value: UInt16, monitor: String?) -> String? {
         let code = Int(feature.vcp)
-        if let m = vcpNames.first(where: { $0.code == code && $0.value == Int(value) && $0.monitorID == monitor && monitor != nil })
-            ?? vcpNames.first(where: { $0.code == code && $0.value == Int(value) && $0.monitorID == nil }) {
-            return m.name
-        }
-        let table: [UInt16: String]
-        switch feature {
-        case .inputSource: table = MCCS.inputSourceNames
-        case .colorTemperature: table = MCCS.colorPresetNames
-        case .powerState: table = MCCS.powerModeNames
-        default: table = [:]
-        }
-        return table[value] ?? MCCS.hex(Int(value))
+        let m = vcpNames.first(where: { $0.code == code && $0.value == Int(value) && $0.monitorID == monitor && monitor != nil })
+            ?? vcpNames.first(where: { $0.code == code && $0.value == Int(value) && $0.monitorID == nil })
+        return m?.name
     }
 
     /// Adds a profile with the next free id.
@@ -132,8 +133,8 @@ struct PowerDisplaySettings: Codable, Equatable {
     /// A fresh profile name: "Profile 3".
     func suggestedProfileName() -> String {
         var n = profiles.count + 1
-        while profiles.contains(where: { $0.name == "Profile \(n)" }) { n += 1 }
-        return "Profile \(n)"
+        while profiles.contains(where: { $0.name == String(localized: "Profile \(n)") }) { n += 1 }
+        return String(localized: "Profile \(n)", comment: "Default name of a new profile; the placeholder is a number")
     }
 }
 
@@ -199,5 +200,5 @@ final class MonitorState: Identifiable {
     }
 
     func supports(_ f: DisplayFeature) -> Bool { snapshot.readings[f] != nil }
-    var name: String { snapshot.name }
+    var name: String { snapshot.isUnnamed ? String(localized: "Display \(snapshot.number)") : snapshot.name }
 }

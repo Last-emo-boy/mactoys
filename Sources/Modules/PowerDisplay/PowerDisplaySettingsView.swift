@@ -23,7 +23,7 @@ struct PowerDisplaySettingsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Brightness, contrast, volume and input for every display")
                             .font(.system(size: 14, weight: .semibold))
-                        Text(store.hasScanned ? summary : "Looking for displays…")
+                        (store.hasScanned ? Text(verbatim: summary) : Text("Looking for displays…"))
                             .font(.system(size: 12)).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -45,7 +45,7 @@ struct PowerDisplaySettingsView: View {
                 }
                 .disabled(!s.value.showMenuBarIcon)
                 Picker(selection: $s.value.wheelIncrement) {
-                    ForEach(PowerDisplaySettings.wheelIncrements, id: \.self) { Text("\($0)").tag($0) }
+                    ForEach(PowerDisplaySettings.wheelIncrements, id: \.self) { Text($0, format: .number).tag($0) }
                 } label: {
                     RowLabel("Mouse wheel increment", subtitle: "Per notch, for the menu bar icon and the flyout sliders.")
                 }
@@ -60,7 +60,7 @@ struct PowerDisplaySettingsView: View {
 
             Section {
                 if store.monitors.isEmpty {
-                    Text(store.hasScanned ? "No displays found." : "Looking for displays…").foregroundStyle(.secondary)
+                    (store.hasScanned ? Text("No displays found.") : Text("Looking for displays…")).foregroundStyle(.secondary)
                 }
                 ForEach(store.monitors) { m in
                     MonitorSettingsRow(module: module, monitor: m)
@@ -92,15 +92,16 @@ struct PowerDisplaySettingsView: View {
 
             Section("Advanced") {
                 SliderRow("Monitor refresh delay", subtitle: "Wait after a display is connected or wakes before reading it again. Raise it if monitors are missed after hot-plug.",
-                          value: $s.value.refreshDelay, in: 0...15, step: 1, format: { "\(Int($0)) s" })
+                          value: $s.value.refreshDelay, in: 0...15, step: 1,
+                          format: { Duration.seconds(Int($0)).formatted(.units(allowed: [.seconds], width: .abbreviated)) })
                 Toggle(isOn: $s.value.restoreOnLaunch) {
                     RowLabel("Restore monitor brightness and color temperature when Power Display launches")
                 }
                 Toggle(isOn: Binding(get: { s.value.maxCompatibility }, set: { on in
                     if on {
-                        guard module.confirm("Turn on max compatibility mode?",
-                                             "This ignores your monitors' capability strings and probes every control directly, with slower timing. Only use it if a monitor is missing.\n\n• The screen may briefly go black or lose signal.\n• The monitor may change brightness, contrast or input unexpectedly.\n• The monitor may stop answering DDC/CI until it's power-cycled.",
-                                             button: "Turn On") else { return }
+                        guard module.confirm(String(localized: "Turn on max compatibility mode?"),
+                                             String(localized: "This ignores your monitors' capability strings and probes every control directly, with slower timing. Only use it if a monitor is missing.\n\n• The screen may briefly go black or lose signal.\n• The monitor may change brightness, contrast or input unexpectedly.\n• The monitor may stop answering DDC/CI until it's power-cycled."),
+                                             button: String(localized: "Turn On")) else { return }
                     }
                     s.value.maxCompatibility = on
                     module.rescan()
@@ -119,8 +120,9 @@ struct PowerDisplaySettingsView: View {
     private var summary: String {
         let controllable = store.monitors.filter { $0.snapshot.kind != .unsupported }.count
         let total = store.monitors.count
-        return controllable == total ? "\(total) display\(total == 1 ? "" : "s") ready"
-            : "\(controllable) of \(total) displays can be controlled"
+        return controllable == total ? String(localized: "\(total) displays ready", comment: "Power Display: number of connected displays")
+            : String(localized: "\(controllable) of \(total) displays can be controlled",
+                     comment: "Power Display: first the displays MacToys can control, then all connected displays")
     }
 
     @ViewBuilder
@@ -137,8 +139,9 @@ struct PowerDisplaySettingsView: View {
                     .frame(maxWidth: 220)
             } else {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(p.name)
-                    Text("ID \(p.id) · \(p.monitors.count) monitor\(p.monitors.count == 1 ? "" : "s")")
+                    Text(verbatim: p.name)
+                    Text("ID \(p.id) · \(p.monitors.count) monitors",
+                         comment: "Power Display profile: first its number, then how many monitors it sets")
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
             }
@@ -181,7 +184,7 @@ private struct MonitorSettingsRow: View {
     private func binding(_ key: WritableKeyPath<MonitorPrefs, Bool>, confirm: (String, String)? = nil) -> Binding<Bool> {
         Binding(get: { prefs[keyPath: key] }, set: { on in
             if on, let (title, message) = confirm {
-                guard module.confirm(title, message, button: "Turn On") else { return }
+                guard module.confirm(title, message, button: String(localized: "Turn On")) else { return }
             }
             module.settings.value.monitors[monitor.id, default: MonitorPrefs()][keyPath: key] = on
         })
@@ -193,12 +196,12 @@ private struct MonitorSettingsRow: View {
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 6).fill(.quaternary)
-                    Text("\(snap.number)").font(.system(size: 13, weight: .bold, design: .rounded))
+                    Text(snap.number, format: .number).font(.system(size: 13, weight: .bold, design: .rounded))
                 }
                 .frame(width: 28, height: 28)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(snap.name).fontWeight(.semibold)
-                    Text(detail(snap)).font(.system(size: 11.5)).foregroundStyle(.secondary)
+                    Text(verbatim: monitor.name).fontWeight(.semibold)
+                    Text(verbatim: detail(snap)).font(.system(size: 11.5)).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Toggle("Hide monitor", isOn: binding(\.hidden)).toggleStyle(.checkbox)
@@ -221,10 +224,12 @@ private struct MonitorSettingsRow: View {
     }
 
     private func detail(_ snap: MonitorSnapshot) -> String {
-        var parts = [snap.transport]
-        if snap.rotation != 0 { parts.append("rotated \(snap.rotation)°") }
+        var parts = [snap.transportTitle]
+        if snap.rotation != 0 {
+            parts.append(String(localized: "rotated \(snap.rotation)°", comment: "Display rotation in degrees"))
+        }
         let features = snap.supported.map(\.title)
-        if !features.isEmpty { parts.append(features.joined(separator: ", ")) }
+        if !features.isEmpty { parts.append(features.formatted(.list(type: .and, width: .narrow))) }
         return parts.joined(separator: " · ")
     }
 
@@ -236,20 +241,20 @@ private struct MonitorSettingsRow: View {
             if monitor.supports(.volume) { Toggle("Volume", isOn: binding(\.showVolume)).toggleStyle(.checkbox) }
             if monitor.supports(.inputSource) {
                 Toggle("Input source", isOn: binding(\.showInputSource, confirm: (
-                    "Show input source control?",
-                    "Switching inputs over DDC/CI can leave the screen black if the new input has no signal, and software control may be unavailable until you switch back with the monitor's buttons. Not every monitor exposes all inputs."
+                    String(localized: "Show input source control?"),
+                    String(localized: "Switching inputs over DDC/CI can leave the screen black if the new input has no signal, and software control may be unavailable until you switch back with the monitor's buttons. Not every monitor exposes all inputs.")
                 ))).toggleStyle(.checkbox)
             }
             if monitor.supports(.colorTemperature) {
                 Toggle("Color temperature", isOn: binding(\.showColorTemperature, confirm: (
-                    "Show color temperature control?",
-                    "Color presets are written over DDC/CI. Some monitors show wrong colors or behave unpredictably, and a few keep the new value after MacToys quits and may need a factory reset."
+                    String(localized: "Show color temperature control?"),
+                    String(localized: "Color presets are written over DDC/CI. Some monitors show wrong colors or behave unpredictably, and a few keep the new value after MacToys quits and may need a factory reset.")
                 ))).toggleStyle(.checkbox)
             }
             if monitor.supports(.powerState) {
                 Toggle("Power state", isOn: binding(\.showPowerState, confirm: (
-                    "Show power state control?",
-                    "Power control puts the monitor in standby or turns it off over DDC/CI. On wakes supported monitors, but some don't wake from software: you may need the power button or to reseat the cable. Others don't restore their previous state."
+                    String(localized: "Show power state control?"),
+                    String(localized: "Power control puts the monitor in standby or turns it off over DDC/CI. On wakes supported monitors, but some don't wake from software: you may need the power button or to reseat the cable. Others don't restore their previous state.")
                 ))).toggleStyle(.checkbox)
             }
             if monitor.supports(.brightness) {
@@ -265,14 +270,15 @@ private struct MonitorSettingsRow: View {
             if let caps = snap.capabilities {
                 HStack(spacing: 14) {
                     if let model = caps.model { Text("Model \(model)") }
-                    if let v = caps.mccsVersion { Text("MCCS \(v)") }
+                    if let v = caps.mccsVersion { Text(verbatim: "MCCS \(v)") }
                     if let t = caps.type { Text("Type \(t)") }
                 }
                 .font(.system(size: 11.5)).foregroundStyle(.secondary)
                 ForEach(caps.codes, id: \.self) { code in
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Text(MCCS.hex(Int(code))).font(.system(size: 11.5, design: .monospaced)).frame(width: 40, alignment: .leading)
+                        Text(verbatim: MCCS.hex(Int(code))).font(.system(size: 11.5, design: .monospaced)).frame(width: 40, alignment: .leading)
                         Text(MCCS.featureName(code)).font(.system(size: 12)).frame(width: 190, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
                         let values = caps.vcp[code] ?? []
                         if !values.isEmpty {
                             Text(values.map { MCCS.hex(Int($0)) }.joined(separator: " "))
@@ -352,7 +358,7 @@ private struct ProfileEditor: View {
         let name = state?.name ?? module.settings.value.prefs(id).lastName ?? id
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(name).fontWeight(.semibold)
+                Text(verbatim: name).fontWeight(.semibold)
                 if state == nil { Text("Not connected").font(.system(size: 11)).foregroundStyle(.secondary) }
             }
             percentRow("Brightness", id: id, key: \.brightness, available: state?.supports(.brightness) ?? true, current: state?.percent[.brightness])
@@ -364,19 +370,20 @@ private struct ProfileEditor: View {
         }
     }
 
-    private func percentRow(_ title: String, id: String, key: WritableKeyPath<ProfileValues, Int?>, available: Bool, current: Double?) -> some View {
+    private func percentRow(_ title: LocalizedStringKey, id: String, key: WritableKeyPath<ProfileValues, Int?>, available: Bool, current: Double?) -> some View {
         let value = profile.monitors[id]?[keyPath: key]
         return HStack(spacing: 10) {
             Toggle(title, isOn: Binding(get: { value != nil }, set: { on in
                 profile.monitors[id, default: ProfileValues()][keyPath: key] = on ? Int(current ?? 50) : nil
             }))
             .toggleStyle(.checkbox)
-            .frame(width: 120, alignment: .leading)
+            .frame(minWidth: 120, alignment: .leading)
             .disabled(!available && value == nil)
             Slider(value: Binding(get: { Double(value ?? 0) }, set: { profile.monitors[id, default: ProfileValues()][keyPath: key] = Int($0) }),
                    in: 0...100, step: 1)
                 .disabled(value == nil)
-            Text(value.map { "\($0)%" } ?? "—").monospacedDigit().frame(width: 44, alignment: .trailing).foregroundStyle(.secondary)
+            Text(value.map { (Double($0) / 100).formatted(.percent.precision(.fractionLength(0))) } ?? "—")
+                .monospacedDigit().frame(minWidth: 44, alignment: .trailing).foregroundStyle(.secondary)
         }
     }
 
@@ -389,9 +396,9 @@ private struct ProfileEditor: View {
                 profile.monitors[id, default: ProfileValues()].colorPreset = on ? Int(state?.discrete[.colorTemperature] ?? options.first ?? 5) : nil
             }))
             .toggleStyle(.checkbox)
-            .frame(width: 120, alignment: .leading)
+            .frame(minWidth: 120, alignment: .leading)
             Picker("", selection: Binding(get: { value ?? 0 }, set: { profile.monitors[id, default: ProfileValues()].colorPreset = $0 })) {
-                ForEach(options, id: \.self) { v in Text(s.valueName(.colorTemperature, v, monitor: id)).tag(Int(v)) }
+                ForEach(options, id: \.self) { v in Text(s.localizedValueName(.colorTemperature, v, monitor: id)).tag(Int(v)) }
             }
             .labelsHidden()
             .disabled(value == nil)
@@ -415,9 +422,10 @@ private struct VCPNamesEditor: View {
                 .font(.system(size: 12)).foregroundStyle(.secondary)
             ForEach(settings.value.vcpNames) { m in
                 HStack(spacing: 10) {
-                    Text(m.code == 0x60 ? "Input" : "Color").frame(width: 50, alignment: .leading)
-                    Text(MCCS.hex(m.value)).font(.system(size: 12, design: .monospaced)).frame(width: 46, alignment: .leading)
-                    Text("→ \(m.name)")
+                    (m.code == 0x60 ? Text("Input", comment: "Monitor input source") : Text("Color", comment: "Monitor color preset"))
+                        .frame(minWidth: 50, alignment: .leading)
+                    Text(verbatim: MCCS.hex(m.value)).font(.system(size: 12, design: .monospaced)).frame(width: 46, alignment: .leading)
+                    Text(verbatim: "→ \(m.name)")
                     Spacer()
                     Text(scopeName(m.monitorID)).font(.system(size: 11.5)).foregroundStyle(.secondary)
                     Button { settings.value.vcpNames.removeAll { $0.id == m.id } } label: {
@@ -431,12 +439,12 @@ private struct VCPNamesEditor: View {
                     Text("Input source").tag(0x60)
                     Text("Color preset").tag(0x14)
                 }
-                .labelsHidden().frame(width: 130)
-                TextField("0x0F", text: $valueText).frame(width: 60)
+                .labelsHidden().fixedSize()
+                TextField("0x0F" as String, text: $valueText).frame(width: 60)
                 TextField("Name", text: $name).frame(width: 130)
                 Picker("", selection: $scope) {
                     Text("All monitors").tag("")
-                    ForEach(monitors) { m in Text(m.name).tag(m.id) }
+                    ForEach(monitors) { m in Text(verbatim: m.name).tag(m.id) }
                 }
                 .labelsHidden().frame(width: 150)
                 Button("Add") {
@@ -459,7 +467,7 @@ private struct VCPNamesEditor: View {
     }
 
     private func scopeName(_ id: String?) -> String {
-        guard let id else { return "All monitors" }
+        guard let id else { return String(localized: "All monitors") }
         return monitors.first { $0.id == id }?.name ?? settings.value.prefs(id).lastName ?? id
     }
 }

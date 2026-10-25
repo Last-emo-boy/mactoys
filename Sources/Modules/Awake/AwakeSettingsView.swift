@@ -29,12 +29,14 @@ struct AwakeSettingsView: View {
                 if s.value.mode == .timed || s.value.mode == .off {
                     LabeledContent {
                         HStack(spacing: 4) {
-                            Text("\(s.value.intervalHours) h").monospacedDigit().frame(minWidth: 40, alignment: .trailing)
+                            Text(Duration.seconds(s.value.intervalHours * 3600).formatted(.units(allowed: [.hours], width: .abbreviated)))
+                                .monospacedDigit().frame(minWidth: 40, alignment: .trailing)
                             Stepper("Hours", value: Binding(get: { s.value.intervalHours },
                                                             set: { module.setInterval(hours: $0, minutes: s.value.intervalMinutes) }),
                                     in: 0...999)
                                 .labelsHidden()
-                            Text("\(s.value.intervalMinutes) min").monospacedDigit().frame(minWidth: 52, alignment: .trailing)
+                            Text(Duration.seconds(s.value.intervalMinutes * 60).formatted(.units(allowed: [.minutes], width: .abbreviated)))
+                                .monospacedDigit().frame(minWidth: 52, alignment: .trailing)
                             Stepper("Minutes", value: Binding(get: { s.value.intervalMinutes },
                                                               set: { module.setInterval(hours: s.value.intervalHours, minutes: $0) }),
                                     in: 0...59, step: 5)
@@ -71,27 +73,27 @@ struct AwakeSettingsView: View {
                     RowLabel("Extra durations", subtitle: "Added to the menu after 30 minutes, 1 hour and 2 hours.")
                     ForEach(s.value.customPresets) { preset in
                         HStack {
-                            Text("Keep awake for \(preset.name)")
+                            Text("Keep awake for \(preset.name)", comment: "Awake menu item; the placeholder is a duration, e.g. '1 hour'")
                             Spacer()
-                            Text(AwakeSchedule.formatDuration(TimeInterval(preset.seconds))).foregroundStyle(.secondary)
+                            Text(AwakeSchedule.displayDuration(TimeInterval(preset.seconds))).foregroundStyle(.secondary)
                             Button {
                                 s.value.customPresets.removeAll { $0 == preset }
                             } label: {
                                 Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
-                            .help("Remove")
+                            .help(Text("Remove", comment: "Help tag: remove this extra duration"))
                         }
                     }
                     HStack(spacing: 8) {
                         TextField("Name, e.g. 4 hours", text: $newPresetName).frame(maxWidth: 180)
-                        Text(AwakeSchedule.formatDuration(TimeInterval(newPresetMinutes * 60)))
+                        Text(AwakeSchedule.displayDuration(TimeInterval(newPresetMinutes * 60)))
                             .monospacedDigit().frame(minWidth: 70, alignment: .trailing)
                         Stepper("Duration", value: $newPresetMinutes, in: 5...(60 * 72), step: 15).labelsHidden()
                         Button("Add") {
                             let seconds = newPresetMinutes * 60
                             let trimmed = newPresetName.trimmingCharacters(in: .whitespaces)
-                            let name = trimmed.isEmpty ? AwakeSchedule.formatDuration(TimeInterval(seconds)) : trimmed
+                            let name = trimmed.isEmpty ? AwakeSchedule.displayDuration(TimeInterval(seconds)) : trimmed
                             s.value.customPresets.append(AwakePreset(name: name, seconds: seconds))
                             newPresetName = ""
                         }
@@ -111,7 +113,7 @@ struct AwakeSettingsView: View {
                         .scaleEffect(1.6)
                         .frame(width: 34, height: 34)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(module.isAwake ? "Keeping this Mac awake" : "Following your Energy settings")
+                        (module.isAwake ? Text("Keeping this Mac awake") : Text("Following your Energy settings"))
                             .font(.system(size: 14, weight: .semibold))
                         Text(module.statusText).font(.system(size: 12)).foregroundStyle(.secondary)
                     }

@@ -6,7 +6,8 @@ enum Appearance: String, Codable, Sendable, CaseIterable {
     case light, dark
 
     var opposite: Appearance { self == .light ? .dark : .light }
-    var title: String { self == .light ? "Light" : "Dark" }
+    /// "Light mode" / "Dark mode".
+    var modeTitle: String { self == .light ? String(localized: "Light mode") : String(localized: "Dark mode") }
 }
 
 /// How Light Switch decides when to switch.
@@ -20,10 +21,10 @@ enum ScheduleMode: String, Codable, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .off: "Off (manual only)"
-        case .fixedHours: "Fixed hours"
-        case .sunsetToSunrise: "Sunset to sunrise"
-        case .followNightShift: "Follow Night Shift"
+        case .off: String(localized: "Off (manual only)", comment: "Light Switch schedule mode")
+        case .fixedHours: String(localized: "Fixed hours", comment: "Light Switch schedule mode")
+        case .sunsetToSunrise: String(localized: "Sunset to sunrise", comment: "Light Switch schedule mode")
+        case .followNightShift: String(localized: "Follow Night Shift", comment: "Light Switch schedule mode")
         }
     }
 
@@ -196,20 +197,31 @@ enum LightSwitchSchedule {
         return .apply(plan.appearance, periodStart: plan.periodStart)
     }
 
-    /// "Dark at sunset · 18:02", "Light at 07:00", "Schedule off".
+    /// "Dark at sunset · 18:02", "Light at 07:00", "Schedule off" (localized, times in the user's format).
     static func describeNext(plan: SchedulePlan?, mode: ScheduleMode, now: Date, calendar: Calendar = .current) -> String {
-        guard mode != .off else { return "Schedule off" }
+        guard mode != .off else { return String(localized: "Schedule off", comment: "Light Switch: no schedule is set") }
         guard let plan else {
-            return mode == .followNightShift ? "Night Shift has no schedule" : "Set a location for sunrise and sunset"
+            return mode == .followNightShift ? String(localized: "Night Shift has no schedule")
+                : String(localized: "Set a location for sunrise and sunset")
         }
-        guard let next = plan.nextChange else { return "\(plan.appearance.title) all day" }
+        guard let next = plan.nextChange else {
+            return plan.appearance == .dark ? String(localized: "Dark all day", comment: "Light Switch: dark appearance all day")
+                : String(localized: "Light all day", comment: "Light Switch: light appearance all day")
+        }
         let f = DateFormatter()
         f.calendar = calendar
         f.timeZone = calendar.timeZone
-        f.setLocalizedDateFormatFromTemplate(calendar.isDate(next, inSameDayAs: now) ? "HHmm" : "EEEHHmm")
-        let target = plan.appearance.opposite
+        f.setLocalizedDateFormatFromTemplate(calendar.isDate(next, inSameDayAs: now) ? "jmm" : "EEEjmm")
         let when = f.string(from: next)
-        if mode == .sunsetToSunrise { return "\(target.title) at \(target == .dark ? "sunset" : "sunrise") · \(when)" }
-        return "\(target.title) at \(when)"
+        switch (plan.appearance.opposite, mode == .sunsetToSunrise) {
+        case (.dark, true):
+            return String(localized: "Dark at sunset · \(when)", comment: "Light Switch: next switch to dark mode; the placeholder is a time")
+        case (.light, true):
+            return String(localized: "Light at sunrise · \(when)", comment: "Light Switch: next switch to light mode; the placeholder is a time")
+        case (.dark, false):
+            return String(localized: "Dark at \(when)", comment: "Light Switch: next switch to dark mode; the placeholder is a time")
+        case (.light, false):
+            return String(localized: "Light at \(when)", comment: "Light Switch: next switch to light mode; the placeholder is a time")
+        }
     }
 }

@@ -49,7 +49,7 @@ public final class PlistPreviewModule: ToyModule {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.propertyList, .json, .xmlPropertyList, .binaryPropertyList, .data]
         panel.allowsMultipleSelection = true
-        panel.message = "Choose property lists or JSON files"
+        panel.message = String(localized: "Choose property lists or JSON files")
         NSApp.activate()
         if panel.runModal() == .OK { open(panel.urls) }
     }
@@ -77,7 +77,7 @@ public final class PlistPreviewModule: ToyModule {
                 NSDocumentController.shared.noteNewRecentDocumentURL(url)
             } catch {
                 let alert = NSAlert()
-                alert.messageText = "Couldn't open \(url.lastPathComponent)"
+                alert.messageText = String(localized: "Couldn't open \(url.lastPathComponent)", comment: "The placeholder is a file name")
                 alert.informativeText = error.localizedDescription
                 NSApp.activate()
                 alert.runModal()
@@ -111,7 +111,7 @@ public final class PlistPreviewModule: ToyModule {
         let panel = NSSavePanel()
         let format = doc.format == .openStep ? .xml : doc.format
         panel.allowedContentTypes = format == .json ? [.json] : [.propertyList]
-        panel.nameFieldStringValue = doc.fileURL?.lastPathComponent ?? (doc.domain.map { "\($0).plist" } ?? "Untitled.plist")
+        panel.nameFieldStringValue = doc.fileURL?.lastPathComponent ?? (doc.domain.map { "\($0).plist" } ?? PlistDocument.untitledName)
         panel.canCreateDirectories = true
         let window = controllers.first { $0.doc === doc }?.window
         let handler: (NSApplication.ModalResponse) -> Void = { response in
@@ -126,10 +126,11 @@ public final class PlistPreviewModule: ToyModule {
     func offerRelaunch(for domain: String) {
         guard settings.value.offerRelaunch, let process = DefaultsDomains.relaunchTarget(for: domain) else { return }
         let alert = NSAlert()
-        alert.messageText = "Relaunch \(process) to apply the change?"
-        alert.informativeText = "\(process) reads its preferences when it starts."
-        alert.addButton(withTitle: "Relaunch \(process)")
-        alert.addButton(withTitle: "Not Now")
+        alert.messageText = String(localized: "Relaunch \(process) to apply the change?", comment: "The placeholder is an app such as Dock or Finder")
+        alert.informativeText = String(localized: "\(process) reads its preferences when it starts.",
+                                       comment: "The placeholder is an app such as Dock or Finder")
+        alert.addButton(withTitle: String(localized: "Relaunch \(process)", comment: "Button; the placeholder is an app such as Dock or Finder"))
+        alert.addButton(withTitle: String(localized: "Not Now"))
         if alert.runModal() == .alertFirstButtonReturn { Shell.run("/usr/bin/killall", [process]) }
     }
 
@@ -141,7 +142,7 @@ public final class PlistPreviewModule: ToyModule {
             w.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
             w.toolbar = NSToolbar(identifier: "defaults")
             w.toolbarStyle = .unified
-            w.title = "Defaults Domains"
+            w.title = String(localized: "Defaults Domains")
             w.setContentSize(NSSize(width: 900, height: 560))
             w.isReleasedWhenClosed = false
             w.setFrameAutosaveName("MacToysDefaultsBrowser")
@@ -226,11 +227,11 @@ final class PlistWindowController: NSObject, NSWindowDelegate {
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         guard doc.isDirty else { return true }
         let alert = NSAlert()
-        alert.messageText = "Save changes to \(doc.displayName)?"
-        alert.informativeText = "Your changes will be lost if you don't save them."
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Cancel")
-        alert.addButton(withTitle: "Don't Save")
+        alert.messageText = String(localized: "Save changes to \(doc.displayName)?", comment: "The placeholder is a document name")
+        alert.informativeText = String(localized: "Your changes will be lost if you don't save them.")
+        alert.addButton(withTitle: String(localized: "Save"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
+        alert.addButton(withTitle: String(localized: "Don't Save"))
         switch alert.runModal() {
         case .alertFirstButtonReturn:
             if doc.fileURL == nil { module?.saveAs(doc); return false }
@@ -281,12 +282,13 @@ struct PlistSettingsView: View {
                     Button("Make MacToys the Default") { makeDefault() }
                         .disabled(defaultApp == "MacToys")
                 } label: {
-                    RowLabel("Default app for property lists", subtitle: defaultApp.isEmpty ? "Checking…" : "Currently \(defaultApp)")
+                    RowLabel(title: Text("Default app for property lists"),
+                             subtitle: defaultApp.isEmpty ? Text("Checking…") : Text("Currently \(defaultApp)", comment: "The placeholder is an app name"))
                 }
                 Picker(selection: $s.value.newDocumentFormat) {
-                    Text("XML").tag(PlistFormat.xml)
-                    Text("Binary").tag(PlistFormat.binary)
-                    Text("JSON").tag(PlistFormat.json)
+                    Text(PlistFormat.xml.title).tag(PlistFormat.xml)
+                    Text(PlistFormat.binary.title).tag(PlistFormat.binary)
+                    Text(PlistFormat.json.title).tag(PlistFormat.json)
                 } label: {
                     RowLabel("Format for new documents", subtitle: "Opened files are always saved in their own format.")
                 }
@@ -321,7 +323,7 @@ struct PlistSettingsView: View {
         if let url = NSWorkspace.shared.urlForApplication(toOpen: .propertyList) {
             defaultApp = FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
         } else {
-            defaultApp = "none"
+            defaultApp = String(localized: "none", comment: "No app opens property lists by default")
         }
     }
 

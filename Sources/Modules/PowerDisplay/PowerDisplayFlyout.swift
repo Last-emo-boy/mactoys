@@ -131,7 +131,8 @@ struct PowerDisplayFlyout: View {
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "bookmark")
-                        Text(settings.value.profiles.first { $0.id == settings.value.lastAppliedProfile }?.name ?? "Profiles")
+                        settings.value.profiles.first { $0.id == settings.value.lastAppliedProfile }
+                            .map { Text(verbatim: $0.name) } ?? Text("Profiles")
                     }
                     .font(.system(size: 12, weight: .medium))
                     .padding(.horizontal, 10).padding(.vertical, 5)
@@ -163,7 +164,9 @@ struct PowerDisplayFlyout: View {
                 Image(systemName: "rectangle.on.rectangle")
                 Text("All displays").font(.system(size: 13, weight: .semibold))
                 Spacer()
-                Text(excluded > 0 ? "\(linked) linked · \(excluded) excluded" : "\(linked) linked")
+                (excluded > 0
+                    ? Text("\(linked) linked · \(excluded) excluded", comment: "Numbers of displays whose brightness is linked and excluded")
+                    : Text("\(linked) linked", comment: "Number of displays whose brightness is linked"))
                     .font(.system(size: 11.5)).foregroundStyle(.secondary)
             }
             FlyoutSlider(module: module, monitorID: nil, feature: .brightness,
@@ -222,7 +225,7 @@ private struct MonitorCard: View {
                 Image(systemName: monitor.snapshot.kind == .builtIn ? "laptopcomputer" : "display")
                 Text(monitor.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                 Spacer(minLength: 6)
-                Text(monitor.snapshot.transport).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
+                Text(monitor.snapshot.transportTitle).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
             }
             if monitor.supports(.brightness) && (!linked || prefs.excludeFromLinkedBrightness) {
                 sliderRow(.brightness)
@@ -265,19 +268,21 @@ private struct MonitorCard: View {
                 ForEach(options, id: \.self) { v in
                     Button {
                         if f == .inputSource && v != current {
-                            guard module.confirm("Switch \(monitor.name) to \(names.valueName(f, v, monitor: monitor.id))?",
-                                                 "If that input has no signal the screen goes black, and you may need the monitor's buttons to switch back.",
-                                                 button: "Switch Input") else { return }
+                            let input = names.localizedValueName(f, v, monitor: monitor.id)
+                            guard module.confirm(String(localized: "Switch \(monitor.name) to \(input)?",
+                                                        comment: "Confirmation: first a display name, then an input source, e.g. 'HDMI 1'"),
+                                                 String(localized: "If that input has no signal the screen goes black, and you may need the monitor's buttons to switch back."),
+                                                 button: String(localized: "Switch Input")) else { return }
                         }
                         module.setDiscrete(f, value: v, on: monitor)
                     } label: {
-                        if v == current { Label(names.valueName(f, v, monitor: monitor.id), systemImage: "checkmark") }
-                        else { Text(names.valueName(f, v, monitor: monitor.id)) }
+                        if v == current { Label(names.localizedValueName(f, v, monitor: monitor.id), systemImage: "checkmark") }
+                        else { Text(names.localizedValueName(f, v, monitor: monitor.id)) }
                     }
                 }
             } label: {
                 HStack(spacing: 4) {
-                    Text(current.map { names.valueName(f, $0, monitor: monitor.id) } ?? "—")
+                    Text(current.map { names.localizedValueName(f, $0, monitor: monitor.id) } ?? "—")
                     Image(systemName: "chevron.up.chevron.down").font(.system(size: 9, weight: .semibold))
                 }
                 .font(.system(size: 12, weight: .medium))
@@ -288,27 +293,51 @@ private struct MonitorCard: View {
         }
     }
 
+    /// One row when the buttons fit, else the buttons go under the label (translations run longer).
     private var powerRow: some View {
-        let options = monitor.snapshot.options[.powerState] ?? DisplayEngine.defaultOptions(.powerState)
-        let names = module.settings.value
-        return HStack(spacing: 10) {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 10) {
+                powerLabel
+                Spacer()
+                powerButtons
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                powerLabel
+                HStack(spacing: 6) { powerButtons }.padding(.leading, 26)
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                powerLabel
+                VStack(alignment: .leading, spacing: 4) { powerButtons }.padding(.leading, 26)
+            }
+        }
+    }
+
+    private var powerLabel: some View {
+        HStack(spacing: 10) {
             Image(systemName: "power").font(.system(size: 12)).foregroundStyle(.secondary).frame(width: 16)
             Text("Power").font(.system(size: 12.5)).foregroundStyle(.secondary)
-            Spacer()
-            ForEach(options, id: \.self) { v in
-                Button(names.valueName(.powerState, v, monitor: monitor.id)) {
-                    if v != 0x01 {
-                        guard module.confirm("Put \(monitor.name) in \(names.valueName(.powerState, v, monitor: monitor.id).lowercased())?",
-                                             "Some monitors don't wake up from software. You may need to press the monitor's power button or reconnect its cable.",
-                                             button: "Turn Off") else { return }
-                    }
-                    module.setPower(v, on: monitor)
+        }
+    }
+
+    @ViewBuilder private var powerButtons: some View {
+        let options = monitor.snapshot.options[.powerState] ?? DisplayEngine.defaultOptions(.powerState)
+        let names = module.settings.value
+        ForEach(options, id: \.self) { v in
+            let mode = names.localizedValueName(.powerState, v, monitor: monitor.id)
+            Button(mode) {
+                if v != 0x01 {
+                    guard module.confirm(String(localized: "Change \(monitor.name) to \(mode)?",
+                                                comment: "Confirmation: first a display name, then a power mode, e.g. 'Standby'"),
+                                         String(localized: "Some monitors don't wake up from software. You may need to press the monitor's power button or reconnect its cable."),
+                                         button: String(localized: "Turn Off", comment: "Button: turn the monitor off or put it in standby")) else { return }
                 }
-                .buttonStyle(.plain)
-                .font(.system(size: 11.5, weight: .medium))
-                .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(RoundedRectangle(cornerRadius: 6).fill(.white.opacity(monitor.discrete[.powerState] == v ? 0.18 : 0.06)))
+                module.setPower(v, on: monitor)
             }
+            .buttonStyle(.plain)
+            .font(.system(size: 11.5, weight: .medium))
+            .fixedSize()
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(RoundedRectangle(cornerRadius: 6).fill(.white.opacity(monitor.discrete[.powerState] == v ? 0.18 : 0.06)))
         }
     }
 }
@@ -320,6 +349,8 @@ struct FlyoutSlider: View {
     let feature: DisplayFeature
     @Binding var value: Double
     @FocusState private var focused: Bool
+
+    private var percentText: String { (value / 100).formatted(.percent.precision(.fractionLength(0))) }
 
     var body: some View {
         GeometryReader { geo in
@@ -345,10 +376,10 @@ struct FlyoutSlider: View {
             if inside { module.hoveredSlider = (monitorID, feature) }
             else if module.hoveredSlider?.monitor == monitorID && module.hoveredSlider?.feature == feature { module.hoveredSlider = nil }
         }
-        .help("\(feature.title) \(Int(value))%")
+        .help(Text(verbatim: "\(feature.title) \(percentText)"))
         .accessibilityElement()
         .accessibilityLabel(feature.title)
-        .accessibilityValue("\(Int(value)) percent")
+        .accessibilityValue(Text(verbatim: percentText))
         .accessibilityAdjustableAction { direction in
             let step = Double(module.settings.value.wheelIncrement)
             value = direction == .increment ? min(100, value + step) : max(0, value - step)
@@ -372,8 +403,8 @@ enum IdentifyOverlay {
             let panel = OverlayPanel(frame: frame, level: .statusBar)
             panel.setContent(GlassPanel(cornerRadius: 28) {
                 VStack(spacing: 6) {
-                    Text("\(m.1)").font(.system(size: 120, weight: .bold, design: .rounded)).monospacedDigit()
-                    Text(m.2).font(.system(size: 15, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
+                    Text(m.1, format: .number).font(.system(size: 120, weight: .bold, design: .rounded)).monospacedDigit()
+                    Text(verbatim: m.2).font(.system(size: 15, weight: .semibold)).foregroundStyle(.secondary).lineLimit(1)
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

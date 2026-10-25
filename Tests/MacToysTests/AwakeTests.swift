@@ -123,6 +123,11 @@ import Testing
         #expect(AwakeSchedule.formatDuration(3600) == "1 h")
         #expect(AwakeSchedule.formatDuration(5400) == "1 h 30 min")
         #expect(AwakeSchedule.formatDuration(86400 + 3 * 3600) == "1 d 3 h")
+        let en = Locale(identifier: "en_US")
+        #expect(AwakeSchedule.displayDuration(30, locale: en) == "30 sec")
+        #expect(AwakeSchedule.displayDuration(1799, locale: en) == "30 min")
+        #expect(AwakeSchedule.displayDuration(5400, locale: en) == "1 hr, 30 min")
+        #expect(AwakeSchedule.displayDuration(86400 + 3 * 3600 + 120, locale: en) == "1 day, 3 hr")
     }
 
     @Test func describesState() {
@@ -131,6 +136,7 @@ import Testing
         s.mode = .indefinite
         s.keepScreenOn = true
         #expect(AwakeSchedule.describe(s, now: now) == "Indefinitely · screen stays on")
+        #expect(AwakeSchedule.statusText(s, now: now) == "Indefinitely · screen stays on")
         s.allowDisplaySleepWhenLocked = true
         #expect(AwakeSchedule.describe(s, now: now, locked: true) == "Indefinitely · screen may sleep while locked")
         s.keepScreenOn = false
@@ -141,7 +147,7 @@ import Testing
     @Test func menuChecksActivePreset() {
         var s = AwakeSettings()
         AwakeSchedule.startTimed(&s, seconds: 3600, now: now)
-        let entries = AwakeMenu.entries(s, now: now.addingTimeInterval(600))
+        let entries = AwakeMenu.entries(s, now: now.addingTimeInterval(600), locale: Locale(identifier: "en_US"))
         let checked = entries.compactMap { entry -> String? in
             if case let .item(title, true, _, _) = entry { return title }
             return nil
@@ -160,12 +166,12 @@ import Testing
         s.intervalHours = 1
         s.intervalMinutes = 30
         s.customPresets = [AwakePreset(name: "8 hours", seconds: 28800)]
-        let titles = AwakeMenu.entries(s, now: now).compactMap { entry -> String? in
+        let titles = AwakeMenu.entries(s, now: now, locale: Locale(identifier: "en_US")).compactMap { entry -> String? in
             if case let .item(title, _, _, .timed) = entry { return title }
             return nil
         }
         #expect(titles == ["Keep awake for 30 minutes", "Keep awake for 1 hour", "Keep awake for 2 hours",
-                           "Keep awake for 8 hours", "Keep awake for 1 h 30 min"])
+                           "Keep awake for 8 hours", "Keep awake for 1 hr, 30 min"])
         s.intervalMinutes = 0
         #expect(AwakeMenu.entries(s, now: now).filter {
             if case .item(_, _, _, .timed) = $0 { return true } else { return false }
