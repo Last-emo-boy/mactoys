@@ -47,6 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         if let i = args.firstIndex(of: "--export-assets"), i + 1 < args.count {
+            NSApp.setActivationPolicy(.accessory)
             ModuleRegistry.shared.register(AllModules.make())
             let dir = URL(fileURLWithPath: args[i + 1])
             Task { @MainActor in

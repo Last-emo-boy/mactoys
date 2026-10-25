@@ -135,7 +135,7 @@ struct EnvEditorView: View {
             Toggle(isOn: Binding(get: { applied }, set: { module.setApplied($0 ? id : nil) })) {
                 applied ? Text("Applied", comment: "This profile is applied") : Text("Not applied", comment: "This profile isn't applied")
             }
-                .toggleStyle(.switch)
+                .toggleStyle(.adaptiveSwitch)
             Menu {
                 Button("Duplicate") { module.duplicateProfile(id) }
                 Button("Delete", role: .destructive) { module.deleteProfile(id) }

@@ -116,7 +116,7 @@ struct HostsWindowView: View {
         return Table(model.visibleEntries, selection: $model.selection) {
             TableColumn(Text("On", comment: "Column: the hosts entry is active")) { e in
                 Toggle("Active", isOn: Binding(get: { e.active }, set: { model.setActive(e.id, $0) }))
-                    .toggleStyle(.switch).labelsHidden().controlSize(.small)
+                    .toggleStyle(.adaptiveSwitch).labelsHidden().controlSize(.small)
             }
             .width(46)
             TableColumn("Address") { e in

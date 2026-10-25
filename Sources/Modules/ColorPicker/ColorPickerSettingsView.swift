@@ -170,7 +170,7 @@ struct FormatSettingsRow: View {
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .fixedSize()
-            Toggle("", isOn: $isEnabled).labelsHidden().toggleStyle(.switch)
+            Toggle("", isOn: $isEnabled).labelsHidden().toggleStyle(.adaptiveSwitch)
         }
     }
 }

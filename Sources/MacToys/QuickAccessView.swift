@@ -99,7 +99,7 @@ private struct SwitchRow: View {
             }
             Spacer()
             Toggle("", isOn: Binding(get: { on }, set: { _ in action.perform(); tick += 1 }))
-                .toggleStyle(.switch).labelsHidden().controlSize(.small)
+                .toggleStyle(.adaptiveSwitch).labelsHidden().controlSize(.small)
         }
         .id(tick)
         .padding(.horizontal, 12)

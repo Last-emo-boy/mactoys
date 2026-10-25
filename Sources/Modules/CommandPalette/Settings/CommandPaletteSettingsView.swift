@@ -296,7 +296,7 @@ private struct ProviderRow: View {
                 ProviderHeader(provider: provider, detail: aliases.isEmpty ? nil : "\(provider.summary) · \(aliases.joined(separator: " "))")
                 Spacer()
                 Toggle(isOn: Binding(get: { t.enabled }, set: { v in update { $0.enabled = v } })) { Text(verbatim: provider.name) }
-                    .toggleStyle(.switch).labelsHidden()
+                    .toggleStyle(.adaptiveSwitch).labelsHidden()
             }
         }
     }

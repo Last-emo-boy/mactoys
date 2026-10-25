@@ -97,7 +97,7 @@ struct AdvancedPasteSettingsView: View {
         return LabeledContent {
             HStack(spacing: 10) {
                 ShortcutRecorder(shortcut: binding.shortcut)
-                Toggle("", isOn: binding.enabled).labelsHidden().toggleStyle(.switch)
+                Toggle("", isOn: binding.enabled).labelsHidden().toggleStyle(.adaptiveSwitch)
             }
         } label: {
             HStack(spacing: 8) {
@@ -252,7 +252,7 @@ private struct CustomActionEditor: View {
                          subtitle: action.prompt.isEmpty ? Text("No prompt yet") : Text(verbatim: action.prompt))
                 Spacer()
                 if action.shortcut != nil { Keycaps(action.shortcut) }
-                Toggle("", isOn: $action.isEnabled).labelsHidden().toggleStyle(.switch).help("Show in the window")
+                Toggle("", isOn: $action.isEnabled).labelsHidden().toggleStyle(.adaptiveSwitch).help("Show in the window")
             }
         }
     }

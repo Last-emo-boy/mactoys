@@ -92,7 +92,7 @@ struct PowerDisplayFlyout: View {
                         Text("Link brightness levels").font(.system(size: 13))
                         Spacer()
                         Toggle("Link brightness levels", isOn: $settings.value.linkedBrightness)
-                            .toggleStyle(.switch).controlSize(.small).labelsHidden()
+                            .toggleStyle(.adaptiveSwitch).controlSize(.small).labelsHidden()
                     }
                     .padding(.horizontal, 4)
                 }
@@ -242,7 +242,7 @@ private struct MonitorCard: View {
                                      set: { module.settings.value.monitors[monitor.id, default: MonitorPrefs()].excludeFromLinkedBrightness = $0 })) {
                     Text("Exclude from linked brightness").font(.system(size: 12)).foregroundStyle(.secondary)
                 }
-                .toggleStyle(.switch).controlSize(.mini)
+                .toggleStyle(.adaptiveSwitch).controlSize(.mini)
             }
         }
         .cardStyle()

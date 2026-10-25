@@ -92,7 +92,7 @@ private struct PluginRow: View {
                 ProviderHeader(provider: provider, detail: p.keyword.isEmpty ? nil : "\(p.keyword)  ·  \(provider.summary)")
                 Spacer()
                 Toggle(isOn: Binding(get: { p.enabled }, set: { v in update { $0.enabled = v } })) { Text(verbatim: provider.name) }
-                    .toggleStyle(.switch).labelsHidden()
+                    .toggleStyle(.adaptiveSwitch).labelsHidden()
             }
         }
     }

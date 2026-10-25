@@ -280,7 +280,7 @@ private struct WorkspaceDetail: View {
         VStack(spacing: 0) {
             optionRow("Move existing windows",
                       "Apps that are already open have their windows moved instead of opening new ones") {
-                Toggle("Move existing windows", isOn: $workspace.moveExistingWindows).toggleStyle(.switch).labelsHidden()
+                Toggle("Move existing windows", isOn: $workspace.moveExistingWindows).toggleStyle(.adaptiveSwitch).labelsHidden()
             }
             Divider()
             optionRow("Shortcut", "Launches this workspace from anywhere") {
@@ -288,7 +288,7 @@ private struct WorkspaceDetail: View {
             }
             Divider()
             optionRow("Launch at login", "Runs when MacToys opens as you log in") {
-                Toggle("Launch at login", isOn: $workspace.launchAtLogin).toggleStyle(.switch).labelsHidden()
+                Toggle("Launch at login", isOn: $workspace.launchAtLogin).toggleStyle(.adaptiveSwitch).labelsHidden()
             }
             Divider()
             HStack(spacing: 8) {

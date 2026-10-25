@@ -38,7 +38,7 @@ public struct SettingsPage<Content: View, Hero: View>: View {
                         }
                         Spacer(minLength: 12)
                         Toggle("Enabled", isOn: Binding(get: { enabled }, set: { registry.setEnabled(info.id, $0) }))
-                            .toggleStyle(.switch)
+                            .toggleStyle(.adaptiveSwitch)
                             .labelsHidden()
                             .accessibilityLabel("Enable \(info.name)")
                     }

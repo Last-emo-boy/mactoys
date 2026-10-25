@@ -47,7 +47,9 @@ enum SnapshotRenderer {
         // so render everything light for legible snapshots (`--dark` overrides for overlays).
         let dark = CommandLine.arguments.contains("--dark")
         window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
-        let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height))
+        let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height)
+            .toggleStyle(.adaptiveSwitch)
+            .environment(\.drawsControlsForSnapshot, true))
         window.contentView = host
         window.orderFrontRegardless()
         for _ in 0..<6 { RunLoop.main.run(until: Date().addingTimeInterval(0.15)) }
@@ -102,3 +104,4 @@ enum WindowImage {
         fn?(.null, 1 << 3, id, (1 << 0) | (1 << 3))?.takeRetainedValue()
     }
 }
+

@@ -190,7 +190,7 @@ struct UtilityRow: View {
             Spacer(minLength: 10)
             if let first = module.shortcutBindings.first(where: { !$0.keys.isEmpty }) { Keycaps(first.keys) }
             Toggle("", isOn: Binding(get: { registry.isEnabled(info.id) }, set: { registry.setEnabled(info.id, $0) }))
-                .toggleStyle(.switch).labelsHidden().controlSize(.small)
+                .toggleStyle(.adaptiveSwitch).labelsHidden().controlSize(.small)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 7)
