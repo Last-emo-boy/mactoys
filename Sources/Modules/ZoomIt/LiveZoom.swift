@@ -25,6 +25,9 @@ final class LiveZoomController {
     private var visible: CGRect
     private(set) var panLocked = false
     private var stopped = false
+    /// MacToys windows over the zoom that the stream was last asked to leave out.
+    private var overlaysSeen: Set<Int> = []
+    private var refreshingExclusions = false
     private var scrollAccumulator = 0.0
     private let logger = Log.for("zoomit")
     private static let hotkeyPrefix = "zoomit.livezoom."
@@ -55,7 +58,10 @@ final class LiveZoomController {
             if let error { self.logger.error("Live Zoom stream ended: \(error.localizedDescription, privacy: .public)") }
             self.stop()
         }
-        try await capture.start(.display(screen.displayID), fps: 60, scale: screen.backingScaleFactor)
+        // MacToys' own menus and windows opened during the zoom are magnified like any app's;
+        // only this panel and the overlays drawn over it stay out of the picture.
+        try await capture.start(.display(screen.displayID), fps: 60, scale: screen.backingScaleFactor,
+                                ownWindows: .atOrAbove(panel.level))
         guard !stopped else { capture.stop(); return }
         panel.orderFrontRegardless()
         let driver = FrameDriver { [weak self] in MainActor.assumeIsolated { self?.tick() } }
@@ -101,7 +107,23 @@ final class LiveZoomController {
         CATransaction.commit()
     }
 
+    /// A MacToys window shown over the zoom (drawing, pointer overlays) would be captured into the
+    /// magnified view under itself; ask the stream to leave out each new one once, one request at a time.
+    private func excludeNewOverlays() {
+        let level = panel.level.rawValue
+        guard !refreshingExclusions,
+              NSApp.windows.contains(where: { $0.isVisible && $0.level.rawValue >= level && !overlaysSeen.contains($0.windowNumber) })
+        else { return }
+        overlaysSeen.formUnion(NSApp.windows.lazy.filter { $0.isVisible && $0.level.rawValue >= level }.map(\.windowNumber))
+        refreshingExclusions = true
+        Task { [weak self] in
+            await self?.capture.refreshExclusions()
+            self?.refreshingExclusions = false
+        }
+    }
+
     private func tick() {
+        excludeNewOverlays()
         // Ease toward the target level each frame.
         if abs(level - target) > 0.001 {
             level = exp(log(level) + (log(target) - log(level)) * 0.22)

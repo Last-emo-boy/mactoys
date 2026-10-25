@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Testing
 @testable import MacToysCore
@@ -36,6 +37,16 @@ import Testing
         #expect(back?.action == "open")
         #expect(back?.parameters["q"] == "a b")
         #expect(back?.files.first?.path == "/tmp/a b.txt")
+    }
+
+    @Test func liveCaptureOwnWindowExclusion() {
+        // Live Zoom: its panel (999) and overlays over it stay out; the menu bar panel and Settings are captured.
+        let overZoom = LiveCapture.OwnWindows.atOrAbove(NSWindow.Level(rawValue: 999))
+        #expect(overZoom.excludes(layer: 999))
+        #expect(overZoom.excludes(layer: 1001))
+        #expect(!overZoom.excludes(layer: Int(CGWindowLevelForKey(.popUpMenuWindow))))
+        #expect(!overZoom.excludes(layer: 0))
+        #expect(LiveCapture.OwnWindows.all.excludes(layer: 0))
     }
 
     @Test func shortcutDisplay() {

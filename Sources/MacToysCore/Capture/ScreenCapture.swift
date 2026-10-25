@@ -67,23 +67,45 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
         case display(CGDirectDisplayID)
     }
 
+    /// Which of MacToys' own windows a `.display` stream leaves out.
+    public enum OwnWindows {
+        /// All of them, so an overlay never captures itself.
+        case all
+        /// Only those at or above `level`: the overlay showing the stream and whatever is drawn over it.
+        /// Windows below it (the menu bar panel, launchers, Settings) are captured like any app's.
+        case atOrAbove(NSWindow.Level)
+
+        /// Whether a MacToys window at window-server `layer` is left out.
+        public func excludes(layer: Int) -> Bool {
+            switch self {
+            case .all: true
+            case .atOrAbove(let level): layer >= level.rawValue
+            }
+        }
+    }
+
     public var onFrame: ((CVPixelBuffer) -> Void)?
     public var onStop: ((Error?) -> Void)?
+    /// MacToys windows the running `.atOrAbove` display stream leaves out.
+    public private(set) var excludedWindowIDs: Set<CGWindowID> = []
     private var stream: SCStream?
     /// The running stream's configuration, so `update` keeps frame rate, cursor and shadow settings.
     private var config: SCStreamConfiguration?
+    private var displayID: CGDirectDisplayID?
+    private var ownWindows = OwnWindows.all
     private let queue = DispatchQueue(label: "com.w33d.mactoys.capture")
 
     public override init() { super.init() }
 
     /// `sourceRect` is in points, relative to the window/display; `scale` multiplies output pixels.
     public func start(_ source: Source, sourceRect: CGRect? = nil, fps: Int = 30, scale: CGFloat = 2,
-                      showsCursor: Bool = false) async throws {
+                      showsCursor: Bool = false, ownWindows: OwnWindows = .all) async throws {
         stop()
         guard CGPreflightScreenCaptureAccess() else { throw CaptureError.notPermitted }
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
         let filter: SCContentFilter
         var size: CGSize
+        var excluded: Set<CGWindowID> = []
         switch source {
         case .window(let id):
             guard let w = content.windows.first(where: { $0.windowID == id }) else { throw CaptureError.notFound }
@@ -91,9 +113,9 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
             size = w.frame.size
         case .display(let id):
             guard let d = content.displays.first(where: { $0.displayID == id }) else { throw CaptureError.notFound }
-            let own = content.applications.filter { $0.processID == ProcessInfo.processInfo.processIdentifier }
-            filter = SCContentFilter(display: d, excludingApplications: own, exceptingWindows: [])
+            (filter, excluded) = Self.displayFilter(d, content: content, ownWindows: ownWindows)
             size = CGSize(width: d.width, height: d.height)
+            displayID = id
         }
         let config = SCStreamConfiguration()
         if let r = sourceRect {
@@ -115,6 +137,36 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
         try await stream.startCapture()
         self.stream = stream
         self.config = config
+        self.ownWindows = ownWindows
+        excludedWindowIDs = excluded
+    }
+
+    /// Re-reads which MacToys windows an `.atOrAbove` display stream leaves out, after one was shown.
+    public func refreshExclusions() async {
+        guard let stream, let displayID, case .atOrAbove = ownWindows,
+              let content = try? await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false),
+              self.stream === stream,
+              let display = content.displays.first(where: { $0.displayID == displayID }) else { return }
+        let (filter, excluded) = Self.displayFilter(display, content: content, ownWindows: ownWindows)
+        do {
+            try await stream.updateContentFilter(filter)
+            excludedWindowIDs = excluded
+        } catch {
+            Log.for("capture").error("Couldn't update the capture filter: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private static func displayFilter(_ display: SCDisplay, content: SCShareableContent,
+                                      ownWindows: OwnWindows) -> (SCContentFilter, Set<CGWindowID>) {
+        let pid = ProcessInfo.processInfo.processIdentifier
+        switch ownWindows {
+        case .all:
+            let own = content.applications.filter { $0.processID == pid }
+            return (SCContentFilter(display: display, excludingApplications: own, exceptingWindows: []), [])
+        case .atOrAbove:
+            let own = content.windows.filter { $0.owningApplication?.processID == pid && ownWindows.excludes(layer: $0.windowLayer) }
+            return (SCContentFilter(display: display, excludingWindows: own), Set(own.map(\.windowID)))
+        }
     }
 
     /// Changes the cropped area of a running stream.
@@ -132,6 +184,8 @@ public final class LiveCapture: NSObject, SCStreamOutput, SCStreamDelegate {
         guard let stream else { return }
         self.stream = nil
         self.config = nil
+        displayID = nil
+        excludedWindowIDs = []
         Task { try? await stream.stopCapture() }
     }
 
