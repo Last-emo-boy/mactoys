@@ -10,9 +10,9 @@ public struct MWBSettings: Codable, Equatable, Sendable {
         case none, control, shift
         public var title: String {
             switch self {
-            case .none: "Just move the pointer"
-            case .control: "While holding ⌃"
-            case .shift: "While holding ⇧"
+            case .none: String(localized: "Just move the pointer", comment: "Easy Mouse: switch Macs without holding a key")
+            case .control: String(localized: "While holding ⌃", comment: "Activation: only while the Control key is held")
+            case .shift: String(localized: "While holding ⇧", comment: "Activation: only while the Shift key is held")
             }
         }
     }

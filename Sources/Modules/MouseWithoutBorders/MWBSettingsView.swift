@@ -39,6 +39,8 @@ struct MachineMatrixView: View {
             }
             if wrap { wrapMark }
         }
+        // Every slot as tall as the tallest tile (a translated status can take two lines).
+        .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity)
     }
 
@@ -53,7 +55,8 @@ struct MachineMatrixView: View {
         Group {
             if let tile { tileView(tile, index: index) } else { emptySlot(index) }
         }
-        .frame(width: 148, height: 104)
+        .frame(width: 148)
+        .frame(minHeight: 104, maxHeight: .infinity)
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
             .strokeBorder(targeted == index ? Color.accentColor : .clear, lineWidth: 2))
         .onDrop(of: [.fileURL, .plainText], isTargeted: Binding(get: { targeted == index },
@@ -70,21 +73,23 @@ struct MachineMatrixView: View {
                     .frame(height: 22, alignment: .leading)
                     .foregroundStyle(t.isActive ? Color.accentColor : .primary)
                 Spacer()
-                Text("\(index + 1)")
+                Text(index + 1, format: .number)
                     .font(.system(size: 10.5, weight: .bold).monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(width: 18, height: 18)
                     .background(Circle().fill(Color.primary.opacity(0.07)))
             }
-            Text(t.name).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
+            Text(verbatim: t.name).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
             HStack(spacing: 5) {
                 Circle().fill(RGBA(hex: t.status.colorHex)?.color ?? .gray).frame(width: 7, height: 7)
-                Text(t.isThisMac ? "This Mac" : t.status.title).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                Text(verbatim: t.isThisMac ? String(localized: "This Mac") : t.status.title).font(.system(size: 11)).foregroundStyle(.secondary)
+                    .lineLimit(2).fixedSize(horizontal: false, vertical: true)
             }
-            Text(t.detail).font(.system(size: 10.5, design: .monospaced)).foregroundStyle(.tertiary).lineLimit(1)
+            Text(verbatim: t.detail).font(.system(size: 10.5, design: .monospaced)).foregroundStyle(.tertiary).lineLimit(1)
         }
         .padding(11)
-        .frame(width: 148, height: 104, alignment: .topLeading)
+        .frame(width: 148, alignment: .topLeading)
+        .frame(minHeight: 104, maxHeight: .infinity, alignment: .topLeading)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
             .fill(t.isActive ? Color.accentColor.opacity(0.1) : Color(nsColor: .controlBackgroundColor)))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -101,7 +106,7 @@ struct MachineMatrixView: View {
         RoundedRectangle(cornerRadius: 12, style: .continuous)
             .strokeBorder(style: StrokeStyle(lineWidth: 1.2, dash: [5, 4]))
             .foregroundStyle(Color.primary.opacity(0.2))
-            .overlay(Text("Empty").font(.system(size: 11)).foregroundStyle(.tertiary))
+            .overlay(Text("Empty", comment: "Device layout: a slot with no Mac in it").font(.system(size: 11)).foregroundStyle(.tertiary))
     }
 
     private func drop(_ providers: [NSItemProvider], on index: Int, tile: Tile?) -> Bool {
@@ -139,7 +144,7 @@ struct MWBMatrixPreview: View {
                     Text("Drag Macs to arrange them · drop a file on a Mac to send it").font(.system(size: 11.5)).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Label("2 connected", systemImage: "checkmark.circle.fill").font(.system(size: 12)).foregroundStyle(.green)
+                Label("\(2) connected", systemImage: "checkmark.circle.fill").font(.system(size: 12)).foregroundStyle(.green)
             }
             MachineMatrixView(tiles: [
                 .init(id: me, name: "w33d’s MacBook Pro", status: .connected, isThisMac: true, isActive: false,
@@ -147,14 +152,14 @@ struct MWBMatrixPreview: View {
                 .init(id: studio, name: "Studio", status: .connected, isThisMac: false, isActive: true,
                       detail: "192.168.1.20", displayCount: 2),
                 .init(id: air, name: "MacBook Air", status: .handshaking, isThisMac: false, isActive: false,
-                      detail: "Handshaking", displayCount: 1),
+                      detail: MWBStatus.handshaking.title, displayCount: 1),
                 nil,
             ], singleRow: true, wrap: true)
             HStack(spacing: 14) {
                 ForEach([MWBStatus.connected, .connecting, .handshaking, .invalidKey, .timeout], id: \.self) { s in
                     HStack(spacing: 5) {
                         Circle().fill(RGBA(hex: s.colorHex)?.color ?? .gray).frame(width: 7, height: 7)
-                        Text(s.title).font(.system(size: 11)).foregroundStyle(.secondary)
+                        Text(verbatim: s.title).font(.system(size: 11)).foregroundStyle(.secondary)
                     }
                 }
             }
@@ -198,8 +203,10 @@ struct MWBSettingsView: View {
                 Toggle(isOn: $s.value.easyMouse) {
                     RowLabel("Switch Macs at the screen edge", subtitle: "Move the pointer past the edge toward the neighboring Mac.")
                 }
-                Picker("Switch", selection: $s.value.easyMouseModifier) {
-                    ForEach(MWBSettings.EasyMouseModifier.allCases, id: \.self) { Text($0.title).tag($0) }
+                Picker(selection: $s.value.easyMouseModifier) {
+                    ForEach(MWBSettings.EasyMouseModifier.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
+                } label: {
+                    Text("Switch", comment: "Easy Mouse picker label: when the pointer switches to the neighboring Mac")
                 }
                 .disabled(!s.value.easyMouse)
                 Toggle(isOn: $s.value.blockCorners) {
@@ -222,7 +229,9 @@ struct MWBSettingsView: View {
                 Toggle(isOn: $s.value.transferFiles) {
                     RowLabel("Transfer files", subtitle: "Copy and paste a single file, drag one across the screen edge, or drop it on a Mac above. Received files go to Downloads.")
                 }
-                SliderRow("File size limit", value: $s.value.maxFileSizeMB, in: 1...1000, step: 1) { "\(Int($0)) MB" }
+                SliderRow("File size limit", value: $s.value.maxFileSizeMB, in: 1...1000, step: 1) {
+                    ByteCountFormatter.string(fromByteCount: Int64($0) * 1_000_000, countStyle: .file)
+                }
                     .disabled(!s.value.transferFiles)
                 sendFileRow
                 transfersList
@@ -307,17 +316,17 @@ struct MWBSettingsView: View {
             VStack(alignment: .leading, spacing: 8) {
                 RowLabel("Connect to another Mac", subtitle: "Enter the key shown on that Mac. The address is optional: Macs on the same network find each other.")
                 HStack {
-                    TextField("Security key", text: $otherKey, prompt: Text("ABCD-EFGH-JKLM-NPQR"))
+                    TextField("Security key", text: $otherKey, prompt: Text(verbatim: "ABCD-EFGH-JKLM-NPQR"))
                         .font(.system(size: 12.5, design: .monospaced))
                     TextField("Address", text: $otherHost, prompt: Text("Name or IP (optional)"))
-                        .frame(width: 180)
+                        .frame(minWidth: 180, maxWidth: 260)
                     Button("Connect") {
                         connectError = module.connect(key: otherKey, host: otherHost)
                         if connectError == nil { otherKey = ""; otherHost = "" }
                     }
                     .disabled(otherKey.isEmpty)
                 }
-                if let connectError { Text(connectError).font(.system(size: 11.5)).foregroundStyle(.red) }
+                if let connectError { Text(verbatim: connectError).font(.system(size: 11.5)).foregroundStyle(.red) }
             }
         }
     }
@@ -347,17 +356,20 @@ struct MWBSettingsView: View {
                 HStack(spacing: 10) {
                     Image(systemName: t.direction == .incoming ? "arrow.down.doc" : "arrow.up.doc").foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(t.name).lineLimit(1).truncationMode(.middle)
+                        Text(verbatim: t.name).lineLimit(1).truncationMode(.middle)
                         switch t.state {
                         case .running:
                             ProgressView(value: t.fraction).controlSize(.small)
                         case .done:
-                            Text("\(t.direction == .incoming ? "From" : "To") \(t.peerName) · \(ByteCountFormatter.string(fromByteCount: Int64(t.size), countStyle: .file))")
+                            let size = ByteCountFormatter.string(fromByteCount: Int64(t.size), countStyle: .file)
+                            (t.direction == .incoming
+                                ? Text("From \(t.peerName) · \(size)", comment: "Received file: the sending Mac's name, then the file size")
+                                : Text("To \(t.peerName) · \(size)", comment: "Sent file: the receiving Mac's name, then the file size"))
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         case .failed(let why):
-                            Text(why).font(.system(size: 11)).foregroundStyle(.red)
+                            Text(verbatim: why).font(.system(size: 11)).foregroundStyle(.red)
                         case .cancelled:
-                            Text("Cancelled").font(.system(size: 11)).foregroundStyle(.secondary)
+                            Text("Cancelled", comment: "File transfer state").font(.system(size: 11)).foregroundStyle(.secondary)
                         }
                     }
                     Spacer()
@@ -378,23 +390,24 @@ struct MWBSettingsView: View {
         let net = module.controller?.network
         return Section("Connections") {
             LabeledContent {
-                Text(([MWBSystem.computerName] + Subnet.localIPv4Addresses()).joined(separator: " · ")
-                     + (net?.listeningPort.map { " · port \($0)" } ?? ""))
+                let port = net?.listeningPort.map { String(localized: "port \(String($0))", comment: "This Mac's listening port; %@ is the port number") }
+                Text(verbatim: ([MWBSystem.computerName] + Subnet.localIPv4Addresses() + [port].compactMap { $0 }).joined(separator: " · "))
                     .font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.secondary).lineLimit(1)
             } label: { RowLabel("This Mac") }
             ForEach(s.value.manualHosts, id: \.self) { host in
                 HStack {
                     let st = net?.hostStatus[host] ?? .notConnected
                     Circle().fill(RGBA(hex: st.colorHex)?.color ?? .gray).frame(width: 7, height: 7)
-                    Text(host).font(.system(size: 12, design: .monospaced))
-                    Text(st.title).font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text(verbatim: host).font(.system(size: 12, design: .monospaced))
+                    Text(verbatim: st.title).font(.system(size: 11)).foregroundStyle(.secondary)
                     Spacer()
                     Button { s.value.manualHosts.removeAll { $0 == host } } label: { Image(systemName: "minus.circle.fill") }
                         .buttonStyle(.borderless)
                 }
             }
             HStack {
-                TextField("Add a Mac by address", text: $newHost, prompt: Text("192.168.1.20 or studio.local"))
+                TextField("Add a Mac by address", text: $newHost,
+                          prompt: Text("192.168.1.20 or studio.local", comment: "Example address; keep the IP address and the host name"))
                     .onSubmit(addHost)
                 Button("Add", action: addHost).disabled(newHost.trimmingCharacters(in: .whitespaces).isEmpty)
             }
@@ -402,7 +415,7 @@ struct MWBSettingsView: View {
                 RowLabel("Same subnet only", subtitle: "Refuse Macs outside this Mac’s local network.")
             }
             LabeledContent {
-                TextField("", value: $s.value.port, format: .number.grouping(.never)).frame(width: 80).multilineTextAlignment(.trailing)
+                TextField(value: $s.value.port, format: .number.grouping(.never)) { EmptyView() }.frame(width: 80).multilineTextAlignment(.trailing)
             } label: {
                 RowLabel("Port", subtitle: "Used when connecting by address (default 15101). Bonjour finds Macs on any port.")
             }

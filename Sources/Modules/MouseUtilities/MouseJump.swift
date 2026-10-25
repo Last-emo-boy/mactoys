@@ -333,7 +333,7 @@ struct MouseJumpView: View {
                 .overlay(RoundedRectangle(cornerRadius: max(bezelRadius - 4, 2), style: .continuous)
                     .strokeBorder(hovered ? Color.accentColor : Color.clear, lineWidth: 2))
                 .position(x: image.midX, y: image.midY)
-            Text("\(d.number)")
+            Text(d.number, format: .number)
                 .font(.system(size: 11, weight: .bold).monospacedDigit())
                 .foregroundStyle(.white)
                 .frame(width: 20, height: 20)

@@ -57,7 +57,9 @@ enum ActionRunner {
             var command = ([path] + args).map(Shell.quote).joined(separator: " ")
             if let directory { command = "cd \(Shell.quote(directory.path)) && " + command }
             Task.detached {
-                do { _ = try Privileged.run(command, prompt: "Keyboard Manager wants to run \(url.lastPathComponent) as administrator.") }
+                let prompt = String(localized: "Keyboard Manager wants to run \(url.lastPathComponent) as administrator.",
+                                    comment: "Administrator password prompt; %@ is the program's file name")
+                do { _ = try Privileged.run(command, prompt: prompt) }
                 catch { await MainActor.run { log.error("Elevated run failed: \(error.localizedDescription, privacy: .public)") } }
             }
             return

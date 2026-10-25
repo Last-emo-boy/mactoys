@@ -66,6 +66,15 @@ final class MWBTransferCenter {
     @ObservationIgnored private var watchdog: Timer?
     @ObservationIgnored private let log = Log.for("mwb")
 
+    private var tooLarge: String {
+        String(localized: "Larger than the \(ByteCountFormatter.string(fromByteCount: Int64(maxBytes), countStyle: .file)) limit.",
+               comment: "File transfer failed; %@ is the size limit, such as 100 MB")
+    }
+
+    private static var disconnected: String {
+        String(localized: "Disconnected.", comment: "File transfer failed: the other Mac disconnected")
+    }
+
     // MARK: - Sending
 
     /// Starts sending a regular file. Returns false (and records why) when it can't.
@@ -77,17 +86,17 @@ final class MWBTransferCenter {
                          direction: .outgoing, purpose: purpose)
         nextID &+= 1
         guard values?.isRegularFile == true else {
-            t.state = .failed("Only single files can be sent (zip folders first).")
+            t.state = .failed(String(localized: "Only single files can be sent (zip folders first)."))
             record(t)
             return false
         }
         guard size <= maxBytes else {
-            t.state = .failed("Larger than the \(maxBytes / 1_000_000) MB limit.")
+            t.state = .failed(tooLarge)
             record(t)
             return false
         }
         guard let handle = try? FileHandle(forReadingFrom: url) else {
-            t.state = .failed("Couldn’t read the file.")
+            t.state = .failed(String(localized: "Couldn’t read the file."))
             record(t)
             return false
         }
@@ -95,7 +104,7 @@ final class MWBTransferCenter {
         outgoing[t.transferID] = Outgoing(handle: handle)
         let started = transmit(.fileStart(MWBFileStart(transferID: t.transferID, name: t.name, size: size, purpose: purpose)), peer, nil)
         guard started else {
-            finishOutgoing(t.transferID, state: .failed("Not connected."))
+            finishOutgoing(t.transferID, state: .failed(String(localized: "Not connected.", comment: "File transfer failed: the other Mac isn't connected")))
             return false
         }
         pump(t.transferID)
@@ -114,13 +123,13 @@ final class MWBTransferCenter {
               t.state == .running else { return }
         let chunk: Data
         do { chunk = try o.handle.read(upToCount: MWBProtocol.fileChunkSize) ?? Data() } catch {
-            finishOutgoing(tid, state: .failed("Read error: \(error.localizedDescription)"))
+            finishOutgoing(tid, state: .failed(String(localized: "Read error: \(error.localizedDescription)", comment: "File transfer failed; %@ is the system's error message")))
             return
         }
         if chunk.isEmpty {
             let digest = Data(o.hasher.finalize())
             _ = transmit(.fileEnd(MWBFileEnd(transferID: tid, sha256: digest)), t.peer, nil)
-            finishOutgoing(tid, state: o.sent == t.size ? .done : .failed("The file changed while sending."))
+            finishOutgoing(tid, state: o.sent == t.size ? .done : .failed(String(localized: "The file changed while sending.")))
             return
         }
         o.hasher.update(data: chunk)
@@ -131,7 +140,7 @@ final class MWBTransferCenter {
         let ok = transmit(.fileChunk(MWBFileChunk(transferID: tid, offset: offset, data: chunk)), t.peer) { [weak self] in
             self?.pump(tid)
         }
-        if !ok { finishOutgoing(tid, state: .failed("Disconnected.")) }
+        if !ok { finishOutgoing(tid, state: .failed(Self.disconnected)) }
     }
 
     private func finishOutgoing(_ tid: UInt32, state: Transfer.State) {
@@ -187,7 +196,7 @@ final class MWBTransferCenter {
         var t = Transfer(transferID: f.transferID, peer: peer, peerName: peerName, name: Self.sanitize(f.name), size: f.size,
                          direction: .incoming, purpose: f.purpose)
         guard f.size <= maxBytes else {
-            t.state = .failed("Larger than the \(maxBytes / 1_000_000) MB limit.")
+            t.state = .failed(tooLarge)
             record(t)
             _ = transmit(.fileCancel(f.transferID), peer, nil)
             return
@@ -195,7 +204,7 @@ final class MWBTransferCenter {
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent("MacToys-MWB-\(UUID().uuidString).part")
         guard FileManager.default.createFile(atPath: temp.path, contents: nil),
               let handle = try? FileHandle(forWritingTo: temp) else {
-            t.state = .failed("Couldn’t create a temporary file.")
+            t.state = .failed(String(localized: "Couldn’t create a temporary file."))
             record(t)
             _ = transmit(.fileCancel(f.transferID), peer, nil)
             return
@@ -210,12 +219,12 @@ final class MWBTransferCenter {
         guard var i = incoming[k], let t = transfers.first(where: { $0.transferID == c.transferID && $0.peer == peer && $0.direction == .incoming }) else { return }
         guard c.offset == i.received, i.received + UInt64(c.data.count) <= t.size else {
             _ = transmit(.fileCancel(c.transferID), peer, nil)
-            finishIncoming(k, state: .failed("Out-of-order data."))
+            finishIncoming(k, state: .failed(String(localized: "Out-of-order data.", comment: "File transfer failed: parts of the file arrived in the wrong order")))
             return
         }
         do { try i.handle.write(contentsOf: c.data) } catch {
             _ = transmit(.fileCancel(c.transferID), peer, nil)
-            finishIncoming(k, state: .failed("Write error: \(error.localizedDescription)"))
+            finishIncoming(k, state: .failed(String(localized: "Write error: \(error.localizedDescription)", comment: "File transfer failed; %@ is the system's error message")))
             return
         }
         i.hasher.update(data: c.data)
@@ -229,7 +238,7 @@ final class MWBTransferCenter {
         let k = key(peer, e.transferID)
         guard let i = incoming[k], let t = transfers.first(where: { $0.transferID == e.transferID && $0.peer == peer && $0.direction == .incoming }) else { return }
         guard i.received == t.size, Data(i.hasher.finalize()) == e.sha256 else {
-            finishIncoming(k, state: .failed("The file arrived damaged."))
+            finishIncoming(k, state: .failed(String(localized: "The file arrived damaged.")))
             return
         }
         try? i.handle.close()
@@ -251,7 +260,7 @@ final class MWBTransferCenter {
                 onReceived?(done, dest)
             }
         } catch {
-            finishIncoming(k, state: .failed("Couldn’t save: \(error.localizedDescription)"))
+            finishIncoming(k, state: .failed(String(localized: "Couldn’t save: \(error.localizedDescription)", comment: "File transfer failed; %@ is the system's error message")))
         }
     }
 
@@ -268,8 +277,8 @@ final class MWBTransferCenter {
     /// Fails every running transfer with a machine that went away.
     func peerDisconnected(_ peer: UUID) {
         for t in transfers where t.peer == peer && t.state == .running {
-            if t.direction == .outgoing { finishOutgoing(t.transferID, state: .failed("Disconnected.")) }
-            else { finishIncoming(key(peer, t.transferID), state: .failed("Disconnected.")) }
+            if t.direction == .outgoing { finishOutgoing(t.transferID, state: .failed(Self.disconnected)) }
+            else { finishIncoming(key(peer, t.transferID), state: .failed(Self.disconnected)) }
         }
     }
 
@@ -300,7 +309,7 @@ final class MWBTransferCenter {
             MainActor.assumeIsolated {
                 guard let self else { return }
                 let stale = self.incoming.filter { Date().timeIntervalSince($0.value.lastActivity) > 60 }.map(\.key)
-                for k in stale { self.finishIncoming(k, state: .failed("Timed out.")) }
+                for k in stale { self.finishIncoming(k, state: .failed(String(localized: "Timed out.", comment: "File transfer failed: no data for a minute"))) }
                 if self.incoming.isEmpty {
                     self.watchdog?.invalidate()
                     self.watchdog = nil

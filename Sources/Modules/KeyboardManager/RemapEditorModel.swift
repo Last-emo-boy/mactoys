@@ -27,18 +27,19 @@ enum RemapFormatting {
                                     "com.apple.Safari": "Safari", "com.microsoft.VSCode": "VS Code"]
 
     static func scope(_ remap: Remap) -> String {
-        if remap.apps.isEmpty { return "Global" }
+        if remap.apps.isEmpty { return String(localized: "Global", comment: "Remap filter and scope: applies in every app") }
         let names = remap.apps.map(appName)
-        return names.count <= 2 ? names.joined(separator: ", ") : "\(names[0]) +\(names.count - 1)"
+        return names.count <= 2 ? names.formatted(.list(type: .and, width: .narrow))
+            : String(localized: "\(names[0]) +\(names.count - 1)", comment: "Remap scope: the first app name, then how many more apps")
     }
 
     static func actionSummary(_ action: RemapAction) -> String {
         switch action.kind {
         case .send: action.combo?.description ?? "—"
-        case .text: "“\(action.text ?? "")”"
-        case .run: "Open " + programName(action.run?.path ?? "")
-        case .openURL: "Open " + (action.url ?? "")
-        case .disable: "Disabled"
+        case .text: String(localized: "“\(action.text ?? "")”", comment: "Remap action: types this text (quotes around it)")
+        case .run: String(localized: "Open \(programName(action.run?.path ?? ""))", comment: "Remap action: opens this app, program, URL or file")
+        case .openURL: String(localized: "Open \(action.url ?? "")", comment: "Remap action: opens this app, program, URL or file")
+        case .disable: String(localized: "Disabled", comment: "Remap action: the key does nothing")
         }
     }
 
@@ -51,21 +52,26 @@ enum RemapFormatting {
     static func annotation(_ remap: Remap) -> String? {
         var parts: [String] = []
         if remap.kind == .key && remap.tapAlone {
-            parts.append("tap")
-            if let hold = remap.holdKey { parts.append("\(hold.keycaps.last ?? hold.name) when held") }
-            else if remap.trigger.key == .capsLock { parts.append("hold for Caps Lock") }
-            else { parts.append("normal when held") }
+            parts.append(String(localized: "tap", comment: "Remap note: the action runs when the key is tapped alone"))
+            if let hold = remap.holdKey {
+                parts.append(String(localized: "\(hold.keycaps.last ?? hold.name) when held",
+                                    comment: "Remap note: the key acts as this modifier (such as ⌃) while held"))
+            }
+            else if remap.trigger.key == .capsLock { parts.append(String(localized: "hold for Caps Lock", comment: "Remap note")) }
+            else { parts.append(String(localized: "normal when held", comment: "Remap note: the key works as usual while held")) }
             return parts.joined(separator: " · ")
         }
         switch remap.action.kind {
-        case .text: return "types text"
+        case .text: return String(localized: "types text", comment: "Remap note")
         case .run:
             if let args = remap.action.run?.arguments, !args.isEmpty { return args }
             return nil
-        case .openURL: return "opens URL"
+        case .openURL: return String(localized: "opens URL", comment: "Remap note")
         default: break
         }
-        if remap.kind == .shortcut && remap.exactMatch { return "exact match" }
+        if remap.kind == .shortcut && remap.exactMatch {
+            return String(localized: "exact match", comment: "Remap note: only when no other modifiers are held")
+        }
         return nil
     }
 }
@@ -123,7 +129,7 @@ final class RemapEditorModel {
         }
     }
 
-    var profileName: String { previewRemaps != nil ? "Default" : (module?.activeProfileName ?? "Default") }
+    var profileName: String { previewRemaps != nil ? RemapProfile.defaultName : (module?.activeProfileName ?? RemapProfile.defaultName) }
 
     /// Bundle ids that appear in any remap, sorted by app name.
     var apps: [String] {

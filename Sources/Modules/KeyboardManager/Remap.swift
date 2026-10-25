@@ -58,23 +58,29 @@ public struct RunSpec: Codable, Hashable, Sendable {
         case showWindow, startAnother, doNothing, close, endTask
         public var title: String {
             switch self {
-            case .showWindow: "Show window"
-            case .startAnother: "Start another instance"
-            case .doNothing: "Do nothing"
-            case .close: "Quit"
-            case .endTask: "Force quit"
+            case .showWindow: String(localized: "Show window", comment: "If the app is already running: bring its window forward")
+            case .startAnother: String(localized: "Start another instance", comment: "If the app is already running")
+            case .doNothing: String(localized: "Do nothing", comment: "If the app is already running")
+            case .close: String(localized: "Quit", comment: "If the app is already running: quit it")
+            case .endTask: String(localized: "Force quit", comment: "If the app is already running: force quit it")
             }
         }
     }
 
     public enum Visibility: String, Codable, Sendable, CaseIterable {
         case normal, hidden
-        public var title: String { self == .normal ? "Normal" : "Hidden (in the background)" }
+        public var title: String {
+            self == .normal ? String(localized: "Normal", comment: "Program visibility (shown normally) and Run as (the current user, no administrator rights)")
+                : String(localized: "Hidden (in the background)", comment: "Program visibility")
+        }
     }
 
     public enum Elevation: String, Codable, Sendable, CaseIterable {
         case normal, administrator
-        public var title: String { self == .normal ? "Normal" : "Administrator (asks for your password)" }
+        public var title: String {
+            self == .normal ? String(localized: "Normal", comment: "Program visibility (shown normally) and Run as (the current user, no administrator rights)")
+                : String(localized: "Administrator (asks for your password)", comment: "Run as")
+        }
     }
 
     /// An `.app` bundle or an executable; `~` and `$VARIABLES` are expanded.
@@ -185,21 +191,21 @@ public struct Remap: Codable, Hashable, Identifiable, Sendable {
         switch kind {
         case .key:
             if tapAlone {
-                if let holdKey, !holdKey.isModifier { return "“When held” must be a modifier key." }
+                if let holdKey, !holdKey.isModifier { return String(localized: "“When held” must be a modifier key.") }
                 if holdKey == nil && !trigger.key.isModifier && trigger.key != .capsLock {
-                    return "Tap-alone keys that aren’t modifiers need a modifier to act as when held."
+                    return String(localized: "Tap-alone keys that aren’t modifiers need a modifier to act as when held.")
                 }
-                if action.kind == .disable { return "Choose what tapping the key does." }
+                if action.kind == .disable { return String(localized: "Choose what tapping the key does.") }
             }
         case .shortcut:
-            if trigger.modifiers.isEmpty { return "Shortcuts must include at least one modifier (⌃ ⌥ ⇧ ⌘ fn)." }
-            if trigger.key.isModifier || trigger.key == .capsLock { return "Shortcuts must end with a non-modifier key." }
-            if let chord, chord.isModifier { return "The chord’s second key can’t be a modifier." }
+            if trigger.modifiers.isEmpty { return String(localized: "Shortcuts must include at least one modifier (⌃ ⌥ ⇧ ⌘ fn).") }
+            if trigger.key.isModifier || trigger.key == .capsLock { return String(localized: "Shortcuts must end with a non-modifier key.") }
+            if let chord, chord.isModifier { return String(localized: "The chord’s second key can’t be a modifier.") }
         }
-        if !action.isComplete { return "Finish choosing what the remap does." }
+        if !action.isComplete { return String(localized: "Finish choosing what the remap does.") }
         if case .send = action.kind, let combo = action.combo, kind == .key, !tapAlone,
            combo == KeyCombo([], trigger.key) {
-            return "A key can’t be remapped to itself."
+            return String(localized: "A key can’t be remapped to itself.")
         }
         return nil
     }
@@ -235,12 +241,17 @@ public struct RemapProfile: Codable, Hashable, Identifiable, Sendable {
         self.remaps = remaps
     }
 
+    /// Name of the first profile.
+    public static var defaultName: String { String(localized: "Default", comment: "Name of the first keyboard profile") }
+    /// Name of a profile imported from a file that doesn't name it.
+    public static var importedName: String { String(localized: "Imported", comment: "Name of a keyboard profile imported from a file that has none") }
+
     private enum CodingKeys: String, CodingKey { case id, name, remaps }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
-        name = try c.decodeIfPresent(String.self, forKey: .name) ?? "Imported"
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? RemapProfile.importedName
         remaps = try c.decodeIfPresent([Remap].self, forKey: .remaps) ?? []
     }
 }
@@ -266,8 +277,9 @@ public struct RemapProfileFile: Codable, Sendable {
         case newerVersion(Int)
         public var errorDescription: String? {
             switch self {
-            case .notAProfile: "The file isn’t a Keyboard Manager profile."
-            case .newerVersion(let v): "The profile was written by a newer version of MacToys (format \(v))."
+            case .notAProfile: String(localized: "The file isn’t a Keyboard Manager profile.")
+            case .newerVersion(let v):
+                String(localized: "The profile was written by a newer version of MacToys (format \(v)).", comment: "%lld is the file format version")
             }
         }
     }
@@ -281,7 +293,7 @@ public struct RemapProfileFile: Codable, Sendable {
             return file.profile
         }
         if let remaps = try? decoder.decode([Remap].self, from: data) {
-            return RemapProfile(name: "Imported", remaps: remaps)
+            return RemapProfile(name: RemapProfile.importedName, remaps: remaps)
         }
         do {
             return try decoder.decode(RemapProfile.self, from: data)
@@ -293,7 +305,7 @@ public struct RemapProfileFile: Codable, Sendable {
 
 /// Settings stored in `keyboardmanager.json`.
 public struct KeyboardManagerSettings: Codable, Equatable, Sendable {
-    public var profiles: [RemapProfile] = [RemapProfile(name: "Default")]
+    public var profiles: [RemapProfile] = [RemapProfile(name: RemapProfile.defaultName)]
     /// Missing or unknown: the first profile.
     public var activeProfileID: UUID?
     /// Remapping is temporarily off (the module stays enabled).
@@ -317,7 +329,7 @@ public struct KeyboardManagerSettings: Codable, Equatable, Sendable {
     public var remaps: [Remap] {
         get { profiles.isEmpty ? [] : profiles[activeProfileIndex].remaps }
         set {
-            if profiles.isEmpty { profiles = [RemapProfile(name: "Default")] }
+            if profiles.isEmpty { profiles = [RemapProfile(name: RemapProfile.defaultName)] }
             profiles[activeProfileIndex].remaps = newValue
         }
     }

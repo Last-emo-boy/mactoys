@@ -43,7 +43,7 @@ final class CursorWrap {
     func toggle() {
         guard isActive || ensureAccessibility() else { return }
         setActive(!isActive)
-        HUD.show("CursorWrap \(isActive ? "on" : "off")", symbol: "arrow.left.and.right.square")
+        HUD.show(isActive ? "CursorWrap on" : "CursorWrap off", symbol: "arrow.left.and.right.square")
     }
 
     private func handle(_ type: CGEventType, _ event: CGEvent) {
@@ -214,7 +214,7 @@ final class MouseButtonLock {
         }
         let (decision, lockedNow) = machine.up(button, at: now)
         if lockedNow {
-            HUD.show("\(Self.name(button)) button locked · click to release", symbol: "lock.fill", duration: 1.2)
+            HUD.show(Self.lockedMessage(button), symbol: "lock.fill", duration: 1.2)
             if button == .right { ContextMenuDismisser.dismissSoon() }
         }
         return apply(decision, to: event)
@@ -250,11 +250,11 @@ final class MouseButtonLock {
         }
     }
 
-    private static func name(_ b: ButtonLockMachine.Button) -> String {
+    private static func lockedMessage(_ b: ButtonLockMachine.Button) -> String {
         switch b {
-        case .left: "Left"
-        case .right: "Right"
-        case .middle: "Middle"
+        case .left: String(localized: "Left button locked · click to release")
+        case .right: String(localized: "Right button locked · click to release")
+        case .middle: String(localized: "Middle button locked · click to release")
         }
     }
 }

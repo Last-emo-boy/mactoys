@@ -62,7 +62,10 @@ final class MWBController {
         transfers.onReceived = { [weak self] t, url in self?.fileReceived(t, at: url) }
         transfers.onFailed = { [weak self] t in
             guard self?.settings.showStatusMessages == true else { return }
-            if case .failed(let why) = t.state { HUD.show("\(t.name): \(why)", symbol: "exclamationmark.triangle") }
+            if case .failed(let why) = t.state {
+                HUD.show(String(localized: "\(t.name): \(why)", comment: "File transfer failed: the file name, then the reason"),
+                         symbol: "exclamationmark.triangle")
+            }
         }
         clipboard.onLocalChange = { [weak self] payload in self?.localClipboardChanged(payload) }
     }
@@ -163,7 +166,7 @@ final class MWBController {
             }
         }
         network.send(.layout(layoutMessage), to: hello.machineID)
-        status("\(hello.name) connected", symbol: "display.2")
+        status(String(localized: "\(hello.name) connected", comment: "Status message; %@ is the other Mac's name"), symbol: "display.2")
         onChange?()
     }
 
@@ -176,7 +179,8 @@ final class MWBController {
         transfers.peerDisconnected(id)
         let name = name(of: id)
         peerInfo[id] = nil
-        status("\(name) disconnected", symbol: "display.trianglebadge.exclamationmark")
+        status(String(localized: "\(name) disconnected", comment: "Status message; %@ is the other Mac's name"),
+               symbol: "display.trianglebadge.exclamationmark")
         onChange?()
     }
 
@@ -204,7 +208,8 @@ final class MWBController {
         case .releaseControl:
             if mode == .controlling(id) {
                 returnToLocal(at: park)
-                status("\(name(of: id)) took over", symbol: "hand.raised")
+                status(String(localized: "\(name(of: id)) took over", comment: "Status message: the other Mac (%@) took back control"),
+                       symbol: "hand.raised")
             }
         case .mouseMove(let m):
             if mode == .controlled(by: id) { injector.move(m) }
@@ -219,11 +224,13 @@ final class MWBController {
         case .clipboardText(let text):
             guard settings.shareClipboard else { return }
             clipboard.applyText(text)
-            status("Clipboard from \(name(of: id))", symbol: "doc.on.clipboard")
+            status(String(localized: "Clipboard from \(name(of: id))", comment: "Status message: clipboard text received; %@ is the Mac's name"),
+                   symbol: "doc.on.clipboard")
         case .clipboardImage(let png):
             guard settings.shareClipboard else { return }
             clipboard.applyImage(png)
-            status("Image from \(name(of: id))", symbol: "photo")
+            status(String(localized: "Image from \(name(of: id))", comment: "Status message: clipboard image received; %@ is the Mac's name"),
+                   symbol: "photo")
         case .userActivity:
             MWBSystem.declareUserActivity()
         case .lockScreen:
@@ -374,7 +381,8 @@ final class MWBController {
             : nil
         if let file = draggedFile, settings.transferFiles {
             transfers.send(file: file, to: target, peerName: name(of: target), purpose: .send)
-            status("Sending \(file.lastPathComponent) to \(name(of: target))", symbol: "arrow.up.doc")
+            status(String(localized: "Sending \(file.lastPathComponent) to \(name(of: target))",
+                          comment: "Status message: the file name, then the Mac's name"), symbol: "arrow.up.doc")
             postLocalKey(kVK_Escape)
         }
         postLocalMouseUp(at: park)
@@ -519,7 +527,8 @@ final class MWBController {
     func switchToMachine(_ index: Int) {
         let slots = settings.layout.normalized.slots
         guard slots.indices.contains(index), let slot = slots[index] else {
-            HUD.show("No Mac in position \(index + 1)", symbol: "display.trianglebadge.exclamationmark")
+            HUD.show(String(localized: "No Mac in position \(index + 1)", comment: "%lld is a slot number in the device layout (1–4)"),
+                     symbol: "display.trianglebadge.exclamationmark")
             return
         }
         if slot.id == myID {
@@ -599,10 +608,13 @@ final class MWBController {
             clipboard.applyFile(url)
             // Received files can travel on to the next Mac.
             clipboardFile = (url, [t.peer])
-            status("\(t.name) copied from \(t.peerName)", symbol: "doc.on.clipboard")
+            status(String(localized: "\(t.name) copied from \(t.peerName)",
+                          comment: "Status message: a file from another Mac's clipboard; the file name, then the Mac's name"),
+                   symbol: "doc.on.clipboard")
         case .send:
-            Notifier.post("Received \(t.name)", "From \(t.peerName) · saved in Downloads")
-            status("Received \(t.name)", symbol: "arrow.down.doc")
+            Notifier.post(String(localized: "Received \(t.name)", comment: "A file arrived; %@ is its name"),
+                          String(localized: "From \(t.peerName) · saved in Downloads", comment: "%@ is the name of the Mac that sent the file"))
+            status(String(localized: "Received \(t.name)", comment: "A file arrived; %@ is its name"), symbol: "arrow.down.doc")
         }
     }
 
@@ -613,7 +625,8 @@ final class MWBController {
             return
         }
         if transfers.send(file: file, to: peer, peerName: name(of: peer), purpose: .send) {
-            status("Sending \(file.lastPathComponent) to \(name(of: peer))", symbol: "arrow.up.doc")
+            status(String(localized: "Sending \(file.lastPathComponent) to \(name(of: peer))",
+                          comment: "Status message: the file name, then the Mac's name"), symbol: "arrow.up.doc")
         }
     }
 

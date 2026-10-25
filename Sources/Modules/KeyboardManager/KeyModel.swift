@@ -61,21 +61,24 @@ public enum KeyCatalog {
     struct ModifierInfo {
         let modifier: Modifiers
         let symbol: String
-        /// "Left"/"Right"; nil for fn.
+        /// "Left"/"Right" (localized); nil for fn.
         let side: String?
         /// `NX_DEVICE…KEYMASK` bit carried in event flags while this key is down; 0 for fn.
         let deviceMask: UInt64
     }
 
+    static let left = String(localized: "Left", comment: "Keycap before a modifier symbol: the left-hand key of the pair (Left ⌘)")
+    static let right = String(localized: "Right", comment: "Keycap before a modifier symbol: the right-hand key of the pair (Right ⌘)")
+
     static let modifierInfo: [Int: ModifierInfo] = [
-        kVK_Control: ModifierInfo(modifier: .control, symbol: "⌃", side: "Left", deviceMask: 0x0000_0001),
-        kVK_Shift: ModifierInfo(modifier: .shift, symbol: "⇧", side: "Left", deviceMask: 0x0000_0002),
-        kVK_RightShift: ModifierInfo(modifier: .shift, symbol: "⇧", side: "Right", deviceMask: 0x0000_0004),
-        kVK_Command: ModifierInfo(modifier: .command, symbol: "⌘", side: "Left", deviceMask: 0x0000_0008),
-        kVK_RightCommand: ModifierInfo(modifier: .command, symbol: "⌘", side: "Right", deviceMask: 0x0000_0010),
-        kVK_Option: ModifierInfo(modifier: .option, symbol: "⌥", side: "Left", deviceMask: 0x0000_0020),
-        kVK_RightOption: ModifierInfo(modifier: .option, symbol: "⌥", side: "Right", deviceMask: 0x0000_0040),
-        kVK_RightControl: ModifierInfo(modifier: .control, symbol: "⌃", side: "Right", deviceMask: 0x0000_2000),
+        kVK_Control: ModifierInfo(modifier: .control, symbol: "⌃", side: left, deviceMask: 0x0000_0001),
+        kVK_Shift: ModifierInfo(modifier: .shift, symbol: "⇧", side: left, deviceMask: 0x0000_0002),
+        kVK_RightShift: ModifierInfo(modifier: .shift, symbol: "⇧", side: right, deviceMask: 0x0000_0004),
+        kVK_Command: ModifierInfo(modifier: .command, symbol: "⌘", side: left, deviceMask: 0x0000_0008),
+        kVK_RightCommand: ModifierInfo(modifier: .command, symbol: "⌘", side: right, deviceMask: 0x0000_0010),
+        kVK_Option: ModifierInfo(modifier: .option, symbol: "⌥", side: left, deviceMask: 0x0000_0020),
+        kVK_RightOption: ModifierInfo(modifier: .option, symbol: "⌥", side: right, deviceMask: 0x0000_0040),
+        kVK_RightControl: ModifierInfo(modifier: .control, symbol: "⌃", side: right, deviceMask: 0x0000_2000),
         kVK_Function: ModifierInfo(modifier: .function, symbol: "fn", side: nil, deviceMask: 0),
     ]
 
@@ -87,25 +90,67 @@ public enum KeyCatalog {
 
     /// `NX_KEYTYPE_*` media keys.
     static let mediaNames: [Int: String] = [
-        0: "Volume Up", 1: "Volume Down", 2: "Brightness Up", 3: "Brightness Down", 5: "Help (media)",
-        7: "Mute", 10: "Num Lock", 13: "Launchpad", 14: "Eject", 15: "Mirror Displays", 16: "Play/Pause",
-        17: "Next Track", 18: "Previous Track", 19: "Fast Forward", 20: "Rewind",
-        21: "Keyboard Light Up", 22: "Keyboard Light Down", 23: "Keyboard Light Toggle",
+        0: String(localized: "Volume Up", comment: "Key name"),
+        1: String(localized: "Volume Down", comment: "Key name"),
+        2: String(localized: "Brightness Up", comment: "Key name"),
+        3: String(localized: "Brightness Down", comment: "Key name"),
+        5: String(localized: "Help (media)", comment: "Key name: the Help media key, as opposed to the Help key of extended keyboards"),
+        7: String(localized: "Mute", comment: "Key name: the mute key"),
+        10: String(localized: "Num Lock", comment: "Key name"),
+        13: String(localized: "Launchpad", comment: "Key name"),
+        14: String(localized: "Eject", comment: "Key name"),
+        15: String(localized: "Mirror Displays", comment: "Key name"),
+        16: String(localized: "Play/Pause", comment: "Key name"),
+        17: String(localized: "Next Track", comment: "Key name"),
+        18: String(localized: "Previous Track", comment: "Key name"),
+        19: String(localized: "Fast Forward", comment: "Key name"),
+        20: String(localized: "Rewind", comment: "Key name"),
+        21: String(localized: "Keyboard Light Up", comment: "Key name: keyboard backlight brighter"),
+        22: String(localized: "Keyboard Light Down", comment: "Key name: keyboard backlight dimmer"),
+        23: String(localized: "Keyboard Light Toggle", comment: "Key name: keyboard backlight on/off"),
     ]
 
     /// Keys that exist on some keyboards only; names the current layout can't provide.
     static let extraNames: [Int: String] = [
         kVK_ISO_Section: "§", kVK_JIS_Yen: "¥ (JIS)", kVK_JIS_Underscore: "_ (JIS)",
-        kVK_JIS_KeypadComma: "Num , (JIS)", kVK_JIS_Eisu: "英数 Eisu", kVK_JIS_Kana: "かな Kana",
-        kVK_ContextualMenu: "Menu", kVK_Help: "Help / Insert",
+        kVK_JIS_KeypadComma: String(localized: "Num , (JIS)", comment: "Key name: the comma key on a Japanese (JIS) numeric keypad"),
+        kVK_JIS_Eisu: "英数 Eisu", kVK_JIS_Kana: "かな Kana",
+        kVK_ContextualMenu: String(localized: "Menu", comment: "Key name: the context menu key of PC keyboards"),
+        kVK_Help: String(localized: "Help / Insert", comment: "Key name: the Help key, Insert on PC keyboards"),
     ]
+
+    /// Keys whose `KeyCodes` name is an English word: modifiers by side, Space, volume keys, the keypad.
+    static let wordNames: [Int: String] = {
+        var names: [Int: String] = [
+            kVK_Space: String(localized: "Space", comment: "Key name: the space bar"),
+            kVK_VolumeUp: String(localized: "Volume Up", comment: "Key name"),
+            kVK_VolumeDown: String(localized: "Volume Down", comment: "Key name"),
+            kVK_Mute: String(localized: "Mute", comment: "Key name: the mute key"),
+        ]
+        for (code, info) in modifierInfo {
+            if info.side == left {
+                names[code] = String(localized: "Left \(info.symbol)", comment: "Key name: a left-hand modifier key; %@ is its symbol, such as ⌘")
+            } else if info.side == right {
+                names[code] = String(localized: "Right \(info.symbol)", comment: "Key name: a right-hand modifier key; %@ is its symbol, such as ⌘")
+            }
+        }
+        let keypad = [kVK_ANSI_Keypad0: "0", kVK_ANSI_Keypad1: "1", kVK_ANSI_Keypad2: "2", kVK_ANSI_Keypad3: "3",
+                      kVK_ANSI_Keypad4: "4", kVK_ANSI_Keypad5: "5", kVK_ANSI_Keypad6: "6", kVK_ANSI_Keypad7: "7",
+                      kVK_ANSI_Keypad8: "8", kVK_ANSI_Keypad9: "9", kVK_ANSI_KeypadDecimal: ".",
+                      kVK_ANSI_KeypadMultiply: "*", kVK_ANSI_KeypadPlus: "+", kVK_ANSI_KeypadDivide: "/",
+                      kVK_ANSI_KeypadMinus: "-", kVK_ANSI_KeypadEquals: "="]
+        for (code, label) in keypad {
+            names[code] = String(localized: "Num \(label)", comment: "Key name: a numeric keypad key; %@ is the character on it, such as 7 or +")
+        }
+        return names
+    }()
 
     public static func name(of key: Key) -> String {
         switch key.kind {
         case .media:
-            return mediaNames[key.code] ?? "Media \(key.code)"
+            return mediaNames[key.code] ?? String(localized: "Media \(key.code)", comment: "Key name: an unknown media key; %lld is its code")
         case .keyboard:
-            if let n = extraNames[key.code] { return n }
+            if let n = extraNames[key.code] ?? wordNames[key.code] { return n }
             let code = UInt16(clamping: key.code)
             if let n = KeyCodes.special[code] { return n }
             return KeyCodes.name(for: code)
@@ -115,6 +160,7 @@ public enum KeyCatalog {
     /// One picker group.
     public struct Group: Identifiable {
         public let id: String
+        public let title: String
         public let keys: [Key]
     }
 
@@ -142,14 +188,14 @@ public enum KeyCatalog {
         let international = [kVK_ISO_Section, kVK_JIS_Yen, kVK_JIS_Underscore, kVK_JIS_KeypadComma, kVK_JIS_Eisu,
                              kVK_JIS_Kana, kVK_ContextualMenu].map(Key.keyboard)
         return [
-            Group(id: "Letters, digits & symbols", keys: letters),
-            Group(id: "Modifiers", keys: modifiers),
-            Group(id: "Editing", keys: editing),
-            Group(id: "Navigation", keys: navigation),
-            Group(id: "Function keys", keys: fkeys),
-            Group(id: "Keypad", keys: keypad),
-            Group(id: "Media & system", keys: media),
-            Group(id: "International & other", keys: international),
+            Group(id: "letters", title: String(localized: "Letters, digits & symbols", comment: "Key picker section"), keys: letters),
+            Group(id: "modifiers", title: String(localized: "Modifiers", comment: "Key picker section"), keys: modifiers),
+            Group(id: "editing", title: String(localized: "Editing", comment: "Key picker section"), keys: editing),
+            Group(id: "navigation", title: String(localized: "Navigation", comment: "Key picker section"), keys: navigation),
+            Group(id: "fkeys", title: String(localized: "Function keys", comment: "Key picker section"), keys: fkeys),
+            Group(id: "keypad", title: String(localized: "Keypad", comment: "Key picker section"), keys: keypad),
+            Group(id: "media", title: String(localized: "Media & system", comment: "Key picker section"), keys: media),
+            Group(id: "international", title: String(localized: "International & other", comment: "Key picker section"), keys: international),
         ]
     }
 

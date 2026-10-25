@@ -116,7 +116,7 @@ public final class KeyboardManagerModule: ToyModule {
 
     func exportProfile(to url: URL? = nil) {
         let s = settings.value
-        let profile = s.profiles.isEmpty ? RemapProfile(name: "Default") : s.profiles[s.activeProfileIndex]
+        let profile = s.profiles.isEmpty ? RemapProfile(name: RemapProfile.defaultName) : s.profiles[s.activeProfileIndex]
         let write: (URL) -> Void = { [log] url in
             do { try RemapProfileFile(profile: profile).encoded().write(to: url, options: .atomic) }
             catch {
@@ -127,7 +127,8 @@ public final class KeyboardManagerModule: ToyModule {
         if let url { write(url); return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = "\(profile.name) Keyboard Profile.json"
+        panel.nameFieldStringValue = String(localized: "\(profile.name) Keyboard Profile",
+                                            comment: "Suggested file name for an exported profile; %@ is the profile name") + ".json"
         NSApp.activate()
         if panel.runModal() == .OK, let url = panel.url { write(url) }
     }
@@ -142,7 +143,10 @@ public final class KeyboardManagerModule: ToyModule {
                 for i in profile.remaps.indices { profile.remaps[i].id = UUID() }
                 if profile.name.isEmpty { profile.name = url.deletingPathExtension().lastPathComponent }
                 let names = Set(self.settings.value.profiles.map(\.name))
-                if names.contains(profile.name) { profile.name += " (imported)" }
+                if names.contains(profile.name) {
+                    profile.name = String(localized: "\(profile.name) (imported)",
+                                          comment: "Name of an imported profile whose name is taken; %@ is its name")
+                }
                 self.settings.update {
                     $0.profiles.append(profile)
                     $0.activeProfileID = profile.id
@@ -177,7 +181,8 @@ public final class KeyboardManagerModule: ToyModule {
                         detail: { [weak self] in
                             guard let self else { return "" }
                             let n = self.settings.value.remaps.filter(\.isEnabled).count
-                            return "\(n) remap\(n == 1 ? "" : "s") · \(self.activeProfileName)"
+                            return String(localized: "\(n) remaps · \(self.activeProfileName)",
+                                          comment: "Quick action detail: number of enabled remaps, then the active profile name")
                         },
                         perform: { [weak self] in self?.togglePaused() }),
         ]
@@ -185,7 +190,7 @@ public final class KeyboardManagerModule: ToyModule {
 
     var activeProfileName: String {
         let s = settings.value
-        return s.profiles.isEmpty ? "Default" : s.profiles[s.activeProfileIndex].name
+        return s.profiles.isEmpty ? RemapProfile.defaultName : s.profiles[s.activeProfileIndex].name
     }
 
     public var shortcutBindings: [ShortcutBinding] {

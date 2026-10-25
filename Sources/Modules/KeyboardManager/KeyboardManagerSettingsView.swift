@@ -15,7 +15,7 @@ struct KeyboardManagerSettingsView: View {
                 Picker(selection: Binding(
                     get: { s.value.profiles.isEmpty ? UUID() : s.value.profiles[s.value.activeProfileIndex].id },
                     set: { s.value.activeProfileID = $0 })) {
-                    ForEach(s.value.profiles) { p in Text("\(p.name) · \(p.remaps.count)").tag(p.id) }
+                    ForEach(s.value.profiles) { p in Text(verbatim: "\(p.name) · \(p.remaps.count.formatted())").tag(p.id) }
                 } label: {
                     RowLabel("Active profile", subtitle: "Each profile is a complete set of remaps. Switch with mactoys://keyboardmanager/profile?name=…")
                 }
@@ -27,7 +27,7 @@ struct KeyboardManagerSettingsView: View {
                     }
                 }
                 HStack {
-                    Button("New") { addProfile(copying: false) }
+                    Button { addProfile(copying: false) } label: { Text("New", comment: "Button: create a new profile") }
                     Button("Duplicate") { addProfile(copying: true) }
                     Button("Rename…") {
                         newName = module.activeProfileName
@@ -49,10 +49,10 @@ struct KeyboardManagerSettingsView: View {
                 }
                 SliderRow("Tap-alone timeout", subtitle: "Longest press that still counts as a tap.",
                           value: Binding(get: { s.value.tapTimeout * 1000 }, set: { s.value.tapTimeout = $0 / 1000 }),
-                          in: 100...1000, step: 25) { "\(Int($0)) ms" }
+                          in: 100...1000, step: 25, format: Self.milliseconds)
                 SliderRow("Chord timeout", subtitle: "How long a chord waits for its second key.",
                           value: Binding(get: { s.value.chordTimeout * 1000 }, set: { s.value.chordTimeout = $0 / 1000 }),
-                          in: 300...3000, step: 100) { "\(Int($0)) ms" }
+                          in: 300...3000, step: 100, format: Self.milliseconds)
             }
             Section("Shortcuts") {
                 ShortcutRow("Open Keyboard Manager", shortcut: $s.value.openEditorShortcut)
@@ -72,7 +72,8 @@ struct KeyboardManagerSettingsView: View {
             HStack(spacing: 18) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Remap keys and shortcuts").font(.headline)
-                    Text("\(keys) key remap\(keys == 1 ? "" : "s") and \(remaps.count - keys) shortcut remap\(remaps.count - keys == 1 ? "" : "s") in “\(module.activeProfileName)”. Tap-alone keys, chords, text, apps and URLs are all edited in the Keyboard Manager window.")
+                    Text("\(keys) key remaps and \(remaps.count - keys) shortcut remaps in “\(module.activeProfileName)”. Tap-alone keys, chords, text, apps and URLs are all edited in the Keyboard Manager window.",
+                         comment: "Number of key remaps, number of shortcut remaps, then the profile name")
                         .font(.system(size: 12)).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Button("Open Keyboard Manager") { module.openEditor() }
@@ -84,7 +85,7 @@ struct KeyboardManagerSettingsView: View {
                         HStack(spacing: 6) {
                             Keycaps(r.triggerKeycaps)
                             Image(systemName: "arrow.right").font(.system(size: 10)).foregroundStyle(.tertiary)
-                            Text(RemapFormatting.actionSummary(r.action)).font(.system(size: 12)).lineLimit(1)
+                            Text(verbatim: RemapFormatting.actionSummary(r.action)).font(.system(size: 12)).lineLimit(1)
                         }
                     }
                 }
@@ -94,8 +95,10 @@ struct KeyboardManagerSettingsView: View {
 
     private func addProfile(copying: Bool) {
         let s = module.settings.value
-        let current = s.profiles.isEmpty ? RemapProfile(name: "Default") : s.profiles[s.activeProfileIndex]
-        var p = RemapProfile(name: copying ? "\(current.name) copy" : "Profile \(s.profiles.count + 1)")
+        let current = s.profiles.isEmpty ? RemapProfile(name: RemapProfile.defaultName) : s.profiles[s.activeProfileIndex]
+        var p = RemapProfile(name: copying
+            ? String(localized: "\(current.name) copy", comment: "Name of a duplicated profile; %@ is the original name")
+            : String(localized: "Profile \(s.profiles.count + 1)", comment: "Name of a new profile; %lld is its number"))
         if copying {
             p.remaps = current.remaps.map { var r = $0; r.id = UUID(); return r }
         }
@@ -103,6 +106,11 @@ struct KeyboardManagerSettingsView: View {
             $0.profiles.append(p)
             $0.activeProfileID = p.id
         }
+    }
+
+    private static func milliseconds(_ value: Double) -> String {
+        Measurement(value: value.rounded(), unit: UnitDuration.milliseconds)
+            .formatted(.measurement(width: .abbreviated, usage: .asProvided))
     }
 
     private func deleteProfile() {

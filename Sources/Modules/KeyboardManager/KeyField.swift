@@ -183,7 +183,7 @@ struct KeyField: View {
                 HStack(spacing: 6) {
                     if focused && !live.isEmpty && mode == .shortcut {
                         Keycaps(live.symbols)
-                        Text("…").foregroundStyle(.secondary)
+                        Text(verbatim: "…").foregroundStyle(.secondary)
                     } else {
                         Keycaps(combo.keycaps)
                     }
@@ -242,13 +242,14 @@ struct KeyPicker: View {
                 ForEach(KeyCatalog.groups) { group in
                     let keys = group.keys.filter(matches)
                     if !keys.isEmpty {
-                        Section(group.id) {
+                        Section(group.title) {
                             ForEach(keys, id: \.self) { key in
                                 Button { onPick(key) } label: {
                                     HStack {
-                                        Text(key.name)
+                                        Text(verbatim: key.name)
                                         Spacer()
-                                        Text(key.kind == .media ? "media" : "\(key.code)")
+                                        (key.kind == .media ? Text("media", comment: "Key picker: shown instead of the key code for media keys")
+                                            : Text(verbatim: "\(key.code)"))
                                             .font(.system(size: 10.5, design: .monospaced))
                                             .foregroundStyle(.tertiary)
                                     }
