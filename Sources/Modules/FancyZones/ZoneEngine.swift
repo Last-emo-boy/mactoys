@@ -97,7 +97,7 @@ final class ZoneEngine {
         if settings.value.flashZonesOnLayoutSwitch {
             overlay.flash(ZoneLayer(display: display, zones: layout.zones(in: display.workArea)), style: style)
         }
-        overlay.showLayoutName(layout.name, on: display, settings: settings.value)
+        overlay.showLayoutName(layout.displayName, on: display, settings: settings.value)
     }
 
     /// Applies the layout with quick key `n` to the active display.

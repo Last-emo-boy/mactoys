@@ -28,8 +28,8 @@ struct ZoneDisplay: Identifiable, Equatable {
         if spanning && screens.count > 1 {
             let frame = screens.map(\.axFrame).reduce(CGRect.null) { $0.union($1) }
             let work = screens.map(\.axVisibleFrame).reduce(CGRect.null) { $0.union($1) }
-            return [ZoneDisplay(key: allDisplaysKey, name: "All displays", number: 1, frame: frame,
-                                workArea: work, isBuiltIn: false)]
+            let name = String(localized: "All displays", comment: "FancyZones: every display combined into one canvas")
+            return [ZoneDisplay(key: allDisplaysKey, name: name, number: 1, frame: frame, workArea: work, isBuiltIn: false)]
         }
         let keys = keys(for: screens)
         return screens.enumerated().map { i, s in

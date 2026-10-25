@@ -216,16 +216,18 @@ public final class FancyZonesModule: ToyModule {
 
     public var shortcutBindings: [ShortcutBinding] {
         let s = settings.value
+        let hold = String(localized: "Hold", comment: "Keycap label: hold down the key that follows")
+        let drag = String(localized: "Drag", comment: "Keycap label: drag a window with the mouse")
         var list = [ShortcutBinding("Launch layout editor", s.editorShortcut),
-                    ShortcutBinding("Snap a window into zones", keys: s.holdShiftToActivate ? ["Hold", "⇧", "Drag"] : ["Drag"]),
-                    ShortcutBinding("Span several zones while dragging", keys: ["Hold", "⌘"])]
+                    ShortcutBinding("Snap a window into zones", keys: s.holdShiftToActivate ? [hold, "⇧", drag] : [drag]),
+                    ShortcutBinding("Span several zones while dragging", keys: [hold, "⌘"])]
         if s.moveWithKeyboard {
             for d in ZoneDirection.allCases where s.moveMode == .relativePosition || d == .left || d == .right {
-                list.append(ShortcutBinding("Move window to the zone \(Self.arrowName(d))", s.moveShortcut(d)))
+                list.append(ShortcutBinding(Self.moveTitle(d), s.moveShortcut(d)))
             }
             if s.moveMode == .relativePosition {
                 for d in ZoneDirection.allCases {
-                    list.append(ShortcutBinding("Extend window to the zone \(Self.arrowName(d))", s.extendShortcut(d)))
+                    list.append(ShortcutBinding(Self.extendTitle(d), s.extendShortcut(d)))
                 }
             }
         }
@@ -235,18 +237,31 @@ public final class FancyZonesModule: ToyModule {
         }
         if s.quickLayoutSwitch {
             for l in layouts.value.all.filter({ $0.quickKey != nil }).sorted(by: { ($0.quickKey ?? 0) < ($1.quickKey ?? 0) }) {
-                if let k = l.quickKey { list.append(ShortcutBinding("Apply layout \(k) · \(l.name)", quickLayoutShortcut(k))) }
+                if let k = l.quickKey {
+                    let title = String(localized: "Apply layout \(k) · \(l.displayName)",
+                                       comment: "Shortcut list: the layout's quick key number (1–9), then its name")
+                    list.append(ShortcutBinding(title, quickLayoutShortcut(k)))
+                }
             }
         }
         return list
     }
 
-    private static func arrowName(_ d: ZoneDirection) -> String {
+    private static func moveTitle(_ d: ZoneDirection) -> String {
         switch d {
-        case .left: "on the left"
-        case .right: "on the right"
-        case .up: "above"
-        case .down: "below"
+        case .left: String(localized: "Move window to the zone on the left")
+        case .right: String(localized: "Move window to the zone on the right")
+        case .up: String(localized: "Move window to the zone above")
+        case .down: String(localized: "Move window to the zone below")
+        }
+    }
+
+    private static func extendTitle(_ d: ZoneDirection) -> String {
+        switch d {
+        case .left: String(localized: "Extend window to the zone on the left")
+        case .right: String(localized: "Extend window to the zone on the right")
+        case .up: String(localized: "Extend window to the zone above")
+        case .down: String(localized: "Extend window to the zone below")
         }
     }
 

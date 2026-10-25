@@ -161,7 +161,7 @@ struct EditorScreenView: View {
                 .position(x: area.midX, y: area.midY)
                 .allowsHitTesting(false)
             if model.displays.count > 1 {
-                Label("\(d.number)  \(d.name)", systemImage: "display")
+                Label { Text(verbatim: "\(d.number)  \(d.name)") } icon: { Image(systemName: "display") }
                     .font(.system(size: 13, weight: .semibold))
                     .padding(.horizontal, 12).padding(.vertical, 7)
                     .background(Capsule().fill(selected ? Color.accentColor : Color.black.opacity(0.45)))

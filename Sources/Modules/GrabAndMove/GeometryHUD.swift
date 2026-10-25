@@ -18,7 +18,7 @@ struct GeometryReadout: View {
             Image(systemName: model.resizing ? "arrow.up.left.and.arrow.down.right" : "arrow.up.and.down.and.arrow.left.and.right")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.8))
-            Text(GrabGeometry.readout(model.frame))
+            Text(verbatim: GrabGeometry.readout(model.frame))
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white)
         }

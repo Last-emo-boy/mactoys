@@ -12,8 +12,8 @@ struct FancyZonesSettingsView: View {
             FancyZonesHero(module: module)
         } content: {
             Section("Zone activation") {
-                Toggle(isOn: $s.value.holdShiftToActivate) { RowLabel("Hold ⇧ to activate zones while dragging",
-                    subtitle: v.holdShiftToActivate ? nil : "Zones show as soon as you drag a window; hold ⇧ to drag freely") }
+                Toggle(isOn: $s.value.holdShiftToActivate) { RowLabel(title: Text("Hold ⇧ to activate zones while dragging"),
+                    subtitle: v.holdShiftToActivate ? nil : Text("Zones show as soon as you drag a window; hold ⇧ to drag freely")) }
                 Toggle(isOn: $s.value.nonPrimaryButtonToggles) { RowLabel("Use a non-primary mouse button to toggle zones",
                     subtitle: "Right-click while dragging shows or hides zones") }
                 Toggle(isOn: $s.value.middleButtonSpansZones) { RowLabel("Use the middle mouse button to span multiple zones",
@@ -24,13 +24,13 @@ struct FancyZonesSettingsView: View {
                 Toggle(isOn: $s.value.mouseWheelSwitchesLayouts) { RowLabel("Scroll while dragging to cycle layouts",
                     subtitle: "Shows the layout name as you switch. Cycles layouts with a quick key, else custom layouts") }
                 Picker(selection: $s.value.overlapAlgorithm) {
-                    ForEach(OverlapAlgorithm.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(OverlapAlgorithm.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("When multiple zones overlap") }
             }
 
             Section("Zone appearance") {
                 Picker(selection: $s.value.zoneColors) {
-                    ForEach(FancyZonesSettings.ZoneColors.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(FancyZonesSettings.ZoneColors.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("Colors") }
                 Group {
                     ColorRow("Highlight color", subtitle: "The zone a window will drop into", color: $s.value.highlightColor)
@@ -39,7 +39,9 @@ struct FancyZonesSettingsView: View {
                     ColorRow("Number color", color: $s.value.numberColor)
                 }
                 .disabled(v.zoneColors == .system)
-                SliderRow("Opacity", value: $s.value.opacity, in: 0...100, step: 5) { "\(Int($0))%" }
+                SliderRow("Opacity", value: $s.value.opacity, in: 0...100, step: 5) {
+                    ($0 / 100).formatted(.percent.precision(.fractionLength(0)))
+                }
                 Toggle(isOn: $s.value.showZoneNumber) { RowLabel("Show zone number") }
             }
 
@@ -48,14 +50,15 @@ struct FancyZonesSettingsView: View {
                     subtitle: "While dragging (mouse wheel) or with a quick layout key") }
                 Group {
                     Picker(selection: $s.value.layoutNamePosition) {
-                        ForEach(FancyZonesSettings.IndicatorPosition.allCases, id: \.self) { Text($0.title).tag($0) }
+                        ForEach(FancyZonesSettings.IndicatorPosition.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                     } label: { RowLabel("Position on screen") }
                     ColorRow("Text color", color: $s.value.layoutNameTextColor)
                     ColorRow("Background color", color: $s.value.layoutNameBackground)
-                    SliderRow("Text size", value: $s.value.layoutNameTextSize, in: 8...128, step: 1) { "\(Int($0)) pt" }
-                    SliderRow("Padding", value: $s.value.layoutNamePadding, in: 0...64, step: 1) { "\(Int($0)) pt" }
+                    SliderRow("Text size", value: $s.value.layoutNameTextSize, in: 8...128, step: 1) { "\(Int($0).formatted()) pt" }
+                    SliderRow("Padding", value: $s.value.layoutNamePadding, in: 0...64, step: 1) { "\(Int($0).formatted()) pt" }
                     SliderRow("Display duration", value: $s.value.layoutNameDuration, in: 300...10_000, step: 100) {
-                        String(format: "%.1f s", $0 / 1000)
+                        Measurement(value: $0 / 1000, unit: UnitDuration.seconds)
+                            .formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(1))))
                     }
                 }
                 .disabled(!v.showLayoutName)
@@ -83,11 +86,11 @@ struct FancyZonesSettingsView: View {
                 Toggle(isOn: $s.value.moveWithKeyboard) { RowLabel("Move windows between zones with the keyboard") }
                 Group {
                     Picker(selection: $s.value.moveMode) {
-                        ForEach(FancyZonesSettings.MoveMode.allCases, id: \.self) { Text($0.title).tag($0) }
+                        ForEach(FancyZonesSettings.MoveMode.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                     } label: {
-                        RowLabel("Move windows based on", subtitle: v.moveMode == .zoneIndex
-                                 ? "← and → step through zone numbers; ↑ and ↓ stay with the app"
-                                 : "Arrows pick the nearest zone in that direction; ⌃⌥⇧ arrows extend over several zones")
+                        RowLabel(title: Text("Move windows based on"), subtitle: v.moveMode == .zoneIndex
+                                 ? Text("← and → step through zone numbers; ↑ and ↓ stay with the app")
+                                 : Text("Arrows pick the nearest zone in that direction; ⌃⌥⇧ arrows extend over several zones"))
                     }
                     Toggle(isOn: $s.value.moveAcrossDisplays) { RowLabel("Move windows between zones across all displays") }
                     Toggle(isOn: $s.value.wrapAround) { RowLabel("Wrap around to the first zone after the last") }
@@ -115,10 +118,10 @@ struct FancyZonesSettingsView: View {
             Section("Layouts") {
                 ShortcutRow("Open layout editor", shortcut: $s.value.editorShortcut)
                 Picker(selection: $s.value.editorDisplay) {
-                    ForEach(FancyZonesSettings.EditorDisplay.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(FancyZonesSettings.EditorDisplay.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("Open the editor on") }
                 Toggle(isOn: $s.value.quickLayoutSwitch) {
-                    RowLabel("Enable quick layout switch", subtitle: quickKeysSummary)
+                    RowLabel(title: Text("Enable quick layout switch"), subtitle: Text(verbatim: quickKeysSummary))
                 }
                 Toggle(isOn: $s.value.flashZonesOnLayoutSwitch) { RowLabel("Flash zones when switching layout") }
                 layoutPicker("Default layout for horizontal displays", selection: $s.value.defaultHorizontalLayout)
@@ -133,13 +136,13 @@ struct FancyZonesSettingsView: View {
 
     private var quickKeysSummary: String {
         let keyed = module.layouts.value.all.filter { $0.quickKey != nil }.sorted { ($0.quickKey ?? 0) < ($1.quickKey ?? 0) }
-        guard !keyed.isEmpty else { return "Assign ⌃⌥⇧ number keys to layouts in the editor" }
-        return keyed.map { "⌃⌥⇧\($0.quickKey ?? 0) \($0.name)" }.joined(separator: " · ")
+        guard !keyed.isEmpty else { return String(localized: "Assign ⌃⌥⇧ number keys to layouts in the editor") }
+        return keyed.map { "⌃⌥⇧\($0.quickKey ?? 0) \($0.displayName)" }.joined(separator: " · ")
     }
 
-    private func layoutPicker(_ title: String, selection: Binding<String>) -> some View {
+    private func layoutPicker(_ title: LocalizedStringKey, selection: Binding<String>) -> some View {
         Picker(selection: selection) {
-            ForEach(module.layouts.value.all.filter { $0.kind != .blank }) { Text($0.name).tag($0.id) }
+            ForEach(module.layouts.value.all.filter { $0.kind != .blank }) { Text(verbatim: $0.displayName).tag($0.id) }
         } label: { RowLabel(title, subtitle: "Used by displays you haven't picked a layout for") }
     }
 }
@@ -170,18 +173,20 @@ private struct FancyZonesHero: View {
                                         .fill(Color(nsColor: .controlBackgroundColor)))
                                     .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
                                         .strokeBorder(on ? Color.accentColor : Color.primary.opacity(0.1), lineWidth: on ? 2 : 1))
-                                Text(t.kind == .priorityGrid ? "Priority" : t.name)
+                                (t.kind == .priorityGrid
+                                    ? Text("Priority", comment: "Short name of the Priority Grid layout template, under its thumbnail")
+                                    : Text(verbatim: t.displayName))
                                     .font(.system(size: 11, weight: on ? .semibold : .regular))
                                     .foregroundStyle(on ? Color.accentColor : .secondary)
                                     .fixedSize()
                             }
                         }
                         .buttonStyle(.plain)
-                        .help("Apply \(t.name)")
+                        .help(Text("Apply \(t.displayName)", comment: "Tooltip: apply the layout template with this name"))
                     }
                 }
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("\(current?.name ?? "No layout") on \(display?.name ?? "this display")")
+                    title(layout: current?.displayName ?? ZoneLayout.Kind.blank.title, display: display?.name)
                         .font(.system(size: 14, weight: .semibold))
                     Text("Each display keeps its own layout. Custom canvas and grid layouts are made in the editor.")
                         .font(.system(size: 12)).foregroundStyle(.secondary)
@@ -194,6 +199,14 @@ private struct FancyZonesHero: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+        }
+    }
+
+    private func title(layout: String, display: String?) -> Text {
+        if let display {
+            Text("\(layout) on \(display)", comment: "FancyZones: a layout name, then the name of the display that uses it")
+        } else {
+            Text("\(layout) on this display", comment: "FancyZones: a layout name")
         }
     }
 }

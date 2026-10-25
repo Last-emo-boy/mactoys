@@ -416,6 +416,15 @@ import Testing
         #expect(lib.uniqueName("Columns") == "Columns 2")
     }
 
+    @Test func templatesAreStoredInEnglishAndShownByKind() {
+        let pg = ZoneLayout.template(.priorityGrid)
+        #expect(pg.name == "Priority Grid")
+        #expect(pg.displayName == ZoneLayout.Kind.priorityGrid.title)
+        #expect(LayoutLibrary().resolve("Priority Grid")?.kind == .priorityGrid)
+        let custom = ZoneLayout.newGrid(name: "Coding")
+        #expect(custom.displayName == "Coding")
+    }
+
     @Test func libraryAndSettingsPersist() throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let store = SettingsStore(directory: dir)
