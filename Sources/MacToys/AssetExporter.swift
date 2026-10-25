@@ -31,7 +31,7 @@ enum AssetExporter {
         for m in registry.modules {
             let info = m.info
             SnapshotRenderer.render(AnyView(ModuleIcon(info, size: 512).padding(0)), size: CGSize(width: 512, height: 512),
-                                    to: dir.appendingPathComponent("icons/\(info.id).png"), transparent: true, scale: 1)
+                                    to: dir.appendingPathComponent("icons/\(info.id).png"), transparent: true, scale: 1, toolbar: false)
             modules.append([
                 "id": info.id, "name": info.name, "summary": info.summary, "symbol": info.symbol,
                 "tint": info.tint.rawValue, "category": info.category.rawValue, "categoryTitle": info.category.title,
@@ -42,15 +42,15 @@ enum AssetExporter {
                 let content = scene.view()
                 let view = scene.wallpaper ? AnyView(ZStack { Wallpaper(); content }) : content
                 SnapshotRenderer.render(view, size: scene.size,
-                                        to: dir.appendingPathComponent("scenes/\(info.id).\(scene.name).png"))
+                                        to: dir.appendingPathComponent("scenes/\(info.id).\(scene.name).png"), toolbar: false)
             }
         }
         SnapshotRenderer.render(AnyView(AppMark(size: 512)), size: CGSize(width: 512, height: 512),
-                                to: dir.appendingPathComponent("icons/app.png"), transparent: true, scale: 1)
+                                to: dir.appendingPathComponent("icons/app.png"), transparent: true, scale: 1, toolbar: false)
         SnapshotRenderer.render(AnyView(WelcomeView {}), size: CGSize(width: 860, height: 600),
-                                to: dir.appendingPathComponent("ui/welcome.png"))
+                                to: dir.appendingPathComponent("ui/welcome.png"), toolbar: false)
         SnapshotRenderer.render(AnyView(QuickAccessView().background(.regularMaterial)), size: CGSize(width: 380, height: 560),
-                                to: dir.appendingPathComponent("ui/quickaccess.png"))
+                                to: dir.appendingPathComponent("ui/quickaccess.png"), toolbar: false)
 
         // Content column only (the film draws the sidebar itself from `sidebar` in the manifest),
         // 930 × 1400 so long pages can be scrolled in the film.
@@ -65,7 +65,7 @@ enum AssetExporter {
             }
             SnapshotRenderer.render(AnyView(view.background(Color(nsColor: .windowBackgroundColor))),
                                     size: CGSize(width: 930, height: 1400),
-                                    to: dir.appendingPathComponent("pages/\(page).png"))
+                                    to: dir.appendingPathComponent("pages/\(page).png"), toolbar: false)
             if await captureLiveWindow(page: page, to: dir.appendingPathComponent("pages/\(page).window.png")) {
                 captured += 1
             }

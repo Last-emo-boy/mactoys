@@ -34,11 +34,15 @@ enum SnapshotRenderer {
     }
 
     /// `transparent` keeps the background clear (icons); `scale` overrides the backing scale.
-    static func render(_ view: AnyView, size: CGSize, to url: URL, transparent: Bool = false, scale renderScale: CGFloat? = nil) {
+    static func render(_ view: AnyView, size: CGSize, to url: URL, transparent: Bool = false, scale renderScale: CGFloat? = nil,
+                       toolbar: Bool = true) {
         let window = NSWindow(contentRect: CGRect(origin: CGPoint(x: -20000, y: -20000), size: size),
-                              styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
-        window.toolbar = NSToolbar(identifier: "snap")
-        window.toolbarStyle = .unified
+                              styleMask: toolbar ? [.titled, .fullSizeContentView] : [.borderless],
+                              backing: .buffered, defer: false)
+        if toolbar {
+            window.toolbar = NSToolbar(identifier: "snap")
+            window.toolbarStyle = .unified
+        }
         // cacheDisplay draws grouped-Form backgrounds in the light style even in Dark Mode,
         // so render everything light for legible snapshots (`--dark` overrides for overlays).
         let dark = CommandLine.arguments.contains("--dark")

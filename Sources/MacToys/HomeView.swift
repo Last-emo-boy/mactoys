@@ -80,7 +80,9 @@ struct HomeView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 ModuleIcon(symbol: a.symbol, tint: a.tint, size: 30)
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text(verbatim: a.title).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
+                                    Text(verbatim: a.title).font(.system(size: 12.5, weight: .semibold))
+                                        .lineLimit(2, reservesSpace: true)
+                                        .fixedSize(horizontal: false, vertical: true)
                                     if let s = a.shortcut { Keycaps(s) } else {
                                         Text("Opens editor").font(.system(size: 11)).foregroundStyle(.tertiary)
                                     }

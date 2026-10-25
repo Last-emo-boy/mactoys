@@ -6,3 +6,6 @@ DerivedData/
 .DS_Store
 .build-*/
 .workflow/
+broll/node_modules/
+broll/out/
+broll/public/assets/app/
