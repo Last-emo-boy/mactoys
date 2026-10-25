@@ -31,11 +31,11 @@ public enum WindowState: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .saved: "Saved position"
-        case .minimized: "Minimized"
-        case .fill: "Fill the screen"
-        case .fullScreen: "Full screen"
-        case .hidden: "Hidden"
+        case .saved: String(localized: "Saved position", comment: "Launch a window as: at its saved position")
+        case .minimized: String(localized: "Minimized", comment: "Window state: minimized (a badge on a window, or how it is launched)")
+        case .fill: String(localized: "Fill the screen", comment: "Launch a window as: filling the screen")
+        case .fullScreen: String(localized: "Full screen", comment: "Launch a window as: in full-screen mode")
+        case .hidden: String(localized: "Hidden", comment: "Launch a window as: its app hidden")
         }
     }
 }

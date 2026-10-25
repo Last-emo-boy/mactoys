@@ -176,7 +176,11 @@ public final class AlwaysOnTopModule: ToyModule {
         for p in all { p.teardown() }
         syncList()
         stopTimer()
-        if show { feedback(pinned: false, title: all.count == 1 ? displayName(of: all[0]) : "\(all.count) windows") }
+        if show {
+            let title = all.count == 1 ? displayName(of: all[0])
+                : String(localized: "\(all.count) windows", comment: "Always On Top: what was unpinned, shown after “Unpinned ·”")
+            feedback(pinned: false, title: title)
+        }
     }
 
     private func raise(_ pin: PinnedWindow) {
@@ -191,7 +195,10 @@ public final class AlwaysOnTopModule: ToyModule {
 
     private func feedback(pinned: Bool, title: String) {
         let s = settings.value
-        HUD.show(pinned ? "Pinned · \(title)" : "Unpinned · \(title)", symbol: pinned ? "pin.fill" : "pin.slash")
+        let message = pinned
+            ? String(localized: "Pinned · \(title)", comment: "HUD after pinning; %@ is the window title or app name")
+            : String(localized: "Unpinned · \(title)", comment: "HUD after unpinning; %@ is the window title, app name or a window count")
+        HUD.show(message, symbol: pinned ? "pin.fill" : "pin.slash")
         if s.playSound { NSSound(named: pinned ? "Tink" : "Pop")?.play() }
     }
 

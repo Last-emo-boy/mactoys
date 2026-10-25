@@ -47,7 +47,7 @@ struct MockWindow: View {
                              Color(red: 0.16, green: 0.79, blue: 0.25)], id: \.self) { Circle().fill($0).frame(width: 12, height: 12) }
                     Spacer()
                 }
-                Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(.black.opacity(0.7))
+                Text(verbatim: title).font(.system(size: 13, weight: .semibold)).foregroundStyle(.black.opacity(0.7))
             }
             .padding(.horizontal, 14)
             .frame(height: 40)
@@ -101,8 +101,8 @@ private struct MockPlayer: View {
                 .frame(width: 78, height: 78)
                 .overlay(Image(systemName: "music.note").font(.system(size: 28, weight: .semibold)).foregroundStyle(.white))
             VStack(alignment: .leading, spacing: 6) {
-                Text("Midnight City").font(.system(size: 14, weight: .semibold)).foregroundStyle(.black.opacity(0.85))
-                Text("M83 · Hurry Up, We're Dreaming").font(.system(size: 11.5)).foregroundStyle(.black.opacity(0.5))
+                Text(verbatim: "Midnight City").font(.system(size: 14, weight: .semibold)).foregroundStyle(.black.opacity(0.85))
+                Text(verbatim: "M83 · Hurry Up, We're Dreaming").font(.system(size: 11.5)).foregroundStyle(.black.opacity(0.5))
                 HStack(spacing: 16) {
                     Image(systemName: "backward.fill")
                     Image(systemName: "pause.fill").font(.system(size: 18))

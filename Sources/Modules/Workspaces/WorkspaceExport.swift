@@ -17,9 +17,9 @@ enum WorkspaceExport {
 
         var title: String {
             switch self {
-            case .app: "App (for the Dock)"
-            case .webloc: "Web Location (.webloc)"
-            case .command: "Shell Script (.command)"
+            case .app: String(localized: "App (for the Dock)", comment: "Kind of workspace shortcut file")
+            case .webloc: String(localized: "Web Location (.webloc)", comment: "Kind of workspace shortcut file; keep .webloc")
+            case .command: String(localized: "Shell Script (.command)", comment: "Kind of workspace shortcut file; keep .command")
             }
         }
     }
@@ -28,7 +28,8 @@ enum WorkspaceExport {
         case compileFailed(String)
         var errorDescription: String? {
             switch self {
-            case .compileFailed(let why): "Couldn't create the app: \(why)"
+            case .compileFailed(let why):
+                String(localized: "Couldn't create the app: \(why)", comment: "%@ is the error from the AppleScript compiler")
             }
         }
     }

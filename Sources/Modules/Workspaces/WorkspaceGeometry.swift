@@ -86,31 +86,122 @@ struct CanvasMapping {
 }
 
 /// Words for where a window sits on its display: "left two thirds", "top right", "full screen".
+/// Every phrase is localized whole: side and fraction words agree with each other in many languages.
 enum PositionDescriber {
-    private static let fractions: [(Double, String)] = [(1.0 / 4, "quarter"), (1.0 / 3, "third"), (1.0 / 2, "half"),
-                                                         (2.0 / 3, "two thirds"), (3.0 / 4, "three quarters")]
+    private enum Fraction { case quarter, third, half, twoThirds, threeQuarters }
+    private enum Column { case left, center, right }
+    private enum Row { case top, middle, bottom }
+
+    private static let fractions: [(Double, Fraction)] = [(1.0 / 4, .quarter), (1.0 / 3, .third), (1.0 / 2, .half),
+                                                           (2.0 / 3, .twoThirds), (3.0 / 4, .threeQuarters)]
 
     static func describe(_ frame: CGRect, in visible: CGRect) -> String {
-        guard visible.width > 0, visible.height > 0 else { return "custom" }
+        guard visible.width > 0, visible.height > 0 else {
+            return String(localized: "custom", comment: "Window position on a display: no recognizable place")
+        }
         let w = frame.width / visible.width, h = frame.height / visible.height
         let x0 = (frame.minX - visible.minX) / visible.width, x1 = (frame.maxX - visible.minX) / visible.width
         let y0 = (frame.minY - visible.minY) / visible.height, y1 = (frame.maxY - visible.minY) / visible.height
         let fullW = w >= 0.9, fullH = h >= 0.9
-        if fullW && fullH { return "full screen" }
-        let hSide: String? = x0 < 0.05 ? "left" : (x1 > 0.95 ? "right" : nil)
-        let vSide: String? = y0 < 0.05 ? "top" : (y1 > 0.95 ? "bottom" : nil)
-        if fullH { return [hSide ?? "center", fraction(w)].compactMap { $0 }.joined(separator: " ") }
-        if fullW { return [vSide ?? "middle", fraction(h)].compactMap { $0 }.joined(separator: " ") }
+        if fullW && fullH {
+            return String(localized: "full screen", comment: "Window placement: covers the whole screen, or is in full-screen mode")
+        }
+        let hSide: Column? = x0 < 0.05 ? .left : (x1 > 0.95 ? .right : nil)
+        let vSide: Row? = y0 < 0.05 ? .top : (y1 > 0.95 ? .bottom : nil)
+        if fullH { return column(hSide ?? .center, fraction(w)) }
+        if fullW { return row(vSide ?? .middle, fraction(h)) }
         switch (vSide, hSide) {
-        case let (v?, h?): return "\(v) \(h)"
-        case let (v?, nil): return v
-        case let (nil, h?): return h
-        default: return "center"
+        case (.top?, .left?): return String(localized: "top left", comment: "Window position on a display")
+        case (.top?, .right?): return String(localized: "top right", comment: "Window position on a display")
+        case (.bottom?, .left?): return String(localized: "bottom left", comment: "Window position on a display")
+        case (.bottom?, .right?): return String(localized: "bottom right", comment: "Window position on a display")
+        case let (v?, nil): return row(v, nil)
+        case let (nil, h?): return column(h, nil)
+        default: return column(.center, nil)
         }
     }
 
-    private static func fraction(_ f: Double) -> String? {
+    private static func fraction(_ f: Double) -> Fraction? {
         fractions.first { abs($0.0 - f) < 0.05 }?.1
+    }
+
+    /// A full-height window: its side and how much of the width it takes.
+    private static func column(_ side: Column, _ fraction: Fraction?) -> String {
+        switch (side, fraction) {
+        case (.left, nil): String(localized: "left", comment: "Window position on a display")
+        case (.left, .quarter):
+            String(localized: "left quarter", comment: "Window position: a full-height column (side, share of the width)")
+        case (.left, .third):
+            String(localized: "left third", comment: "Window position: a full-height column (side, share of the width)")
+        case (.left, .half):
+            String(localized: "left half", comment: "Window position: a full-height column (side, share of the width)")
+        case (.left, .twoThirds):
+            String(localized: "left two thirds", comment: "Window position: a full-height column (side, share of the width)")
+        case (.left, .threeQuarters):
+            String(localized: "left three quarters", comment: "Window position: a full-height column (side, share of the width)")
+        case (.center, nil): String(localized: "center", comment: "Window position on a display")
+        case (.center, .quarter):
+            String(localized: "center quarter", comment: "Window position: a full-height column (side, share of the width)")
+        case (.center, .third):
+            String(localized: "center third", comment: "Window position: a full-height column (side, share of the width)")
+        case (.center, .half):
+            String(localized: "center half", comment: "Window position: a full-height column (side, share of the width)")
+        case (.center, .twoThirds):
+            String(localized: "center two thirds", comment: "Window position: a full-height column (side, share of the width)")
+        case (.center, .threeQuarters):
+            String(localized: "center three quarters", comment: "Window position: a full-height column (side, share of the width)")
+        case (.right, nil): String(localized: "right", comment: "Window position on a display")
+        case (.right, .quarter):
+            String(localized: "right quarter", comment: "Window position: a full-height column (side, share of the width)")
+        case (.right, .third):
+            String(localized: "right third", comment: "Window position: a full-height column (side, share of the width)")
+        case (.right, .half):
+            String(localized: "right half", comment: "Window position: a full-height column (side, share of the width)")
+        case (.right, .twoThirds):
+            String(localized: "right two thirds", comment: "Window position: a full-height column (side, share of the width)")
+        case (.right, .threeQuarters):
+            String(localized: "right three quarters", comment: "Window position: a full-height column (side, share of the width)")
+        }
+    }
+
+    /// A full-width window: its side and how much of the height it takes.
+    private static func row(_ side: Row, _ fraction: Fraction?) -> String {
+        switch (side, fraction) {
+        case (.top, nil): String(localized: "top", comment: "Window position on a display")
+        case (.top, .quarter):
+            String(localized: "top quarter", comment: "Window position: a full-width row (side, share of the height)")
+        case (.top, .third):
+            String(localized: "top third", comment: "Window position: a full-width row (side, share of the height)")
+        case (.top, .half):
+            String(localized: "top half", comment: "Window position: a full-width row (side, share of the height)")
+        case (.top, .twoThirds):
+            String(localized: "top two thirds", comment: "Window position: a full-width row (side, share of the height)")
+        case (.top, .threeQuarters):
+            String(localized: "top three quarters", comment: "Window position: a full-width row (side, share of the height)")
+        case (.middle, nil):
+            String(localized: "middle", comment: "Window position on a display: full width, vertically in the middle")
+        case (.middle, .quarter):
+            String(localized: "middle quarter", comment: "Window position: a full-width row (side, share of the height)")
+        case (.middle, .third):
+            String(localized: "middle third", comment: "Window position: a full-width row (side, share of the height)")
+        case (.middle, .half):
+            String(localized: "middle half", comment: "Window position: a full-width row (side, share of the height)")
+        case (.middle, .twoThirds):
+            String(localized: "middle two thirds", comment: "Window position: a full-width row (side, share of the height)")
+        case (.middle, .threeQuarters):
+            String(localized: "middle three quarters", comment: "Window position: a full-width row (side, share of the height)")
+        case (.bottom, nil): String(localized: "bottom", comment: "Window position on a display")
+        case (.bottom, .quarter):
+            String(localized: "bottom quarter", comment: "Window position: a full-width row (side, share of the height)")
+        case (.bottom, .third):
+            String(localized: "bottom third", comment: "Window position: a full-width row (side, share of the height)")
+        case (.bottom, .half):
+            String(localized: "bottom half", comment: "Window position: a full-width row (side, share of the height)")
+        case (.bottom, .twoThirds):
+            String(localized: "bottom two thirds", comment: "Window position: a full-width row (side, share of the height)")
+        case (.bottom, .threeQuarters):
+            String(localized: "bottom three quarters", comment: "Window position: a full-width row (side, share of the height)")
+        }
     }
 }
 

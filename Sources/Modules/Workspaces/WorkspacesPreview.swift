@@ -87,7 +87,7 @@ struct LaunchProgressPreview: View {
                                     displayID: WorkspaceSamples.external.id,
                                     frame: CGRect(x: 1512, y: 115, width: 1280, height: 775)))
         let session = LaunchSession(workspace: ws)
-        let statuses: [LaunchSession.Status] = [.launched, .moved, .arranging, .launching, .failed("App not found")]
+        let statuses: [LaunchSession.Status] = [.launched, .moved, .arranging, .launching, .failed(String(localized: "App not found"))]
         for (row, status) in zip(session.rows, statuses) { session.set(row.id, status) }
         return session
     }

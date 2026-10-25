@@ -117,7 +117,7 @@ struct MockDashboard: View {
                 ForEach([Color(red: 1, green: 0.37, blue: 0.34), Color(red: 1, green: 0.74, blue: 0.18),
                          Color(red: 0.16, green: 0.79, blue: 0.25)], id: \.self) { Circle().fill($0).frame(width: 12, height: 12) }
                 Spacer()
-                Text("Analytics — Q4").font(.system(size: 13, weight: .semibold)).foregroundStyle(.black.opacity(0.7))
+                Text(verbatim: "Analytics — Q4").font(.system(size: 13, weight: .semibold)).foregroundStyle(.black.opacity(0.7))
                 Spacer()
                 Color.clear.frame(width: 50)
             }
@@ -132,7 +132,7 @@ struct MockDashboard: View {
                 }
                 .frame(width: 320)
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Weekly signups").font(.system(size: 13, weight: .semibold)).foregroundStyle(.black.opacity(0.8))
+                    Text(verbatim: "Weekly signups").font(.system(size: 13, weight: .semibold)).foregroundStyle(.black.opacity(0.8))
                     HStack(alignment: .bottom, spacing: 9) {
                         ForEach(Array(bars.enumerated()), id: \.offset) { i, v in
                             RoundedRectangle(cornerRadius: 3)
@@ -170,11 +170,11 @@ struct MockDashboard: View {
     private func stat(_ title: String, _ value: String, _ delta: String, _ color: Color) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.system(size: 11.5)).foregroundStyle(.black.opacity(0.5))
-                Text(value).font(.system(size: 19, weight: .bold)).foregroundStyle(.black.opacity(0.85))
+                Text(verbatim: title).font(.system(size: 11.5)).foregroundStyle(.black.opacity(0.5))
+                Text(verbatim: value).font(.system(size: 19, weight: .bold)).foregroundStyle(.black.opacity(0.85))
             }
             Spacer()
-            Text(delta).font(.system(size: 12, weight: .semibold)).foregroundStyle(color)
+            Text(verbatim: delta).font(.system(size: 12, weight: .semibold)).foregroundStyle(color)
         }
         .padding(.horizontal, 14)
         .frame(height: 50)

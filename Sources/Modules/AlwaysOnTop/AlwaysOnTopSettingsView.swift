@@ -34,7 +34,9 @@ struct AlwaysOnTopSettingsView: View {
                     if s.value.colorMode == .custom {
                         ColorRow("Color", color: $s.value.customColor, supportsOpacity: false)
                     }
-                    SliderRow("Opacity", value: $s.value.opacity, in: 0...100, step: 1) { "\(Int($0)) %" }
+                    SliderRow("Opacity", value: $s.value.opacity, in: 0...100, step: 1) {
+                        ($0 / 100).formatted(.percent.precision(.fractionLength(0)))
+                    }
                     SliderRow("Thickness", value: $s.value.thickness, in: 1...24, step: 1) { "\(Int($0)) px" }
                     Toggle(isOn: $s.value.roundedCorners) {
                         RowLabel("Enable rounded corners")
@@ -47,9 +49,9 @@ struct AlwaysOnTopSettingsView: View {
                     RowLabel("Play a sound when pinning a window")
                 }
                 Picker(selection: $s.value.frameRate) {
-                    Text("15 fps").tag(15)
-                    Text("30 fps").tag(30)
-                    Text("60 fps").tag(60)
+                    ForEach([15, 30, 60], id: \.self) { fps in
+                        Text("\(fps) fps", comment: "Frame rate: frames per second").tag(fps)
+                    }
                 } label: {
                     RowLabel("Mirror frame rate", subtitle: "Higher rates look smoother and use more energy")
                 }
@@ -73,7 +75,8 @@ private struct AlwaysOnTopHero: View {
                 .frame(width: 150, height: 96)
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
-                    Text("Pin the focused window with").font(.system(size: 13, weight: .semibold))
+                    Text("Pin the focused window with", comment: "Followed by the keys of the keyboard shortcut")
+                        .font(.system(size: 13, weight: .semibold))
                     Keycaps(module.settings.value.activation)
                 }
                 Text("macOS doesn't let one app float another app's windows, so a pinned window is kept in front by a live mirror while you work elsewhere. Pointing at it brings the real window forward in place.")
@@ -86,9 +89,9 @@ private struct AlwaysOnTopHero: View {
                         ForEach(list.items) { item in
                             HStack(spacing: 8) {
                                 Image(systemName: "pin.fill").foregroundStyle(Tint.indigo.color).font(.system(size: 11))
-                                Text(item.title.isEmpty ? item.app : item.title).lineLimit(1)
+                                Text(verbatim: item.title.isEmpty ? item.app : item.title).lineLimit(1)
                                 if !item.title.isEmpty {
-                                    Text(item.app).foregroundStyle(.secondary).lineLimit(1)
+                                    Text(verbatim: item.app).foregroundStyle(.secondary).lineLimit(1)
                                 }
                                 Spacer(minLength: 8)
                                 Button("Unpin") { module.unpin(windowID: item.id) }.controlSize(.small)

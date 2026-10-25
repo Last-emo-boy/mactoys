@@ -28,7 +28,8 @@ struct WorkspaceCanvas: View {
                         .fill(Color.white.opacity(0.05))
                         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.white.opacity(0.14), lineWidth: 1.5))
                         .overlay(alignment: .bottomTrailing) {
-                            Text("Display \(workspace.displayNumber(of: display.id))")
+                            Text("Display \(workspace.displayNumber(of: display.id))",
+                                 comment: "A display of the workspace; %lld is its number")
                                 .font(.system(size: 10, weight: .semibold))
                                 .foregroundStyle(.white.opacity(0.35))
                                 .padding(6)
@@ -58,11 +59,13 @@ struct WorkspaceCanvas: View {
             }
         }
         let selected = selectedApp == app.id
-        let label = app.state == .minimized ? "\(app.name) (minimized)" : app.name
+        let label = app.state == .minimized
+            ? String(localized: "\(app.name) (minimized)", comment: "Window tile in the workspace layout; %@ is the app name")
+            : app.name
         return RoundedRectangle(cornerRadius: 6, style: .continuous)
             .fill(Color(nsColor: AppIcons.color(path: app.appPath)))
             .overlay(alignment: .topLeading) {
-                Text(label)
+                Text(verbatim: label)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
@@ -91,7 +94,8 @@ struct WorkspaceCanvas: View {
             .gesture(dragGesture(app.id, map: map, resize: false))
             .onTapGesture { selectedApp = app.id }
             .accessibilityElement()
-            .accessibilityLabel("\(label), \(WorkspaceText.placement(of: app, in: workspace))")
+            .accessibilityLabel(Text("\(label), \(WorkspaceText.placement(of: app, in: workspace))",
+                                     comment: "Accessibility: a window tile; the app name, then where the window goes"))
     }
 
     private func dragGesture(_ id: UUID, map: CanvasMapping, resize: Bool) -> some Gesture {

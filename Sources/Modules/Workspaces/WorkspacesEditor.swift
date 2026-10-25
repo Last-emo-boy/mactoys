@@ -35,7 +35,7 @@ final class WorkspacesEditorWindow: NSObject, NSWindowDelegate {
         if window == nil {
             let host = NSHostingController(rootView: WorkspacesEditorView(settings: settings, state: state, actions: actions))
             let w = NSWindow(contentViewController: host)
-            w.title = "Workspaces"
+            w.title = String(localized: "Workspaces")
             w.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
             w.titleVisibility = .hidden
             w.titlebarAppearsTransparent = true
@@ -105,7 +105,9 @@ struct WorkspacesEditorView: View {
             Spacer()
             Button("Capture current", action: actions.capture)
                 .help("Save the apps and windows open now as a new workspace")
-            Button("Launch") { if let id = selected?.id { actions.launch(id) } }
+            Button { if let id = selected?.id { actions.launch(id) } } label: {
+                Text("Launch", comment: "Button: launch the workspace")
+            }
                 .buttonStyle(.borderedProminent)
                 .disabled(selected == nil)
                 .keyboardShortcut(.return, modifiers: .command)
@@ -126,7 +128,9 @@ struct WorkspacesEditorView: View {
                             state.expandedApp = nil
                         }
                         .contextMenu {
-                            Button("Launch") { actions.launch(ws.id) }
+                            Button { actions.launch(ws.id) } label: {
+                                Text("Launch", comment: "Button: launch the workspace")
+                            }
                             Button("Recapture Current Windows") { actions.recapture(ws.id) }
                             Button("Duplicate") { actions.duplicate(ws.id) }
                             Menu("Create Shortcut") {
@@ -185,12 +189,12 @@ private struct WorkspaceCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(workspace.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+            Text(verbatim: workspace.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
             HStack(spacing: 4) {
                 ForEach(uniqueApps.prefix(4), id: \.self) { path in
                     Image(nsImage: AppIcons.icon(path: path)).resizable().frame(width: 20, height: 20)
                 }
-                Text(WorkspaceText.summary(of: workspace))
+                Text(verbatim: WorkspaceText.summary(of: workspace))
                     .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -229,7 +233,7 @@ private struct WorkspaceDetail: View {
                         .textFieldStyle(.plain)
                         .font(.system(size: 20, weight: .bold))
                     Spacer()
-                    Text(hint).font(.system(size: 12)).foregroundStyle(.secondary)
+                    Text(verbatim: hint).font(.system(size: 12)).foregroundStyle(.secondary)
                 }
                 WorkspaceCanvas(workspace: $workspace, selectedApp: $st.selectedApp)
                     .frame(height: 236)
@@ -241,7 +245,9 @@ private struct WorkspaceDetail: View {
     }
 
     private var hint: String {
-        "Drag windows to adjust" + (workspace.shortcut.map { " · \($0.description) launches" } ?? "")
+        guard let shortcut = workspace.shortcut else { return String(localized: "Drag windows to adjust") }
+        return String(localized: "Drag windows to adjust · \(shortcut.description) launches",
+                      comment: "Workspace editor hint; %@ is the keyboard shortcut that launches the workspace")
     }
 
     private var appList: some View {
@@ -305,7 +311,7 @@ private struct WorkspaceDetail: View {
         .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.primary.opacity(0.09)))
     }
 
-    private func optionRow<Control: View>(_ title: String, _ subtitle: String,
+    private func optionRow<Control: View>(_ title: LocalizedStringKey, _ subtitle: LocalizedStringKey,
                                           @ViewBuilder control: () -> Control) -> some View {
         HStack(spacing: 12) {
             RowLabel(title, subtitle: subtitle)
@@ -340,13 +346,13 @@ private struct WorkspaceAppRow: View {
             HStack(spacing: 10) {
                 Image(nsImage: AppIcons.icon(path: app.appPath)).resizable().frame(width: 26, height: 26)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(app.name).font(.system(size: 13, weight: .medium))
-                    Text(WorkspaceText.subtitle(of: app, in: workspace))
+                    Text(verbatim: app.name).font(.system(size: 13, weight: .medium))
+                    Text(verbatim: WorkspaceText.subtitle(of: app, in: workspace))
                         .font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 8)
                 Menu {
-                    Button(expanded ? "Hide Launch Options" : "Launch Options…", action: onToggle)
+                    Button(action: onToggle) { expanded ? Text("Hide Launch Options") : Text("Launch Options…") }
                     Picker("Launch As", selection: $app.state) {
                         ForEach(WindowState.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
@@ -358,7 +364,7 @@ private struct WorkspaceAppRow: View {
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .accessibilityLabel("Options for \(app.name)")
+                .accessibilityLabel(Text("Options for \(app.name)", comment: "Accessibility: menu button; %@ is the app name"))
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -370,14 +376,19 @@ private struct WorkspaceAppRow: View {
                 Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 8) {
                     GridRow {
                         Text("Arguments").foregroundStyle(.secondary)
-                        TextField("e.g. --reuse-window", text: $app.arguments)
+                        TextField("Arguments", text: $app.arguments,
+                                  prompt: Text("e.g. --reuse-window",
+                                               comment: "Placeholder: an example command-line argument; keep --reuse-window"))
                             .font(.system(size: 12, design: .monospaced))
                             .textFieldStyle(.roundedBorder)
                     }
                     GridRow {
-                        Text("Open").foregroundStyle(.secondary)
+                        Text("Open", comment: "Open (verb), as a label: the field with the file, folder or URL the app opens when launched")
+                            .foregroundStyle(.secondary)
                         HStack(spacing: 6) {
-                            TextField("URL, ~/folder or /path/to/file", text: $app.openTarget)
+                            TextField("Open", text: $app.openTarget,
+                                      prompt: Text("URL, ~/folder or /path/to/file",
+                                                   comment: "Placeholder; keep ~/folder and /path/to/file as path samples"))
                                 .textFieldStyle(.roundedBorder)
                             Button("Choose…", action: onChoose)
                         }
@@ -391,8 +402,9 @@ private struct WorkspaceAppRow: View {
                         .fixedSize()
                     }
                     GridRow {
-                        Text("Window").foregroundStyle(.secondary)
-                        Text("\(Int(app.frame.width)) × \(Int(app.frame.height)) at \(Int(app.frame.minX)), \(Int(app.frame.minY))")
+                        Text("Window", comment: "Label: the saved size and position of the window").foregroundStyle(.secondary)
+                        Text("\(Int(app.frame.width)) × \(Int(app.frame.height)) at \(Int(app.frame.minX)), \(Int(app.frame.minY))",
+                             comment: "Window size and position in points: width × height at x, y")
                             .font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.secondary)
                     }
                 }

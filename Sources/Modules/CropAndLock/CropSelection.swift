@@ -130,7 +130,9 @@ final class CropSelectionView: NSView {
 
     private func drawHint() {
         let center = CGPoint(x: bounds.midX, y: min(bounds.midY, 60))
-        drawPill("\(mode.title) · drag over the area to keep · esc cancels", at: center,
+        drawPill(String(localized: "\(mode.title) · drag over the area to keep · esc cancels",
+                        comment: "Crop selection hint; %@ is the crop mode (Thumbnail, Interactive or Screenshot), esc is the key"),
+                 at: center,
                  font: .systemFont(ofSize: 13, weight: .semibold))
     }
 
