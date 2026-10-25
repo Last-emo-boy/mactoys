@@ -12,7 +12,7 @@ struct QuickAccentSettingsView: View {
             HeroCard(tint: .pink) {
                 HStack(spacing: 14) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Hold a letter, tap \(activationHint)").font(.system(size: 14, weight: .semibold))
+                        heroTitle.font(.system(size: 14, weight: .semibold))
                         Text("Tap again to move through the characters (⇧Space or ← goes back), release the letter to type the selection. Esc cancels.")
                             .font(.system(size: 12)).foregroundStyle(.secondary)
                     }
@@ -23,18 +23,18 @@ struct QuickAccentSettingsView: View {
         } content: {
             Section("Activation") {
                 Picker(selection: $settings.value.activation) {
-                    ForEach(AccentEngine.Activation.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(AccentEngine.Activation.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: {
-                    RowLabel("Activation key", subtitle: settings.value.activation == .hold
-                             ? "The toolbar opens after you hold the letter alone; the letter is replaced only if you choose a character."
-                             : "Hold the letter, then press the key.")
+                    RowLabel(title: Text("Activation key"), subtitle: settings.value.activation == .hold
+                             ? Text("The toolbar opens after you hold the letter alone; the letter is replaced only if you choose a character.")
+                             : Text("Hold the letter, then press the key."))
                 }
                 if settings.value.activation == .hold {
                     SliderRow("Hold duration", subtitle: "How long to hold the letter before the toolbar opens.",
-                              value: $settings.value.holdDuration, in: 100...3000, step: 50) { "\(Int($0)) ms" }
+                              value: $settings.value.holdDuration, in: 100...3000, step: 50) { Self.milliseconds($0) }
                 } else {
                     SliderRow("Input delay", subtitle: "How long the letter and the activation key must stay down before the toolbar opens. Quicker presses type normally, so fast typing isn't affected.",
-                              value: $settings.value.inputDelay, in: 100...1000, step: 25) { "\(Int($0)) ms" }
+                              value: $settings.value.inputDelay, in: 100...1000, step: 25) { Self.milliseconds($0) }
                 }
                 Toggle(isOn: $settings.value.startFromLeft) {
                     RowLabel("Start selection from the left", subtitle: "← also starts at the first character instead of the last.")
@@ -44,7 +44,7 @@ struct QuickAccentSettingsView: View {
             Section("Toolbar") {
                 Picker(selection: $settings.value.position) {
                     ForEach(QuickAccentSettings.Position.allCases, id: \.self) { p in
-                        Text(p.title).tag(p)
+                        Text(verbatim: p.title).tag(p)
                         if p == .caret { Divider() }
                     }
                 } label: {
@@ -98,16 +98,20 @@ struct QuickAccentSettingsView: View {
         }
     }
 
-    private var activationHint: String {
+    private var heroTitle: Text {
         switch settings.value.activation {
-        case .both: "Space or ←/→"
-        case .space: "Space"
-        case .arrows: "← or →"
-        case .hold: "and keep holding"
+        case .both: Text("Hold a letter, tap Space or ←/→")
+        case .space: Text("Hold a letter, tap Space")
+        case .arrows: Text("Hold a letter, tap ← or →")
+        case .hold: Text("Hold a letter, tap and keep holding")
         }
     }
 
-    private func setGrid(_ group: AccentSet.Group, title: String) -> some View {
+    static func milliseconds(_ value: Double) -> String {
+        Duration.milliseconds(Int(value)).formatted(.units(allowed: [.milliseconds], width: .abbreviated))
+    }
+
+    private func setGrid(_ group: AccentSet.Group, title: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), alignment: .leading)], alignment: .leading, spacing: 6) {
@@ -185,15 +189,15 @@ struct CharacterReferenceView: View {
         return AccentLogic.unicodeInfo(c).name.localizedCaseInsensitiveContains(q)
     }
 
-    private func group(_ title: String, _ matches: [Match]) -> some View {
+    private func group(_ title: LocalizedStringKey, _ matches: [Match]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(title.uppercased()).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            Text(title).textCase(.uppercase).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
             ForEach(matches) { match in
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(match.accentSet.name).font(.system(size: 13, weight: .semibold))
+                    Text(verbatim: match.accentSet.name).font(.system(size: 13, weight: .semibold))
                     ForEach(match.rows, id: \.key) { row in
                         HStack(alignment: .top, spacing: 8) {
-                            Text(row.key.label)
+                            Text(verbatim: row.key.label)
                                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                                 .foregroundStyle(.secondary)
                                 .frame(width: 44, alignment: .leading)
@@ -220,15 +224,16 @@ private struct FlowRow: View {
                     let pb = NSPasteboard.general
                     pb.clearContents()
                     pb.setString(c, forType: .string)
-                    HUD.show("Copied \(c)", symbol: "doc.on.doc")
+                    HUD.show(String(localized: "Copied \(c)", comment: "Character reference: %@ is the character that was copied"),
+                             symbol: "doc.on.doc")
                 } label: {
-                    Text(AccentLogic.display(c))
+                    Text(verbatim: AccentLogic.display(c))
                         .font(.system(size: 17))
                         .frame(minWidth: 34, minHeight: 30)
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
                 }
                 .buttonStyle(.plain)
-                .help("\(info.code) · \(info.name)")
+                .help(Text(verbatim: "\(info.code) · \(info.name)"))
             }
         }
     }

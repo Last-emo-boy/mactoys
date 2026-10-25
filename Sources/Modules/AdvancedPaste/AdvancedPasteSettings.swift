@@ -29,11 +29,18 @@ public struct CustomAction: Codable, Equatable, Sendable, Identifiable {
         self.isEnabled = isEnabled
     }
 
+    /// Starter actions, in the user's language (they become user data once saved; prompts go to the AI model).
     public static let defaults = [
-        CustomAction(name: "Fix spelling and grammar",
-                     prompt: "Fix spelling and grammar. Keep the original language, meaning, tone and formatting."),
-        CustomAction(name: "Summarize in 3 bullets", prompt: "Summarize the text in three short Markdown bullet points."),
-        CustomAction(name: "Translate to English", prompt: "Translate the text to English. Keep the formatting.", isEnabled: false),
+        CustomAction(name: String(localized: "Fix spelling and grammar", comment: "Default custom AI action name"),
+                     prompt: String(localized: "Fix spelling and grammar. Keep the original language, meaning, tone and formatting.",
+                                    comment: "Default custom AI action: instructions sent to the AI model")),
+        CustomAction(name: String(localized: "Summarize in 3 bullets", comment: "Default custom AI action name"),
+                     prompt: String(localized: "Summarize the text in three short Markdown bullet points.",
+                                    comment: "Default custom AI action: instructions sent to the AI model")),
+        CustomAction(name: String(localized: "Translate to English", comment: "Default custom AI action name"),
+                     prompt: String(localized: "Translate the text to English. Keep the formatting.",
+                                    comment: "Default custom AI action: instructions sent to the AI model"),
+                     isEnabled: false),
     ]
 }
 
@@ -42,9 +49,9 @@ public struct AdvancedPasteSettings: Codable, Equatable, Sendable {
         case caret, pointer, center
         public var title: String {
             switch self {
-            case .caret: "Near the text cursor"
-            case .pointer: "Near the pointer"
-            case .center: "Center of the screen"
+            case .caret: String(localized: "Near the text cursor")
+            case .pointer: String(localized: "Near the pointer")
+            case .center: String(localized: "Center of the screen")
             }
         }
     }

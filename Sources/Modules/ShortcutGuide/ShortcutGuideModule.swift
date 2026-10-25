@@ -9,9 +9,9 @@ public struct ShortcutGuideSettings: Codable, Equatable, Sendable {
 
         public var title: String {
             switch self {
-            case .holdOrShortcut: "Hold ⌘ or press the shortcut"
-            case .hold: "Hold ⌘"
-            case .shortcut: "Shortcut only"
+            case .holdOrShortcut: String(localized: "Hold ⌘ or press the shortcut")
+            case .hold: String(localized: "Hold ⌘")
+            case .shortcut: String(localized: "Shortcut only", comment: "Shortcut Guide activation: only the keyboard shortcut opens it")
             }
         }
 
@@ -23,9 +23,9 @@ public struct ShortcutGuideSettings: Codable, Equatable, Sendable {
         case system, dark, light
         public var title: String {
             switch self {
-            case .system: "System"
-            case .dark: "Dark"
-            case .light: "Light"
+            case .system: String(localized: "System", comment: "Theme: follow the system appearance")
+            case .dark: String(localized: "Dark", comment: "Theme: dark appearance")
+            case .light: String(localized: "Light", comment: "Theme: light appearance")
             }
         }
     }
@@ -167,7 +167,10 @@ public final class ShortcutGuideModule: ToyModule {
     public var shortcutBindings: [ShortcutBinding] {
         let s = settings.value
         var list: [ShortcutBinding] = []
-        if s.activation.usesHold { list.append(ShortcutBinding("Show Shortcut Guide (hold)", keys: ["Hold", "⌘"])) }
+        if s.activation.usesHold {
+            list.append(ShortcutBinding("Show Shortcut Guide (hold)",
+                                        keys: [String(localized: "Hold", comment: "Shortcut list key label: keep the next key pressed"), "⌘"]))
+        }
         if s.activation.usesShortcut, s.shortcut != nil { list.append(ShortcutBinding("Show Shortcut Guide", s.shortcut)) }
         return list
     }
@@ -260,23 +263,27 @@ struct ShortcutGuideSettingsView: View {
         } content: {
             Section("Activation") {
                 Picker(selection: $settings.value.activation) {
-                    ForEach(ShortcutGuideSettings.Activation.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(ShortcutGuideSettings.Activation.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("Activation method") }
                 if settings.value.activation.usesShortcut {
                     ShortcutRow("Activation shortcut", subtitle: "Press again or esc to close.", shortcut: $settings.value.shortcut)
                 }
                 if settings.value.activation.usesHold {
                     SliderRow("Press duration", subtitle: "How long ⌘ must be held alone. Any other key or a click cancels.",
-                              value: $settings.value.pressDuration, in: 100...5000, step: 50) { "\(Int($0)) ms" }
+                              value: $settings.value.pressDuration, in: 100...5000, step: 50) {
+                        Duration.milliseconds(Int($0)).formatted(.units(allowed: [.milliseconds], width: .abbreviated))
+                    }
                     Toggle(isOn: $settings.value.closeOnRelease) {
                         RowLabel("Close when ⌘ is released", subtitle: "Off: the guide stays open until esc or a click outside it.")
                     }
                 }
             }
             Section("Appearance") {
-                SliderRow("Background dimming", value: $settings.value.dimOpacity, in: 0...0.9, step: 0.05) { "\(Int(($0 * 100).rounded())) %" }
+                SliderRow("Background dimming", value: $settings.value.dimOpacity, in: 0...0.9, step: 0.05) {
+                    $0.formatted(.percent.precision(.fractionLength(0)))
+                }
                 Picker(selection: $settings.value.theme) {
-                    ForEach(ShortcutGuideSettings.Theme.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(ShortcutGuideSettings.Theme.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("Theme") }
             }
             Section("Pinned shortcuts") {
@@ -284,8 +291,9 @@ struct ShortcutGuideSettingsView: View {
                 LabeledContent {
                     Button("Unpin all") { settings.value.pinned = [:] }.disabled(count == 0)
                 } label: {
-                    RowLabel("\(count) pinned in \(settings.value.pinned.count) app\(settings.value.pinned.count == 1 ? "" : "s")",
-                             subtitle: "Hover a shortcut in the guide and click the pin to keep it at the top for that app.")
+                    RowLabel(title: Text("\(count) pinned in \(settings.value.pinned.count) apps",
+                                         comment: "%1$lld pinned shortcuts in %2$lld apps"),
+                             subtitle: Text("Hover a shortcut in the guide and click the pin to keep it at the top for that app."))
                 }
             }
             Section("Excluded apps") {

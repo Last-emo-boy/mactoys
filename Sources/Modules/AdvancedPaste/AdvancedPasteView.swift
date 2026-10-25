@@ -84,8 +84,11 @@ final class PasteSession {
         if settings.historyEnabled {
             for entry in history.prefix(12) where !isCurrent(entry) {
                 let symbol = entry.kind == .image ? "photo" : entry.kind == .files ? "doc"
-                    : ClipboardSummary.textDetail(entry.text ?? "") == "Link" ? "link" : "doc.plaintext"
-                let title = entry.kind == .image ? "Image · " + entry.date.formatted(date: .abbreviated, time: .shortened) : entry.title
+                    : ClipboardSummary.isLink(entry.text ?? "") ? "link" : "doc.plaintext"
+                let title = entry.kind == .image
+                    ? String(localized: "Image · \(entry.date.formatted(date: .abbreviated, time: .shortened))",
+                             comment: "Clipboard history entry for a copied image; %@ is when it was copied")
+                    : entry.title
                 list.append(Row(id: "history." + entry.id.uuidString, kind: .history(entry), title: title, symbol: symbol, number: nil))
             }
         }
@@ -101,6 +104,11 @@ final class PasteSession {
     }
 
     var selectedRow: Row? { rows.indices.contains(selection) ? rows[selection] : nil }
+
+    /// "Transcode to .mp3…": an action that is running.
+    nonisolated static func inProgress(_ title: String) -> String {
+        String(localized: "\(title)…", comment: "Advanced Paste: %@ is the action that is running")
+    }
 }
 
 /// The window content (design 07, left).
@@ -152,13 +160,13 @@ struct AdvancedPasteView: View {
     private var preview: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: session.summary.symbol).font(.system(size: 13)).foregroundStyle(.secondary).padding(.top, 1)
-            Text(session.isEmpty ? "The clipboard is empty" : session.summary.snippet)
+            (session.isEmpty ? Text("The clipboard is empty") : Text(verbatim: session.summary.snippet))
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundStyle(session.isEmpty ? .secondary : .primary)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if !session.isEmpty {
-                Text(session.summary.detail).font(.system(size: 11)).foregroundStyle(.secondary).padding(.top, 1)
+                Text(verbatim: session.summary.detail).font(.system(size: 11)).foregroundStyle(.secondary).padding(.top, 1)
             }
         }
         .padding(.horizontal, 16)
@@ -180,13 +188,14 @@ struct AdvancedPasteView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 1) {
                     if session.rows.isEmpty {
-                        Text(session.isEmpty ? "Copy something, then open Advanced Paste again." : "No paste actions apply to this content.")
+                        (session.isEmpty ? Text("Copy something, then open Advanced Paste again.")
+                                         : Text("No paste actions apply to this content."))
                             .font(.system(size: 12)).foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity).padding(.top, 40)
                     }
-                    section("Paste as", rows: session.rows.enumerated().filter { if case .action = $0.element.kind { true } else { false } })
-                    section("Custom actions", rows: session.rows.enumerated().filter { if case .custom = $0.element.kind { true } else { false } })
-                    section("History", rows: session.rows.enumerated().filter { if case .history = $0.element.kind { true } else { false } })
+                    section(Text("Paste as", comment: "Advanced Paste window: heading above the list of formats"), rows: session.rows.enumerated().filter { if case .action = $0.element.kind { true } else { false } })
+                    section(Text("Custom actions"), rows: session.rows.enumerated().filter { if case .custom = $0.element.kind { true } else { false } })
+                    section(Text("History", comment: "Advanced Paste window: heading above recent clipboard entries"), rows: session.rows.enumerated().filter { if case .history = $0.element.kind { true } else { false } })
                 }
                 .padding(.vertical, 6)
             }
@@ -198,9 +207,9 @@ struct AdvancedPasteView: View {
     }
 
     @ViewBuilder
-    private func section(_ title: String, rows: [EnumeratedSequence<[PasteSession.Row]>.Element]) -> some View {
+    private func section(_ title: Text, rows: [EnumeratedSequence<[PasteSession.Row]>.Element]) -> some View {
         if !rows.isEmpty {
-            Text(title)
+            title
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 16)
@@ -222,10 +231,10 @@ struct AdvancedPasteView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(selected ? Color.white : (row.symbol == "sparkles" ? Tint.purple.color : Color.primary.opacity(0.75)))
                 .frame(width: 20)
-            Text(row.title).font(.system(size: 13)).lineLimit(1).truncationMode(.tail)
+            Text(verbatim: row.title).font(.system(size: 13)).lineLimit(1).truncationMode(.tail)
             Spacer(minLength: 8)
             if let n = row.number {
-                Text("⌘ \(n)").font(.system(size: 11.5)).foregroundStyle(selected ? Color.white.opacity(0.85) : Color.secondary)
+                Text(verbatim: "⌘ \(n)").font(.system(size: 11.5)).foregroundStyle(selected ? Color.white.opacity(0.85) : Color.secondary)
             }
         }
         .foregroundStyle(selected ? Color.white : Color.primary)
@@ -240,10 +249,11 @@ struct AdvancedPasteView: View {
             Spacer()
             if let progress {
                 ProgressView(value: progress).progressViewStyle(.circular).controlSize(.large)
-                Text("\(title) · \(Int(progress * 100)) %").font(.system(size: 13, weight: .medium))
+                Text(verbatim: "\(title) · \(progress.formatted(.percent.precision(.fractionLength(0))))")
+                    .font(.system(size: 13, weight: .medium))
             } else {
                 ProgressView().controlSize(.large)
-                Text(title + "…").font(.system(size: 13, weight: .medium))
+                Text(verbatim: PasteSession.inProgress(title)).font(.system(size: 13, weight: .medium))
             }
             Button(role: .cancel, action: onCancel) { Label("Cancel", systemImage: "xmark") }
                 .keyboardShortcut(.cancelAction)
@@ -254,9 +264,9 @@ struct AdvancedPasteView: View {
 
     private func result(_ title: String, _ output: AdvancedPasteTransforms.Output) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+            Text(verbatim: title).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
             ScrollView {
-                Text(outputText(output))
+                Text(verbatim: outputText(output))
                     .font(.system(size: 13))
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -276,7 +286,7 @@ struct AdvancedPasteView: View {
         VStack(spacing: 12) {
             Spacer()
             Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 28)).foregroundStyle(.orange)
-            Text(message).font(.system(size: 13)).multilineTextAlignment(.center).frame(maxWidth: 360)
+            Text(verbatim: message).font(.system(size: 13)).multilineTextAlignment(.center).frame(maxWidth: 360)
             HStack {
                 Button("Back", action: onBack)
                 Button("Settings…", action: onSettings)

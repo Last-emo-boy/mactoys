@@ -1,10 +1,19 @@
+import Foundation
+
 /// Default macOS shortcuts (Apple's "Mac keyboard shortcuts" support article), grouped for the macOS tab.
+/// Titles and group names are localized; keycaps aren't.
 enum SystemShortcuts {
-    private static func s(_ title: String, _ keys: String...) -> ShortcutItem { ShortcutItem(title, keys) }
+    private static func s(_ title: LocalizedStringResource, _ keys: String...) -> ShortcutItem {
+        ShortcutItem(String(localized: title), keys)
+    }
+
+    private static func group(_ title: LocalizedStringResource, _ items: [ShortcutItem]) -> ShortcutGroup {
+        ShortcutGroup(String(localized: title), items)
+    }
 
     static let groups: [ShortcutGroup] = [
-        ShortcutGroup("Apps & windows", [
-            s("Spotlight", "⌘", "Space"),
+        group("Apps & windows", [
+            s(LocalizedStringResource("Spotlight", comment: "macOS shortcut: open Spotlight search (feature name)"), "⌘", "Space"),
             s("Switch apps", "⌘", "⇥"),
             s("Switch windows of the app", "⌘", "`"),
             s("Hide the app", "⌘", "H"),
@@ -13,17 +22,20 @@ enum SystemShortcuts {
             s("Close window", "⌘", "W"),
             s("Close all windows of the app", "⌥", "⌘", "W"),
             s("New window or document", "⌘", "N"),
-            s("Open", "⌘", "O"),
+            s(LocalizedStringResource("Open", comment: "macOS shortcut: open a file"), "⌘", "O"),
             s("Settings for the app", "⌘", ","),
             s("Quit the app", "⌘", "Q"),
-            s("Force Quit", "⌥", "⌘", "⎋"),
+            s(LocalizedStringResource("Force Quit", comment: "macOS shortcut: open the Force Quit window"), "⌥", "⌘", "⎋"),
             s("Enter or exit full screen", "fn", "F"),
             s("Emoji & Symbols", "fn", "E"),
             s("Character Viewer", "⌃", "⌘", "Space"),
         ]),
-        ShortcutGroup("Window tiling", [
+        group("Window tiling", [
             s("Fill the screen", "fn", "⌃", "F"),
-            s("Center", "fn", "⌃", "C"),
+            // A key of its own: "Center" is also a position elsewhere, and many languages use a verb here.
+            s(LocalizedStringResource("Center (window tiling)", defaultValue: "Center",
+                                      comment: "macOS shortcut: move the window to the center of the screen (a verb)"),
+              "fn", "⌃", "C"),
             s("Tile left half", "fn", "⌃", "←"),
             s("Tile right half", "fn", "⌃", "→"),
             s("Tile top half", "fn", "⌃", "↑"),
@@ -32,14 +44,14 @@ enum SystemShortcuts {
             s("Arrange top and bottom", "fn", "⌃", "⇧", "↑"),
             s("Return to previous size", "fn", "⌃", "R"),
         ]),
-        ShortcutGroup("Mission Control & Spaces", [
-            s("Mission Control", "⌃", "↑"),
-            s("Application windows", "⌃", "↓"),
+        group("Mission Control & Spaces", [
+            s(LocalizedStringResource("Mission Control", comment: "macOS shortcut: show Mission Control (feature name)"), "⌃", "↑"),
+            s(LocalizedStringResource("Application windows", comment: "macOS shortcut: App Exposé, the current app's windows"), "⌃", "↓"),
             s("Move one space left", "⌃", "←"),
             s("Move one space right", "⌃", "→"),
             s("Show Desktop", "F11"),
         ]),
-        ShortcutGroup("Screenshots", [
+        group("Screenshots", [
             s("Screenshot or recording options", "⇧", "⌘", "5"),
             s("Capture the whole screen", "⇧", "⌘", "3"),
             s("Capture a selection", "⇧", "⌘", "4"),
@@ -47,26 +59,26 @@ enum SystemShortcuts {
             s("Copy the whole screen", "⌃", "⇧", "⌘", "3"),
             s("Copy a selection", "⌃", "⇧", "⌘", "4"),
         ]),
-        ShortcutGroup("Editing", [
-            s("Undo", "⌘", "Z"),
-            s("Redo", "⇧", "⌘", "Z"),
-            s("Cut", "⌘", "X"),
-            s("Copy", "⌘", "C"),
-            s("Paste", "⌘", "V"),
+        group("Editing", [
+            s(LocalizedStringResource("Undo", comment: "macOS shortcut: Edit menu command"), "⌘", "Z"),
+            s(LocalizedStringResource("Redo", comment: "macOS shortcut: Edit menu command"), "⇧", "⌘", "Z"),
+            s(LocalizedStringResource("Cut", comment: "macOS shortcut: Edit menu command"), "⌘", "X"),
+            s(LocalizedStringResource("Copy", comment: "macOS shortcut: Edit menu command"), "⌘", "C"),
+            s(LocalizedStringResource("Paste", comment: "macOS shortcut: Edit menu command"), "⌘", "V"),
             s("Paste and match style", "⌥", "⇧", "⌘", "V"),
             s("Select all", "⌘", "A"),
-            s("Find", "⌘", "F"),
+            s(LocalizedStringResource("Find", comment: "macOS shortcut: Edit menu command"), "⌘", "F"),
             s("Find next", "⌘", "G"),
             s("Find previous", "⇧", "⌘", "G"),
-            s("Bold", "⌘", "B"),
-            s("Italic", "⌘", "I"),
-            s("Underline", "⌘", "U"),
+            s(LocalizedStringResource("Bold", comment: "macOS shortcut: text style"), "⌘", "B"),
+            s(LocalizedStringResource("Italic", comment: "macOS shortcut: text style"), "⌘", "I"),
+            s(LocalizedStringResource("Underline", comment: "macOS shortcut: text style"), "⌘", "U"),
             s("Show fonts", "⌘", "T"),
             s("Look up the selected word", "⌃", "⌘", "D"),
             s("Show spelling and grammar", "⌘", ":"),
             s("Check document now", "⌘", ";"),
         ]),
-        ShortcutGroup("Text navigation", [
+        group("Text navigation", [
             s("Start of line", "⌘", "←"),
             s("End of line", "⌘", "→"),
             s("Start of document", "⌘", "↑"),
@@ -81,40 +93,40 @@ enum SystemShortcuts {
             s("Delete to end of line", "⌃", "K"),
             s("Swap characters", "⌃", "T"),
         ]),
-        ShortcutGroup("Documents", [
-            s("Save", "⌘", "S"),
+        group("Documents", [
+            s(LocalizedStringResource("Save", comment: "macOS shortcut: File menu command"), "⌘", "S"),
             s("Duplicate or save as", "⇧", "⌘", "S"),
-            s("Print", "⌘", "P"),
+            s(LocalizedStringResource("Print", comment: "macOS shortcut: File menu command"), "⌘", "P"),
             s("Page setup", "⇧", "⌘", "P"),
             s("New tab", "⌘", "T"),
             s("Show next tab", "⌃", "⇥"),
             s("Show previous tab", "⌃", "⇧", "⇥"),
         ]),
-        ShortcutGroup("Finder", [
+        group("Finder", [
             s("New Finder window", "⌘", "N"),
             s("New folder", "⇧", "⌘", "N"),
-            s("Get Info", "⌘", "I"),
-            s("Duplicate", "⌘", "D"),
-            s("Quick Look", "Space"),
-            s("Open", "⌘", "↓"),
-            s("Enclosing folder", "⌘", "↑"),
+            s(LocalizedStringResource("Get Info", comment: "macOS shortcut: Finder command"), "⌘", "I"),
+            s(LocalizedStringResource("Duplicate", comment: "macOS shortcut: Finder command, duplicate the selected files"), "⌘", "D"),
+            s(LocalizedStringResource("Quick Look", comment: "macOS shortcut: Finder, preview the selected file (feature name)"), "Space"),
+            s(LocalizedStringResource("Open", comment: "macOS shortcut: Finder command, open the selected item"), "⌘", "↓"),
+            s(LocalizedStringResource("Enclosing folder", comment: "macOS shortcut: Finder, go to the parent folder"), "⌘", "↑"),
             s("Move to Trash", "⌘", "⌫"),
             s("Empty Trash", "⇧", "⌘", "⌫"),
             s("Go to folder", "⇧", "⌘", "G"),
             s("Show hidden files", "⇧", "⌘", "."),
-            s("Applications", "⇧", "⌘", "A"),
-            s("Desktop", "⇧", "⌘", "D"),
-            s("Downloads", "⌥", "⌘", "L"),
-            s("Home", "⇧", "⌘", "H"),
-            s("Utilities", "⇧", "⌘", "U"),
+            s(LocalizedStringResource("Applications", comment: "macOS shortcut: Finder, go to the Applications folder"), "⇧", "⌘", "A"),
+            s(LocalizedStringResource("Desktop", comment: "macOS shortcut: Finder, go to the Desktop folder"), "⇧", "⌘", "D"),
+            s(LocalizedStringResource("Downloads", comment: "macOS shortcut: Finder, go to the Downloads folder"), "⌥", "⌘", "L"),
+            s(LocalizedStringResource("Home", comment: "macOS shortcut: Finder, go to the home folder"), "⇧", "⌘", "H"),
+            s(LocalizedStringResource("Utilities", comment: "macOS shortcut: Finder, go to the Utilities folder"), "⇧", "⌘", "U"),
             s("Finder search window", "⌥", "⌘", "Space"),
             s("Show or hide the Dock", "⌥", "⌘", "D"),
         ]),
-        ShortcutGroup("Session & accessibility", [
+        group("Session & accessibility", [
             s("Lock screen", "⌃", "⌘", "Q"),
             s("Log out", "⇧", "⌘", "Q"),
             s("Accessibility shortcuts", "⌥", "⌘", "F5"),
-            s("VoiceOver", "⌘", "F5"),
+            s(LocalizedStringResource("VoiceOver", comment: "macOS shortcut: turn VoiceOver on or off (feature name)"), "⌘", "F5"),
         ]),
     ]
 }

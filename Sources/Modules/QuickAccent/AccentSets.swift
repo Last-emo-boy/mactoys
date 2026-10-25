@@ -1,10 +1,13 @@
 // Generated from PowerToys' Quick Accent CharacterMappings.cs (MIT License, Copyright (c) Microsoft Corporation).
-// Sets are in PowerToys' popup display order: languages, then special sets.
+// Sets are in PowerToys' popup display order: languages, then special sets. Language sets are named by
+// the system (`Locale.localizedString(forIdentifier:)`) in the UI language; the others are localized strings.
+
+import Foundation
 
 extension AccentSet {
     /// Every character set, in display order.
     public static let all: [AccentSet] = [
-        AccentSet(id: "BE", name: "Belarusian (Latin)", group: .language, characters: [
+        AccentSet(id: "BE", language: "be-Latn", characters: [
             .c: ["ć", "č"],
             .l: ["ł"],
             .n: ["ń"],
@@ -13,19 +16,19 @@ extension AccentSet {
             .z: ["ź", "ž"],
             .comma: ["„", "“", "«", "»"],
         ]),
-        AccentSet(id: "BE_CYRL", name: "Belarusian (Cyrillic)", group: .language, characters: [
+        AccentSet(id: "BE_CYRL", language: "be-Cyrl", characters: [
             .e: ["ё"],
             .g: ["ґ"],
             .i: ["і"],
             .u: ["ў"],
             .comma: ["’", "„", "“", "«", "»"],
         ]),
-        AccentSet(id: "BG", name: "Bulgarian", group: .language, characters: [
+        AccentSet(id: "BG", language: "bg", characters: [
             .e: ["€"],
             .i: ["ѝ"],
             .comma: ["„", "“", "«", "»"],
         ]),
-        AccentSet(id: "CA", name: "Catalan", group: .language, characters: [
+        AccentSet(id: "CA", language: "ca", characters: [
             .digit1: ["¡"],
             .a: ["à", "á"],
             .c: ["ç"],
@@ -38,7 +41,7 @@ extension AccentSet {
             .comma: ["¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’"],
             .slash: ["¿"],
         ]),
-        AccentSet(id: "CRH", name: "Crimean Tatar", group: .language, characters: [
+        AccentSet(id: "CRH", language: "crh", characters: [
             .a: ["â"],
             .c: ["ç"],
             .e: ["€"],
@@ -51,7 +54,7 @@ extension AccentSet {
             .t: ["₺"],
             .u: ["ü"],
         ]),
-        AccentSet(id: "CY", name: "Welsh", group: .language, characters: [
+        AccentSet(id: "CY", language: "cy", characters: [
             .a: ["â", "ä", "à", "á"],
             .e: ["ê", "ë", "è", "é"],
             .i: ["î", "ï", "ì", "í"],
@@ -62,7 +65,7 @@ extension AccentSet {
             .w: ["ŵ", "ẅ", "ẁ", "ẃ"],
             .comma: ["‘", "’", "“", "”"],
         ]),
-        AccentSet(id: "CZ", name: "Czech", group: .language, characters: [
+        AccentSet(id: "CZ", language: "cs", characters: [
             .a: ["á"],
             .c: ["č"],
             .d: ["ď"],
@@ -78,7 +81,7 @@ extension AccentSet {
             .z: ["ž"],
             .comma: ["„", "“", "‚", "‘", "»", "«", "›", "‹"],
         ]),
-        AccentSet(id: "DE", name: "German", group: .language, characters: [
+        AccentSet(id: "DE", language: "de", characters: [
             .a: ["ä"],
             .e: ["€"],
             .o: ["ö"],
@@ -86,13 +89,13 @@ extension AccentSet {
             .u: ["ü"],
             .comma: ["„", "“", "‚", "‘", "»", "«", "›", "‹"],
         ]),
-        AccentSet(id: "DK", name: "Danish", group: .language, characters: [
+        AccentSet(id: "DK", language: "da", characters: [
             .a: ["å", "æ"],
             .e: ["€"],
             .o: ["ø"],
             .comma: ["»", "«", "“", "”", "›", "‹", "‘", "’"],
         ]),
-        AccentSet(id: "EL", name: "Greek", group: .language, characters: [
+        AccentSet(id: "EL", language: "el", characters: [
             .a: ["α", "ά"],
             .b: ["β"],
             .c: ["χ"],
@@ -116,7 +119,7 @@ extension AccentSet {
             .z: ["ζ"],
             .comma: ["“", "”", "«", "»"],
         ]),
-        AccentSet(id: "EPO", name: "Esperanto", group: .language, characters: [
+        AccentSet(id: "EPO", language: "eo", characters: [
             .c: ["ĉ"],
             .g: ["ĝ"],
             .h: ["ĥ"],
@@ -124,7 +127,7 @@ extension AccentSet {
             .s: ["ŝ"],
             .u: ["ŭ"],
         ]),
-        AccentSet(id: "EST", name: "Estonian", group: .language, characters: [
+        AccentSet(id: "EST", language: "et", characters: [
             .a: ["ä"],
             .e: ["€"],
             .o: ["ö", "õ"],
@@ -133,13 +136,13 @@ extension AccentSet {
             .s: ["š"],
             .comma: ["„", "“", "«", "»"],
         ]),
-        AccentSet(id: "FI", name: "Finnish", group: .language, characters: [
+        AccentSet(id: "FI", language: "fi", characters: [
             .a: ["ä", "å"],
             .e: ["€"],
             .o: ["ö"],
             .comma: ["”", "’", "»"],
         ]),
-        AccentSet(id: "FR", name: "French", group: .language, characters: [
+        AccentSet(id: "FR", language: "fr", characters: [
             .a: ["à", "â", "á", "ä", "ã", "æ"],
             .c: ["ç"],
             .e: ["é", "è", "ê", "ë", "€"],
@@ -149,7 +152,7 @@ extension AccentSet {
             .y: ["ÿ", "ý"],
             .comma: ["«", "»", "‹", "›", "“", "”", "‘", "’"],
         ]),
-        AccentSet(id: "GA", name: "Gaeilge (Irish)", group: .language, characters: [
+        AccentSet(id: "GA", language: "ga", characters: [
             .a: ["á"],
             .e: ["é", "€"],
             .i: ["í"],
@@ -157,7 +160,7 @@ extension AccentSet {
             .u: ["ú"],
             .comma: ["“", "”", "‘", "’"],
         ]),
-        AccentSet(id: "GD", name: "Gàidhlig (Scottish Gaelic)", group: .language, characters: [
+        AccentSet(id: "GD", language: "gd", characters: [
             .a: ["à"],
             .e: ["è"],
             .i: ["ì"],
@@ -166,7 +169,7 @@ extension AccentSet {
             .u: ["ù"],
             .comma: ["“", "”", "‘", "’"],
         ]),
-        AccentSet(id: "HE", name: "Hebrew", group: .language, characters: [
+        AccentSet(id: "HE", language: "he", characters: [
             .a: ["שׂ", "שׁ", "\u{05B0}"],
             .b: ["׆"],
             .e: ["\u{05B8}", "\u{05B3}", "\u{05BB}"],
@@ -184,7 +187,7 @@ extension AccentSet {
             .period: ["\u{05AB}", "\u{05BD}", "\u{05BF}"],
             .minus: ["־"],
         ]),
-        AccentSet(id: "HR", name: "Croatian", group: .language, characters: [
+        AccentSet(id: "HR", language: "hr", characters: [
             .c: ["ć", "č"],
             .d: ["đ"],
             .e: ["€"],
@@ -192,7 +195,7 @@ extension AccentSet {
             .z: ["ž"],
             .comma: ["„", "“", "»", "«"],
         ]),
-        AccentSet(id: "HU", name: "Hungarian", group: .language, characters: [
+        AccentSet(id: "HU", language: "hu", characters: [
             .a: ["á"],
             .e: ["é"],
             .i: ["í"],
@@ -201,7 +204,7 @@ extension AccentSet {
             .y: ["ÿ", "ý"],
             .comma: ["„", "”", "»", "«"],
         ]),
-        AccentSet(id: "IS", name: "Icelandic", group: .language, characters: [
+        AccentSet(id: "IS", language: "is", characters: [
             .a: ["á", "æ"],
             .d: ["ð"],
             .e: ["é"],
@@ -212,7 +215,7 @@ extension AccentSet {
             .t: ["þ"],
             .comma: ["„", "“", "‚", "‘"],
         ]),
-        AccentSet(id: "IT", name: "Italian", group: .language, characters: [
+        AccentSet(id: "IT", language: "it", characters: [
             .a: ["à"],
             .e: ["è", "é", "ə", "€"],
             .i: ["ì", "í"],
@@ -220,7 +223,7 @@ extension AccentSet {
             .u: ["ù", "ú"],
             .comma: ["«", "»", "“", "”", "‘", "’"],
         ]),
-        AccentSet(id: "KU", name: "Kurdish", group: .language, characters: [
+        AccentSet(id: "KU", language: "ku", characters: [
             .c: ["ç"],
             .e: ["ê", "€"],
             .i: ["î"],
@@ -232,7 +235,7 @@ extension AccentSet {
             .u: ["û", "ü"],
             .comma: ["«", "»", "“", "”"],
         ]),
-        AccentSet(id: "LT", name: "Lithuanian", group: .language, characters: [
+        AccentSet(id: "LT", language: "lt", characters: [
             .a: ["ą"],
             .c: ["č"],
             .e: ["ę", "ė", "€"],
@@ -242,7 +245,7 @@ extension AccentSet {
             .z: ["ž"],
             .comma: ["„", "“", "‚", "‘"],
         ]),
-        AccentSet(id: "MI", name: "Maori", group: .language, characters: [
+        AccentSet(id: "MI", language: "mi", characters: [
             .a: ["ā"],
             .e: ["ē"],
             .i: ["ī"],
@@ -251,12 +254,12 @@ extension AccentSet {
             .u: ["ū"],
             .comma: ["“", "”", "‘", "’"],
         ]),
-        AccentSet(id: "MK", name: "Macedonian", group: .language, characters: [
+        AccentSet(id: "MK", language: "mk", characters: [
             .e: ["ѐ"],
             .i: ["ѝ"],
             .comma: ["„", "“", "’", "‘"],
         ]),
-        AccentSet(id: "MT", name: "Maltese", group: .language, characters: [
+        AccentSet(id: "MT", language: "mt", characters: [
             .a: ["à"],
             .c: ["ċ"],
             .e: ["è", "€"],
@@ -267,7 +270,7 @@ extension AccentSet {
             .u: ["ù"],
             .z: ["ż"],
         ]),
-        AccentSet(id: "NL", name: "Dutch", group: .language, characters: [
+        AccentSet(id: "NL", language: "nl", characters: [
             .a: ["á", "à", "ä"],
             .c: ["ç"],
             .e: ["é", "è", "ë", "ê", "€"],
@@ -277,14 +280,16 @@ extension AccentSet {
             .u: ["ú", "ü", "û"],
             .comma: ["“", "„", "”", "‘", ",", "’"],
         ]),
-        AccentSet(id: "NO", name: "Norwegian", group: .language, characters: [
+        AccentSet(id: "NO", language: "no", characters: [
             .a: ["å", "æ"],
             .e: ["€", "é"],
             .o: ["ø"],
             .s: ["$"],
             .comma: ["«", "»", ",", "‘", "’", "„", "“"],
         ]),
-        AccentSet(id: "PI", name: "Pinyin", group: .language, characters: [
+        AccentSet(id: "PI", name: LocalizedStringResource("Pinyin",
+                                                  comment: "Quick Accent character set: tone marks for Chinese Pinyin"),
+                  group: .language, characters: [
             .digit1: ["\u{0304}", "ˉ"],
             .digit2: ["\u{0301}", "ˊ"],
             .digit3: ["\u{030C}", "ˇ"],
@@ -304,13 +309,15 @@ extension AccentSet {
             .z: ["ẑ"],
             .comma: ["“", "”", "‘", "’", "「", "」", "『", "』"],
         ]),
-        AccentSet(id: "PJT", name: "Pitjantjatjara/Yankunytjatjara", group: .language, characters: [
+        AccentSet(id: "PJT", name: LocalizedStringResource("Pitjantjatjara/Yankunytjatjara",
+                                                  comment: "Quick Accent character set: two Aboriginal Australian languages"),
+                  group: .language, characters: [
             .l: ["ḻ"],
             .n: ["ṉ"],
             .r: ["ṟ"],
             .t: ["ṯ"],
         ]),
-        AccentSet(id: "PL", name: "Polish", group: .language, characters: [
+        AccentSet(id: "PL", language: "pl", characters: [
             .a: ["ą"],
             .c: ["ć"],
             .e: ["ę", "€"],
@@ -321,7 +328,7 @@ extension AccentSet {
             .z: ["ż", "ź"],
             .comma: ["„", "”", "‘", "’", "»", "«"],
         ]),
-        AccentSet(id: "PT", name: "Portuguese", group: .language, characters: [
+        AccentSet(id: "PT", language: "pt", characters: [
             .a: ["á", "à", "â", "ã", "ª"],
             .c: ["ç"],
             .e: ["é", "ê", "€"],
@@ -331,14 +338,14 @@ extension AccentSet {
             .u: ["ú"],
             .comma: ["“", "”", "‘", "’", "«", "»"],
         ]),
-        AccentSet(id: "RO", name: "Romanian", group: .language, characters: [
+        AccentSet(id: "RO", language: "ro", characters: [
             .a: ["ă", "â"],
             .i: ["î"],
             .s: ["ș"],
             .t: ["ț"],
             .comma: ["„", "”", "«", "»"],
         ]),
-        AccentSet(id: "SK", name: "Slovak", group: .language, characters: [
+        AccentSet(id: "SK", language: "sk", characters: [
             .a: ["á", "ä"],
             .c: ["č"],
             .d: ["ď"],
@@ -355,14 +362,14 @@ extension AccentSet {
             .z: ["ž"],
             .comma: ["„", "“", "‚", "‘", "»", "«", "›", "‹"],
         ]),
-        AccentSet(id: "SL", name: "Slovenian", group: .language, characters: [
+        AccentSet(id: "SL", language: "sl", characters: [
             .c: ["č", "ć"],
             .e: ["€"],
             .s: ["š"],
             .z: ["ž"],
             .comma: ["„", "“", "»", "«"],
         ]),
-        AccentSet(id: "SP", name: "Spanish", group: .language, characters: [
+        AccentSet(id: "SP", language: "es", characters: [
             .digit1: ["¡"],
             .a: ["á"],
             .e: ["é", "€"],
@@ -375,26 +382,26 @@ extension AccentSet {
             .comma: ["¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’"],
             .slash: ["¿"],
         ]),
-        AccentSet(id: "SR", name: "Serbian", group: .language, characters: [
+        AccentSet(id: "SR", language: "sr-Latn", characters: [
             .c: ["ć", "č"],
             .d: ["đ"],
             .s: ["š"],
             .z: ["ž"],
             .comma: ["„", "“", "‚", "’", "»", "«", "›", "‹"],
         ]),
-        AccentSet(id: "SR_CYRL", name: "Serbian (Cyrillic)", group: .language, characters: [
+        AccentSet(id: "SR_CYRL", language: "sr-Cyrl", characters: [
             .d: ["ђ", "џ"],
             .l: ["љ"],
             .n: ["њ"],
             .c: ["ћ"],
         ]),
-        AccentSet(id: "SV", name: "Swedish", group: .language, characters: [
+        AccentSet(id: "SV", language: "sv", characters: [
             .a: ["å", "ä"],
             .e: ["é"],
             .o: ["ö"],
             .comma: ["”", "’", "»", "«"],
         ]),
-        AccentSet(id: "TK", name: "Turkish", group: .language, characters: [
+        AccentSet(id: "TK", language: "tr", characters: [
             .a: ["â"],
             .c: ["ç"],
             .e: ["ë", "€"],
@@ -406,7 +413,7 @@ extension AccentSet {
             .u: ["ü", "û"],
             .comma: ["“", "”", "‘", "’", "«", "»", "‹", "›"],
         ]),
-        AccentSet(id: "VI", name: "Vietnamese", group: .language, characters: [
+        AccentSet(id: "VI", language: "vi", characters: [
             .a: ["à", "ả", "ã", "á", "ạ", "ă", "ằ", "ẳ", "ẵ", "ắ", "ặ", "â", "ầ", "ẩ", "ẫ", "ấ", "ậ"],
             .d: ["đ", "₫"],
             .e: ["è", "ẻ", "ẽ", "é", "ẹ", "ê", "ề", "ể", "ễ", "ế", "ệ"],
@@ -415,7 +422,9 @@ extension AccentSet {
             .u: ["ù", "ủ", "ũ", "ú", "ụ", "ư", "ừ", "ử", "ữ", "ứ", "ự"],
             .y: ["ỳ", "ỷ", "ỹ", "ý", "ỵ"],
         ]),
-        AccentSet(id: "CUR", name: "Currency", group: .special, characters: [
+        AccentSet(id: "CUR", name: LocalizedStringResource("Currency",
+                                                  comment: "Quick Accent character set: currency symbols"),
+                  group: .special, characters: [
             .b: ["฿", "в"],
             .c: ["¢", "₡", "č"],
             .d: ["₫"],
@@ -433,7 +442,9 @@ extension AccentSet {
             .w: ["₩"],
             .y: ["¥"],
         ]),
-        AccentSet(id: "GRC", name: "Greek Polytonic", group: .special, characters: [
+        AccentSet(id: "GRC", name: LocalizedStringResource("Greek Polytonic",
+                                                  comment: "Quick Accent character set: polytonic (ancient) Greek"),
+                  group: .special, characters: [
             .a: ["α", "ἀ", "ἁ", "ὰ", "ά", "ᾶ", "ᾱ", "ᾰ", "ἂ", "ἃ", "ἄ", "ἅ", "ἆ", "ἇ", "ᾳ", "ᾀ", "ᾁ", "ᾴ", "ᾲ", "ᾷ", "ᾄ", "ᾅ", "ᾂ", "ᾃ", "ᾆ", "ᾇ"],
             .b: ["β"],
             .c: ["χ", "ϲ"],
@@ -462,7 +473,9 @@ extension AccentSet {
             .comma: ["“", "”", "‘", "’", ";", "`", "´"],
             .period: ["·"],
         ]),
-        AccentSet(id: "IPA", name: "IPA (phonetic)", group: .special, characters: [
+        AccentSet(id: "IPA", name: LocalizedStringResource("IPA (phonetic)",
+                                                  comment: "Quick Accent character set: International Phonetic Alphabet"),
+                  group: .special, characters: [
             .a: ["ɑ", "æ", "ɒ", "ɐ"],
             .b: ["β", "ʙ", "ɓ", "ʘ"],
             .c: ["ç", "χ", "ǂ"],
@@ -490,7 +503,9 @@ extension AccentSet {
             .period: ["ˈ", "ˌ", "ː", "ʼ", "\u{031D}", "\u{0325}", "\u{031A}", "\u{0361}", "\u{035C}"],
             .slash: ["ʔ"],
         ]),
-        AccentSet(id: "PIE", name: "Proto-Indo-European", group: .special, characters: [
+        AccentSet(id: "PIE", name: LocalizedStringResource("Proto-Indo-European",
+                                                  comment: "Quick Accent character set: reconstructed Proto-Indo-European"),
+                  group: .special, characters: [
             .a: ["ā"],
             .e: ["ē"],
             .o: ["ō"],
@@ -501,7 +516,9 @@ extension AccentSet {
             .m: ["m̥"],
             .n: ["n̥"],
         ]),
-        AccentSet(id: "ROM", name: "Middle Eastern Romanization", group: .special, characters: [
+        AccentSet(id: "ROM", name: LocalizedStringResource("Middle Eastern Romanization",
+                                                  comment: "Quick Accent character set: Latin transliteration of Arabic, Hebrew, Persian…"),
+                  group: .special, characters: [
             .a: ["á", "â", "ă", "ā"],
             .b: ["ḇ"],
             .c: ["č", "ç"],
@@ -525,7 +542,9 @@ extension AccentSet {
             .z: ["ż", "ž", "z\u{0304}", "z\u{0327}", "ẓ", "z\u{0324}", "ẕ"],
             .period: ["’", "ʾ", "ʿ", "′", "…"],
         ]),
-        AccentSet(id: "SPECIAL", name: "Special characters", group: .special, characters: [
+        AccentSet(id: "SPECIAL", name: LocalizedStringResource("Special characters",
+                                                  comment: "Quick Accent character set: miscellaneous symbols"),
+                  group: .special, characters: [
             .digit0: ["₀", "⁰", "°", "↉", "₎", "⁾"],
             .digit1: ["₁", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒"],
             .digit2: ["₂", "²", "⅔", "⅖"],

@@ -21,7 +21,9 @@ struct AdvancedPasteSettingsView: View {
                             .font(.system(size: 12)).foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Button("Open") { module.controller.showWindow() }
+                    Button { module.controller.showWindow() } label: {
+                        Text("Open", comment: "Button: open the Advanced Paste window")
+                    }
                         .buttonStyle(.borderedProminent)
                     Keycaps(settings.value.openShortcut)
                 }
@@ -30,7 +32,7 @@ struct AdvancedPasteSettingsView: View {
             Section("Activation & behavior") {
                 ShortcutRow("Open Advanced Paste window", shortcut: $settings.value.openShortcut)
                 Picker(selection: $settings.value.windowPosition) {
-                    ForEach(AdvancedPasteSettings.WindowPosition.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(AdvancedPasteSettings.WindowPosition.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("Window position", subtitle: "Falls back to the pointer when an app doesn't report its text cursor.") }
                 Toggle(isOn: $settings.value.showPreview) { RowLabel("Show a preview of the current clipboard content") }
                 Toggle(isOn: $settings.value.historyEnabled) {
@@ -49,18 +51,16 @@ struct AdvancedPasteSettingsView: View {
             }
 
             Section("Actions") {
-                actionRow(.plainText, subtitle: "Removes all formatting.")
-                actionRow(.markdown, subtitle: "Converts HTML and rich text: headings, lists, links, emphasis, code, tables, images.")
-                actionRow(.json, subtitle: "Converts CSV/TSV, XML, YAML and key=value text; pretty-prints JSON.")
-                actionRow(.imageToText, subtitle: "On-device text recognition.")
-                actionRow(.txtFile, subtitle: "Pastes a file into Finder or any file field.")
+                actionRow(.plainText, subtitle: Text("Removes all formatting."))
+                actionRow(.markdown, subtitle: Text("Converts HTML and rich text: headings, lists, links, emphasis, code, tables, images."))
+                actionRow(.json, subtitle: Text("Converts CSV/TSV, XML, YAML and key=value text; pretty-prints JSON."))
+                actionRow(.imageToText, subtitle: Text("On-device text recognition."))
+                actionRow(.txtFile, subtitle: Text("Pastes a file into Finder or any file field."))
                 actionRow(.htmlFile)
                 actionRow(.pngFile)
-                actionRow(.transcodeM4A, subtitle: "Audio or video on the clipboard, converted with AVFoundation.")
-                actionRow(.transcodeMP4, subtitle: "H.264 video with AAC audio, keeping dimensions and metadata.")
-                actionRow(.transcodeMP3, subtitle: MediaTranscoder.tool("ffmpeg") != nil || MediaTranscoder.tool("lame") != nil
-                          ? "Encoded with \(MediaTranscoder.tool("ffmpeg") != nil ? "ffmpeg" : "LAME")."
-                          : "Needs ffmpeg or LAME (brew install lame); macOS has no MP3 encoder.")
+                actionRow(.transcodeM4A, subtitle: Text("Audio or video on the clipboard, converted with AVFoundation."))
+                actionRow(.transcodeMP4, subtitle: Text("H.264 video with AAC audio, keeping dimensions and metadata."))
+                actionRow(.transcodeMP3, subtitle: mp3Subtitle)
             }
 
             aiSection
@@ -70,8 +70,8 @@ struct AdvancedPasteSettingsView: View {
                 LabeledContent {
                     Button("Clear history") { history.clear() }.disabled(history.items.allSatisfy(\.pinned))
                 } label: {
-                    RowLabel("\(history.items.count) item\(history.items.count == 1 ? "" : "s")",
-                             subtitle: "Password managers and concealed copies are never recorded.")
+                    RowLabel(title: Text("\(history.items.count) items", comment: "Clipboard history: number of saved entries"),
+                             subtitle: Text("Password managers and concealed copies are never recorded."))
                 }
             }
         }
@@ -82,7 +82,15 @@ struct AdvancedPasteSettingsView: View {
         }
     }
 
-    private func actionRow(_ action: Action, subtitle: String? = nil) -> some View {
+    private var mp3Subtitle: Text {
+        if MediaTranscoder.tool("ffmpeg") != nil || MediaTranscoder.tool("lame") != nil {
+            let encoder = MediaTranscoder.tool("ffmpeg") != nil ? "ffmpeg" : "LAME"
+            return Text("Encoded with \(encoder).", comment: "%@ is the MP3 encoder program in use: ffmpeg or LAME")
+        }
+        return Text("Needs ffmpeg or LAME (brew install lame); macOS has no MP3 encoder.")
+    }
+
+    private func actionRow(_ action: Action, subtitle: Text? = nil) -> some View {
         let binding = Binding<ActionPrefs>(
             get: { settings.value.prefs(action) },
             set: { settings.value.actions[action.name] = $0 })
@@ -94,7 +102,7 @@ struct AdvancedPasteSettingsView: View {
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: action.symbol).foregroundStyle(.secondary).frame(width: 18)
-                RowLabel(action == .plainText ? "Paste as plain text" : action.title, subtitle: subtitle)
+                RowLabel(title: action == .plainText ? Text("Paste as plain text") : Text(verbatim: action.title), subtitle: subtitle)
             }
         }
     }
@@ -114,30 +122,36 @@ struct AdvancedPasteSettingsView: View {
                         p.systemPrompt = settings.value.provider.systemPrompt
                         settings.value.provider = p
                     })) {
-                    ForEach(AIProvider.Kind.allCases) { Text($0.title).tag($0) }
+                    ForEach(AIProvider.Kind.allCases) { Text(verbatim: $0.title).tag($0) }
                 }
                 LabeledContent {
-                    TextField("", text: $settings.value.provider.endpoint, prompt: Text("https://…"))
-                        .textFieldStyle(.roundedBorder).frame(width: 300)
+                    TextField("", text: $settings.value.provider.endpoint, prompt: Text(verbatim: "https://…"))
+                        .textFieldStyle(.roundedBorder).labelsHidden().frame(width: 300)
                 } label: {
-                    RowLabel(settings.value.provider.kind == .azureOpenAI ? "Endpoint" : "Base URL",
-                             subtitle: "Requests go to …/chat/completions.")
+                    RowLabel(title: settings.value.provider.kind == .azureOpenAI
+                                 ? Text("Endpoint", comment: "Azure OpenAI: the resource URL")
+                                 : Text("Base URL", comment: "AI provider: URL the API paths are appended to"),
+                             subtitle: Text("Requests go to …/chat/completions."))
                 }
                 LabeledContent {
-                    TextField("", text: $settings.value.provider.model, prompt: Text("model"))
-                        .textFieldStyle(.roundedBorder).frame(width: 300)
+                    TextField("", text: $settings.value.provider.model, prompt: Text("model", comment: "Placeholder: AI model name"))
+                        .textFieldStyle(.roundedBorder).labelsHidden().frame(width: 300)
                 } label: {
-                    RowLabel(settings.value.provider.kind == .azureOpenAI ? "Deployment name" : "Model")
+                    RowLabel(title: settings.value.provider.kind == .azureOpenAI
+                                 ? Text("Deployment name", comment: "Azure OpenAI: name of the model deployment")
+                                 : Text("Model", comment: "AI model name, e.g. gpt-4o-mini"))
                 }
                 if settings.value.provider.kind == .azureOpenAI {
                     LabeledContent {
-                        TextField("", text: $settings.value.provider.apiVersion, prompt: Text("2024-10-21"))
-                            .textFieldStyle(.roundedBorder).frame(width: 300)
+                        TextField("", text: $settings.value.provider.apiVersion, prompt: Text(verbatim: "2024-10-21"))
+                            .textFieldStyle(.roundedBorder).labelsHidden().frame(width: 300)
                     } label: { RowLabel("API version") }
                 }
                 LabeledContent {
-                    SecureField("", text: $apiKey, prompt: Text(settings.value.provider.requiresKey ? "Required" : "Optional"))
-                        .textFieldStyle(.roundedBorder).frame(width: 300)
+                    SecureField("", text: $apiKey, prompt: settings.value.provider.requiresKey
+                                ? Text("Required", comment: "Placeholder: an API key must be entered")
+                                : Text("Optional", comment: "Placeholder: an API key may be left empty"))
+                        .textFieldStyle(.roundedBorder).labelsHidden().frame(width: 300)
                         .onChange(of: apiKey) { _, new in Keychain.set(new, for: settings.value.provider.keychainAccount) }
                 } label: {
                     RowLabel("API key", subtitle: "Stored in your login keychain.")
@@ -162,7 +176,9 @@ struct AdvancedPasteSettingsView: View {
                     }
                 } label: {
                     if let testResult {
-                        Label(testResult.message, systemImage: testResult.ok ? "checkmark.circle.fill" : "xmark.octagon.fill")
+                        Label { Text(verbatim: testResult.message) } icon: {
+                            Image(systemName: testResult.ok ? "checkmark.circle.fill" : "xmark.octagon.fill")
+                        }
                             .foregroundStyle(testResult.ok ? .green : .red)
                             .font(.system(size: 12))
                             .lineLimit(3)
@@ -182,7 +198,8 @@ struct AdvancedPasteSettingsView: View {
                 }
             }
             Button {
-                settings.value.customActions.append(CustomAction(name: "New action", prompt: ""))
+                settings.value.customActions.append(CustomAction(
+                    name: String(localized: "New action", comment: "Name of a newly added custom AI action"), prompt: ""))
             } label: {
                 Label("Add custom action", systemImage: "plus")
             }
@@ -198,7 +215,8 @@ struct AdvancedPasteSettingsView: View {
             do {
                 let reply = try await AIClient.complete(provider: provider, apiKey: key, instructions: "Reply with the single word OK.",
                                                         content: "ping")
-                testResult = (true, "Connected · \(reply.prefix(40))")
+                testResult = (true, String(localized: "Connected · \(String(reply.prefix(40)))",
+                                           comment: "AI connection test passed; %@ is the start of the provider's reply"))
             } catch {
                 testResult = (false, error.localizedDescription)
             }
@@ -220,7 +238,7 @@ private struct CustomActionEditor: View {
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(2...6)
                 HStack {
-                    Text("Shortcut").foregroundStyle(.secondary)
+                    Text("Shortcut", comment: "Label next to the shortcut recorder of a custom AI action").foregroundStyle(.secondary)
                     ShortcutRecorder(shortcut: $action.shortcut)
                     Spacer()
                     Button(role: .destructive, action: onDelete) { Label("Delete", systemImage: "trash") }
@@ -230,8 +248,8 @@ private struct CustomActionEditor: View {
         } label: {
             HStack {
                 Image(systemName: "sparkles").foregroundStyle(Tint.purple.color)
-                RowLabel(action.name.isEmpty ? "Untitled" : action.name,
-                         subtitle: action.prompt.isEmpty ? "No prompt yet" : action.prompt)
+                RowLabel(title: action.name.isEmpty ? Text("Untitled", comment: "Custom AI action without a name") : Text(verbatim: action.name),
+                         subtitle: action.prompt.isEmpty ? Text("No prompt yet") : Text(verbatim: action.prompt))
                 Spacer()
                 if action.shortcut != nil { Keycaps(action.shortcut) }
                 Toggle("", isOn: $action.isEnabled).labelsHidden().toggleStyle(.switch).help("Show in the window")

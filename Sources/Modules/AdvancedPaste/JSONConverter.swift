@@ -12,14 +12,18 @@ public enum JSONConverter {
         case yaml
         case lines(Int)
 
+        /// What the text is, for the clipboard preview ("CSV · 3 rows"); localized.
         public var label: String {
             switch self {
             case .json: "JSON"
             case .xml: "XML"
-            case .delimited(let d, let rows): "\(d == "\t" ? "TSV" : "CSV") · \(rows) row\(rows == 1 ? "" : "s")"
-            case .keyValue(let n): "Key/value · \(n) key\(n == 1 ? "" : "s")"
+            case .delimited(let d, let rows):
+                String(localized: "\(d == "\t" ? "TSV" : "CSV") · \(rows) rows",
+                       comment: "Clipboard preview: %1$@ is CSV or TSV, %2$lld the number of data rows")
+            case .keyValue(let n):
+                String(localized: "Key/value · \(n) keys", comment: "Clipboard preview: key=value text and its number of keys")
             case .yaml: "YAML"
-            case .lines(let n): "Text · \(n) line\(n == 1 ? "" : "s")"
+            case .lines(let n): String(localized: "Text · \(n) lines", comment: "Clipboard preview: plain text and its line count")
             }
         }
     }

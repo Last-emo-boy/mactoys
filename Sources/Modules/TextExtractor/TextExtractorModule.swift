@@ -8,17 +8,17 @@ public struct TextExtractorSettings: Codable, Equatable, Sendable {
 
         public var title: String {
             switch self {
-            case .lines: "Lines"
-            case .table: "Table"
-            case .singleLine: "Single line"
+            case .lines: String(localized: "Lines", comment: "Text Extractor mode: keep the line breaks")
+            case .table: String(localized: "Table", comment: "Text Extractor mode: rows and columns separated by tabs")
+            case .singleLine: String(localized: "Single line", comment: "Text Extractor mode: join everything into one line")
             }
         }
 
         public var detail: String {
             switch self {
-            case .lines: "One line of text per line on screen."
-            case .table: "Rows and columns separated by tabs, ready for Numbers or Excel."
-            case .singleLine: "Everything joined into one line; hyphenated line breaks are rejoined."
+            case .lines: String(localized: "One line of text per line on screen.")
+            case .table: String(localized: "Rows and columns separated by tabs, ready for Numbers or Excel.")
+            case .singleLine: String(localized: "Everything joined into one line; hyphenated line breaks are rejoined.")
             }
         }
     }
@@ -122,9 +122,9 @@ private struct SampleScreen: View {
                                     Color(red: 0.88, green: 0.54, blue: 0.42)],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
             VStack(alignment: .leading, spacing: 10) {
-                Text("Release notes 0.102").font(.system(size: 26, weight: .bold))
-                Text("Mouse Button Lock and CursorHide join\nthe mouse utilities family.").font(.system(size: 15))
-                Text("Quick Accent gains Belarusian and Pitjantjatjara sets.").font(.system(size: 15)).padding(.top, 30)
+                Text(verbatim: "Release notes 0.102").font(.system(size: 26, weight: .bold))
+                Text(verbatim: "Mouse Button Lock and CursorHide join\nthe mouse utilities family.").font(.system(size: 15))
+                Text(verbatim: "Quick Accent gains Belarusian and Pitjantjatjara sets.").font(.system(size: 15)).padding(.top, 30)
             }
             .foregroundStyle(.white)
             .padding(.leading, 250)
@@ -156,14 +156,14 @@ struct TextExtractorSettingsView: View {
             }
             Section("Recognition") {
                 Picker(selection: $settings.value.mode) {
-                    ForEach(TextExtractorSettings.Mode.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(TextExtractorSettings.Mode.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: {
-                    RowLabel("Default mode", subtitle: settings.value.mode.detail)
+                    RowLabel(title: Text("Default mode"), subtitle: Text(verbatim: settings.value.mode.detail))
                 }
                 Picker(selection: $settings.value.language) {
-                    Text("Automatic").tag(String?.none)
+                    Text("Automatic", comment: "Recognition language: detect it automatically").tag(String?.none)
                     Divider()
-                    ForEach(TextRecognizer.languages, id: \.code) { Text($0.name).tag(Optional($0.code)) }
+                    ForEach(TextRecognizer.languages, id: \.code) { Text(verbatim: $0.name).tag(Optional($0.code)) }
                 } label: {
                     RowLabel("Preferred language", subtitle: "Recognized on this Mac. Also changes when you pick a language in the overlay.")
                 }
