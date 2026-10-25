@@ -80094,6 +80094,12 @@
             "value": "스포트라이트 주변의 어두운 영역입니다(투명일 때 50% 검정)."
           }
         },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A área escurecida ao redor do holofote (preto a 50%, quando transparente)."
+          }
+        },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
