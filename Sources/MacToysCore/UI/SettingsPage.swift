@@ -94,6 +94,10 @@ public struct HeroCard<Content: View>: View {
 // a `LocalizedStringKey` (string literals: extracted into the String Catalog and translated),
 // `Text` (when mixing a literal with a runtime value), and a disfavored `String` that is shown
 // as is (runtime values; localize them at the source with `String(localized:)`).
+//
+// A literal title with a runtime `String` subtitle can't be told apart from an all-runtime call by
+// overload ranking, so `RowLabel("Title", subtitle: path)` shows *both* verbatim. Write
+// `RowLabel("Title", verbatimSubtitle: path)` instead (title localized, subtitle as is).
 
 /// Title + optional subtitle label used across rows.
 public struct RowLabel: View {
@@ -109,14 +113,15 @@ public struct RowLabel: View {
         self.init(title: Text(title), subtitle: subtitle.map { Text($0) })
     }
 
-    @_disfavoredOverload
-    public init(_ title: LocalizedStringKey, subtitle: String?) {
-        self.init(title: Text(title), subtitle: subtitle.flatMap { $0.isEmpty ? nil : Text(verbatim: $0) })
+    public init(_ title: LocalizedStringKey, verbatimSubtitle: String?) {
+        self.init(title: Text(title), subtitle: verbatimSubtitle.flatMap { $0.isEmpty ? nil : Text(verbatim: $0) })
     }
 
+    // The verbatim fallbacks are generic: a plain `String` parameter would beat
+    // `LocalizedStringKey` for literals even when disfavored.
     @_disfavoredOverload
-    public init(_ title: String, subtitle: String? = nil) {
-        self.init(title: Text(verbatim: title), subtitle: subtitle.flatMap { $0.isEmpty ? nil : Text(verbatim: $0) })
+    public init<S: StringProtocol>(_ title: S, subtitle: String? = nil) {
+        self.init(title: Text(verbatim: String(title)), subtitle: subtitle.flatMap { $0.isEmpty ? nil : Text(verbatim: $0) })
     }
 
     public var body: some View {
@@ -141,9 +146,13 @@ public struct ShortcutRow: View {
     }
 
     @_disfavoredOverload
-    public init(_ title: String, subtitle: String? = nil, shortcut: Binding<Shortcut?>) {
-        self.label = RowLabel(title, subtitle: subtitle)
+    public init<S: StringProtocol>(_ title: S, subtitle: String? = nil, shortcut: Binding<Shortcut?>) {
+        self.label = RowLabel(String(title), subtitle: subtitle)
         self._shortcut = shortcut
+    }
+
+    public init(_ title: LocalizedStringKey, verbatimSubtitle: String?, shortcut: Binding<Shortcut?>) {
+        self.init(label: RowLabel(title, verbatimSubtitle: verbatimSubtitle), shortcut: shortcut)
     }
 
     public init(label: RowLabel, shortcut: Binding<Shortcut?>) {
@@ -172,8 +181,12 @@ public struct ColorRow: View {
     }
 
     @_disfavoredOverload
-    public init(_ title: String, subtitle: String? = nil, color: Binding<RGBA>, supportsOpacity: Bool = true) {
+    public init<S: StringProtocol>(_ title: S, subtitle: String? = nil, color: Binding<RGBA>, supportsOpacity: Bool = true) {
         self.init(label: RowLabel(title, subtitle: subtitle), color: color, supportsOpacity: supportsOpacity)
+    }
+
+    public init(_ title: LocalizedStringKey, verbatimSubtitle: String?, color: Binding<RGBA>, supportsOpacity: Bool = true) {
+        self.init(label: RowLabel(title, verbatimSubtitle: verbatimSubtitle), color: color, supportsOpacity: supportsOpacity)
     }
 
     public init(label: RowLabel, color: Binding<RGBA>, supportsOpacity: Bool = true) {
@@ -209,9 +222,15 @@ public struct SliderRow: View {
     }
 
     @_disfavoredOverload
-    public init(_ title: String, subtitle: String? = nil, value: Binding<Double>, in range: ClosedRange<Double>,
+    public init<S: StringProtocol>(_ title: S, subtitle: String? = nil, value: Binding<Double>, in range: ClosedRange<Double>,
                 step: Double? = nil, format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
         self.init(label: RowLabel(title, subtitle: subtitle), value: value, in: range, step: step, format: format)
+    }
+
+    public init(_ title: LocalizedStringKey, verbatimSubtitle: String?, value: Binding<Double>,
+                in range: ClosedRange<Double>, step: Double? = nil,
+                format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
+        self.init(label: RowLabel(title, verbatimSubtitle: verbatimSubtitle), value: value, in: range, step: step, format: format)
     }
 
     public init(label: RowLabel, value: Binding<Double>, in range: ClosedRange<Double>, step: Double? = nil,
@@ -262,10 +281,17 @@ public struct InfoBar: View {
                   actionTitle: actionTitle.map { Text($0) }, action: action)
     }
 
+    /// Localized title and action, runtime message (a path, an error description…).
+    public init(_ kind: InfoKind, title: LocalizedStringKey, verbatimMessage: String?,
+                actionTitle: LocalizedStringKey? = nil, action: (() -> Void)? = nil) {
+        self.init(kind, title: Text(title), message: verbatimMessage.map { Text(verbatim: $0) },
+                  actionTitle: actionTitle.map { Text($0) }, action: action)
+    }
+
     @_disfavoredOverload
-    public init(_ kind: InfoKind, title: String, message: String? = nil, actionTitle: String? = nil,
-                action: (() -> Void)? = nil) {
-        self.init(kind, title: Text(verbatim: title), message: message.map { Text(verbatim: $0) },
+    public init<S: StringProtocol>(_ kind: InfoKind, title: S, message: String? = nil, actionTitle: String? = nil,
+                                   action: (() -> Void)? = nil) {
+        self.init(kind, title: Text(verbatim: String(title)), message: message.map { Text(verbatim: $0) },
                   actionTitle: actionTitle.map { Text(verbatim: $0) }, action: action)
     }
 
@@ -316,8 +342,8 @@ public struct ExcludedAppsEditor: View {
     }
 
     @_disfavoredOverload
-    public init(_ title: String, apps: Binding<[String]>) {
-        self.title = Text(verbatim: title)
+    public init<S: StringProtocol>(_ title: S, apps: Binding<[String]>) {
+        self.title = Text(verbatim: String(title))
         self._apps = apps
     }
 
