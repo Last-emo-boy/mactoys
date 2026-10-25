@@ -13,3 +13,5 @@ for lang in $langs; do
   rm -rf "$BROLL/public/assets/app/$lang"
   "$APP/Contents/MacOS/MacToys" --export-assets "$BROLL/public/assets/app" -AppleLanguages "($lang)" | grep -v '^wrote'
 done
+# The 1024 px app icon for the title and end card (icons/app.png is only 512 px).
+sips -s format png "$ROOT/Resources/App/AppIcon.icns" --out "$BROLL/public/assets/app/appicon.png" >/dev/null
