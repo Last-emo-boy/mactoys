@@ -57,8 +57,14 @@ def classify(value):
     return "runtime"
 
 
+def localized_names(src):
+    """Properties and lets declared as LocalizedStringKey / Text: already localized, not runtime Strings."""
+    return set(re.findall(r'\b(?:var|let)\s+(\w+)\s*:\s*(?:LocalizedStringKey|Text|LocalizedStringResource)\b', src))
+
+
 def scan(path, fix):
     src = path.read_text(encoding="utf-8")
+    keyed = localized_names(src)
     edits, reports = [], []
     for m in CALL.finditer(src):
         name = m.group(1)
@@ -82,6 +88,8 @@ def scan(path, fix):
             continue
         value = target[0].split(":", 1)[1]
         kind = classify(value)
+        if kind == "runtime" and value.strip() in keyed:
+            continue
         line = src.count("\n", 0, m.start()) + 1
         if kind == "runtime":
             a, b = target[1]

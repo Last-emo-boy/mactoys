@@ -82,12 +82,12 @@ struct GeneralView: View {
                         Button("Restore…") { BackupActions.restore() }
                     }
                 } label: {
-                    RowLabel("Settings backup", subtitle: Paths.settings.path as String?)
+                    RowLabel("Settings backup", verbatimSubtitle: Paths.settings.path)
                 }
                 LabeledContent {
                     Button("Reveal") { NSWorkspace.shared.activateFileViewerSelecting([Paths.appSupport]) }
                 } label: {
-                    RowLabel("Data folder", subtitle: Paths.appSupport.path as String?)
+                    RowLabel("Data folder", verbatimSubtitle: Paths.appSupport.path)
                 }
             }
 
