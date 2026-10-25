@@ -54,26 +54,31 @@ struct DrawToolbar: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .help(color.key.map { "\(color.title) (\(String($0).uppercased()))" } ?? color.title)
+                    .help(color.key.map {
+                        String(localized: "\(color.title) (\(String($0).uppercased()))",
+                               comment: "Pen color tooltip: color name, then the letter key that selects it")
+                    } ?? color.title)
                 }
                 separator
                 ForEach(Self.tools) { tool in
-                    iconButton(tool.symbol, selected: state.tool == tool, help: tool.title) { state.tool = tool }
+                    iconButton(tool.symbol, selected: state.tool == tool, help: Text(verbatim: tool.title)) { state.tool = tool }
                         .disabled(tool == .blur && !state.blurAvailable)
                 }
                 separator
-                iconButton("arrow.uturn.backward", help: "Undo (⌘Z)", action: actions.undo).disabled(!state.canUndo)
-                iconButton("trash", help: "Erase all (E)", action: actions.clear)
-                iconButton("rectangle.fill", selected: state.board == .whiteboard, help: "Whiteboard (W)") {
+                iconButton("arrow.uturn.backward", help: Text("Undo (⌘Z)"), action: actions.undo).disabled(!state.canUndo)
+                iconButton("trash", help: Text("Erase all (E)", comment: "Toolbar tooltip; E is the letter key"), action: actions.clear)
+                iconButton("rectangle.fill", selected: state.board == .whiteboard,
+                           help: Text("Whiteboard (W)", comment: "Toolbar tooltip; W is the letter key")) {
                     actions.toggleBoard(.whiteboard)
                 }
-                iconButton("rectangle.inset.filled", selected: state.board == .blackboard, help: "Blackboard (K)") {
+                iconButton("rectangle.inset.filled", selected: state.board == .blackboard,
+                           help: Text("Blackboard (K)", comment: "Toolbar tooltip; K is the letter key")) {
                     actions.toggleBoard(.blackboard)
                 }
                 separator
                 iconButton(state.isRecording ? "stop.circle.fill" : "video", selected: state.isRecording,
-                           tint: state.isRecording ? .red : nil, help: "Record the screen (⌃⌥5)", action: actions.record)
-                iconButton("xmark", help: "Exit (Esc)", action: actions.close)
+                           tint: state.isRecording ? .red : nil, help: Text("Record the screen (⌃⌥5)"), action: actions.record)
+                iconButton("xmark", help: Text("Exit (Esc)"), action: actions.close)
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 5)
@@ -84,7 +89,7 @@ struct DrawToolbar: View {
         Rectangle().fill(.white.opacity(0.16)).frame(width: 1, height: 20).padding(.horizontal, 2)
     }
 
-    private func iconButton(_ symbol: String, selected: Bool = false, tint: Color? = nil, help: String,
+    private func iconButton(_ symbol: String, selected: Bool = false, tint: Color? = nil, help: Text,
                             action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)

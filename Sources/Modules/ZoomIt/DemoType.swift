@@ -100,7 +100,8 @@ final class DemoTypeController {
         do {
             let data = try Data(contentsOf: url)
             guard data.count <= 1_048_576 else {
-                HUD.show("The DemoType script is larger than 1 MB", symbol: "exclamationmark.triangle")
+                HUD.show("The DemoType script is larger than \(Int64(1_048_576).formatted(.byteCount(style: .memory)))",
+                         symbol: "exclamationmark.triangle")
                 return false
             }
             guard let text = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .utf16)

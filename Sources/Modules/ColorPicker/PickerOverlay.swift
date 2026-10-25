@@ -89,8 +89,8 @@ struct ColorChip: View {
                 .overlay(RoundedRectangle(cornerRadius: 5, style: .continuous).strokeBorder(.white.opacity(0.25)))
                 .frame(width: 20, height: 20)
             VStack(alignment: .leading, spacing: 1) {
-                Text(label).font(.system(size: 13.5, weight: .semibold, design: .monospaced))
-                if let name { Text(name).font(.system(size: 10.5, weight: .medium)).foregroundStyle(.white.opacity(0.6)) }
+                Text(verbatim: label).font(.system(size: 13.5, weight: .semibold, design: .monospaced))
+                if let name { Text(verbatim: name).font(.system(size: 10.5, weight: .medium)).foregroundStyle(.white.opacity(0.6)) }
             }
             .lineLimit(1)
         }
@@ -300,7 +300,7 @@ final class PickerSession {
         model.color = color
         model.patch = s.pixels.patch(centerX: pixel.x, centerY: pixel.y, size: model.cells)
         model.label = ColorFormatter.format(color, settings.copyFormat.format)
-        model.name = settings.showColorName ? ColorNames.name(for: color) : nil
+        model.name = settings.showColorName ? ColorNames.displayName(for: color) : nil
     }
 
     private func complete(_ outcome: Outcome) {

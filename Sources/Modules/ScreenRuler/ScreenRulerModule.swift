@@ -54,7 +54,7 @@ public final class ScreenRulerModule: ToyModule {
     public var shortcutBindings: [ShortcutBinding] {
         [ShortcutBinding("Screen Ruler", settings.value.activationShortcut),
          ShortcutBinding("Ruler: pick a tool", keys: ["⌘", "1–4"]),
-         ShortcutBinding("Ruler: keep a measurement", keys: ["⇧", "Click"])]
+         ShortcutBinding("Ruler: keep a measurement", keys: ["⇧", String(localized: "Click", comment: "Shortcut key: a mouse click")])]
     }
 
     public func handle(_ command: AppCommand) -> Bool {

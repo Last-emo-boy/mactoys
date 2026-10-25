@@ -56,6 +56,60 @@ public enum ColorNames {
         return mid[index]
     }
 
+    /// `name(for:)` in the user's language, for display. The `%Na` format parameter keeps the
+    /// English name, like every other format output.
+    public static func displayName(for c: ColorValue) -> String {
+        localized(name(for: c))
+    }
+
+    private static func localized(_ name: String) -> String {
+        switch name {
+        case "White": String(localized: "White", comment: "Color name")
+        case "Black": String(localized: "Black", comment: "Color name")
+        case "Light Gray": String(localized: "Light Gray", comment: "Color name")
+        case "Gray": String(localized: "Gray", comment: "Color name")
+        case "Dark Gray": String(localized: "Dark Gray", comment: "Color name")
+        case "Coral": String(localized: "Coral", comment: "Color name")
+        case "Rose": String(localized: "Rose", comment: "Color name (pinkish red)")
+        case "Light Orange": String(localized: "Light Orange", comment: "Color name")
+        case "Tan": String(localized: "Tan", comment: "Color name (light brown)")
+        case "Light Yellow": String(localized: "Light Yellow", comment: "Color name")
+        case "Light Green": String(localized: "Light Green", comment: "Color name")
+        case "Lime": String(localized: "Lime", comment: "Color name (yellowish green)")
+        case "Aqua": String(localized: "Aqua", comment: "Color name (greenish blue)")
+        case "Sky Blue": String(localized: "Sky Blue", comment: "Color name")
+        case "Light Turquoise": String(localized: "Light Turquoise", comment: "Color name")
+        case "Pale Blue": String(localized: "Pale Blue", comment: "Color name")
+        case "Light Blue": String(localized: "Light Blue", comment: "Color name")
+        case "Ice Blue": String(localized: "Ice Blue", comment: "Color name")
+        case "Periwinkle": String(localized: "Periwinkle", comment: "Color name (lavender blue)")
+        case "Lavender": String(localized: "Lavender", comment: "Color name")
+        case "Pink": String(localized: "Pink", comment: "Color name")
+        case "Red": String(localized: "Red", comment: "Color name")
+        case "Orange": String(localized: "Orange", comment: "Color name")
+        case "Brown": String(localized: "Brown", comment: "Color name")
+        case "Gold": String(localized: "Gold", comment: "Color name")
+        case "Yellow": String(localized: "Yellow", comment: "Color name")
+        case "Olive Green": String(localized: "Olive Green", comment: "Color name")
+        case "Green": String(localized: "Green", comment: "Color name")
+        case "Bright Green": String(localized: "Bright Green", comment: "Color name")
+        case "Teal": String(localized: "Teal", comment: "Color name (dark cyan)")
+        case "Turquoise": String(localized: "Turquoise", comment: "Color name")
+        case "Blue": String(localized: "Blue", comment: "Color name")
+        case "Blue Gray": String(localized: "Blue Gray", comment: "Color name")
+        case "Indigo": String(localized: "Indigo", comment: "Color name")
+        case "Purple": String(localized: "Purple", comment: "Color name")
+        case "Dark Red": String(localized: "Dark Red", comment: "Color name")
+        case "Dark Yellow": String(localized: "Dark Yellow", comment: "Color name")
+        case "Dark Green": String(localized: "Dark Green", comment: "Color name")
+        case "Dark Teal": String(localized: "Dark Teal", comment: "Color name")
+        case "Dark Blue": String(localized: "Dark Blue", comment: "Color name")
+        case "Dark Purple": String(localized: "Dark Purple", comment: "Color name")
+        case "Plum": String(localized: "Plum", comment: "Color name (dark purple)")
+        default: name
+        }
+    }
+
     // MARK: CSS named colors
 
     /// The CSS Color Module Level 4 named colors (spelling aliases such as `grey` and `cyan` are omitted).

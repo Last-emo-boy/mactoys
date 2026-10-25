@@ -140,15 +140,27 @@ import Testing
 
     @Test func labels() {
         let m = DisplayMetrics(pixelsPerPoint: 2, pixelsPerInch: 254)
-        #expect(MeasurementText.label(width: 236, height: 250, extra: .none, metrics: m) == "236 × 250 px")
-        #expect(MeasurementText.label(width: 236, height: nil, extra: .none, metrics: m) == "236 px")
-        #expect(MeasurementText.label(width: nil, height: 250, extra: .points, metrics: m) == "250 px\n125 pt")
-        #expect(MeasurementText.label(width: 236, height: 250, extra: .inches, metrics: m) == "236 × 250 px\n0.9291 × 0.9843 in")
-        #expect(MeasurementText.label(width: 254, height: 127, extra: .centimeters, metrics: m) == "254 × 127 px\n2.54 × 1.27 cm")
+        let en = Locale(identifier: "en_US")
+        #expect(MeasurementText.label(width: 236, height: 250, extra: .none, metrics: m, locale: en) == "236 × 250 px")
+        #expect(MeasurementText.label(width: 236, height: nil, extra: .none, metrics: m, locale: en) == "236 px")
+        #expect(MeasurementText.label(width: nil, height: 250, extra: .points, metrics: m, locale: en) == "250 px\n125 pt")
+        #expect(MeasurementText.label(width: 236, height: 250, extra: .inches, metrics: m, locale: en) == "236 × 250 px\n0.9291 × 0.9843 in")
+        #expect(MeasurementText.label(width: 254, height: 127, extra: .centimeters, metrics: m, locale: en) == "254 × 127 px\n2.54 × 1.27 cm")
         #expect(MeasurementText.clipboard(width: 236, height: 250) == "236 × 250")
         #expect(MeasurementText.clipboard(width: nil, height: 250) == "250")
-        #expect(MeasurementText.number(1234.4) == "1234")
-        #expect(MeasurementText.number(0.00123) == "0.00123")
+        #expect(MeasurementText.number(1234.4, locale: en) == "1234")
+        #expect(MeasurementText.number(0.00123, locale: en) == "0.00123")
+        #expect(MeasurementText.number(12345, locale: en) == "12345")
+    }
+
+    @Test func labelsFollowTheLocale() {
+        let m = DisplayMetrics(pixelsPerPoint: 2, pixelsPerInch: 254)
+        let de = Locale(identifier: "de_DE")
+        #expect(MeasurementText.number(0.00123, locale: de) == "0,00123")
+        let label = MeasurementText.label(width: 254, height: 127, extra: .centimeters, metrics: m, locale: de)
+        #expect(label.hasPrefix("254 × 127 px\n2,54 × 1,27"))
+        let ru = MeasurementText.label(width: 254, height: 127, extra: .centimeters, metrics: m, locale: Locale(identifier: "ru_RU"))
+        #expect(ru.hasSuffix("см"))
     }
 
     @Test func settingsRoundTrip() throws {

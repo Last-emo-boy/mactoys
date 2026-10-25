@@ -7,7 +7,17 @@ public enum PenColor: String, Codable, CaseIterable, Sendable, Identifiable {
     case red, green, blue, yellow, orange, pink, white
 
     public var id: String { rawValue }
-    public var title: String { rawValue.capitalized }
+    public var title: String {
+        switch self {
+        case .red: String(localized: "Red", comment: "Color name")
+        case .green: String(localized: "Green", comment: "Color name")
+        case .blue: String(localized: "Blue", comment: "Color name")
+        case .yellow: String(localized: "Yellow", comment: "Color name")
+        case .orange: String(localized: "Orange", comment: "Color name")
+        case .pink: String(localized: "Pink", comment: "Color name")
+        case .white: String(localized: "White", comment: "Color name")
+        }
+    }
 
     public var rgba: RGBA {
         switch self {
@@ -45,15 +55,15 @@ public enum TimerPosition: String, Codable, CaseIterable, Sendable, Identifiable
     public var id: String { rawValue }
     public var title: String {
         switch self {
-        case .topLeft: "Top left"
-        case .top: "Top"
-        case .topRight: "Top right"
-        case .left: "Left"
-        case .center: "Center"
-        case .right: "Right"
-        case .bottomLeft: "Bottom left"
-        case .bottom: "Bottom"
-        case .bottomRight: "Bottom right"
+        case .topLeft: String(localized: "Top left", comment: "Break timer position on the screen")
+        case .top: String(localized: "Top", comment: "Break timer position on the screen")
+        case .topRight: String(localized: "Top right", comment: "Break timer position on the screen")
+        case .left: String(localized: "Left", comment: "Break timer position on the screen")
+        case .center: String(localized: "Center", comment: "Break timer position on the screen")
+        case .right: String(localized: "Right", comment: "Break timer position on the screen")
+        case .bottomLeft: String(localized: "Bottom left", comment: "Break timer position on the screen")
+        case .bottom: String(localized: "Bottom", comment: "Break timer position on the screen")
+        case .bottomRight: String(localized: "Bottom right", comment: "Break timer position on the screen")
         }
     }
 }
@@ -70,10 +80,10 @@ public enum BreakBackground: String, Codable, CaseIterable, Sendable, Identifiab
     public var id: String { rawValue }
     public var title: String {
         switch self {
-        case .none: "None"
-        case .fadedDesktop: "Faded desktop"
-        case .blurredDesktop: "Blurred desktop"
-        case .image: "Image file"
+        case .none: String(localized: "None", comment: "Break timer background: a plain dark screen")
+        case .fadedDesktop: String(localized: "Faded desktop")
+        case .blurredDesktop: String(localized: "Blurred desktop")
+        case .image: String(localized: "Image file")
         }
     }
 }
@@ -84,8 +94,8 @@ public enum RecordFormat: String, Codable, CaseIterable, Sendable, Identifiable 
     public var title: String {
         switch self {
         case .mp4: "MP4"
-        case .mov: "QuickTime movie"
-        case .gif: "Animated GIF"
+        case .mov: String(localized: "QuickTime movie")
+        case .gif: String(localized: "Animated GIF")
         }
     }
 }

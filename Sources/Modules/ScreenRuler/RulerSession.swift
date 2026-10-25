@@ -273,7 +273,7 @@ final class RulerSession {
         guard abs(scrollAccumulator) >= 1 else { return }
         tolerance = min(255, max(0, tolerance + (scrollAccumulator > 0 ? 15 : -15)))
         scrollAccumulator = 0
-        showNote("Tolerance \(tolerance)")
+        showNote(String(localized: "Tolerance \(tolerance)", comment: "Screen Ruler: the edge-detection tolerance changed; the number is 0–255"))
         measure()
     }
 
@@ -379,6 +379,6 @@ final class RulerSession {
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(text, forType: .string)
-        if overlaysStay { showNote("Copied") } else { HUD.show("Copied \(text)", symbol: "ruler") }
+        if overlaysStay { showNote(String(localized: "Copied", comment: "Screen Ruler: the measurement was copied to the clipboard")) } else { HUD.show("Copied \(text)", symbol: "ruler") }
     }
 }
