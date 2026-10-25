@@ -5,8 +5,8 @@ import MacToysCore
 @MainActor
 final class ShellProvider: SearchProvider {
     let id = "shell"
-    let name = "Shell"
-    let summary = "Run shell commands in a terminal, silently, or show their output"
+    let name = String(localized: "Shell", comment: "Provider name: shell commands")
+    let summary = String(localized: "Run shell commands in a terminal, silently, or show their output")
     let icon = ItemIcon.symbol("terminal.fill", .graphite)
     let defaultKeyword = ">"
     let globalByDefault = false
@@ -16,7 +16,9 @@ final class ShellProvider: SearchProvider {
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Run Shell Command", subtitle: "Run a command in \(engine.options.value.terminal.title) or silently",
+        [pageCommand(title: Phrase("Run Shell Command"),
+                     subtitle: String(localized: "Run a command in \(engine.options.value.terminal.title) or silently",
+                                      comment: "%@ is a terminal app such as Terminal or iTerm2"),
                      keywords: ["terminal", "command", "zsh", "bash"])]
     }
 
@@ -51,10 +53,10 @@ final class ShellProvider: SearchProvider {
         var it = item(cmd, mode: engine.options.value.shellMode, score: score)
         it.id = "shell:history:\(cmd)"
         it.title = cmd
-        it.subtitle = "From history · \(engine.options.value.shellMode.title)"
-        it.section = "History"
+        it.subtitle = String(localized: "From history · \(engine.options.value.shellMode.title)", comment: "%@ is how the command runs, e.g. “Run silently”")
+        it.section = String(localized: "History", comment: "Provider name: results selected before")
         it.isPinnable = true
-        it.actions.append(PaletteAction(id: "forget", title: "Remove from History", symbol: "trash", recordsUsage: false) {
+        it.actions.append(PaletteAction(id: "forget", title: Labels.removeFromHistory, symbol: "trash", recordsUsage: false) {
             self.engine.usage.removeShell(cmd)
             return .refresh
         })
@@ -65,21 +67,21 @@ final class ShellProvider: SearchProvider {
         let o = engine.options.value
         let title: String
         switch mode {
-        case .terminal: title = "Run “\(cmd)” in \(o.terminal.title)"
-        case .silent: title = "Run “\(cmd)” silently"
-        case .output: title = "Run “\(cmd)” and show output"
+        case .terminal: title = String(localized: "Run “\(cmd)” in \(o.terminal.title)", comment: "%1$@ is a shell command, %2$@ a terminal app")
+        case .silent: title = String(localized: "Run “\(cmd)” silently", comment: "%@ is a shell command")
+        case .output: title = String(localized: "Run “\(cmd)” and show output", comment: "%@ is a shell command")
         }
         let actions = ShellMode.allCases.filter { $0 != mode }.map { other in
             PaletteAction(id: "mode.\(other.rawValue)", title: other.title, symbol: symbol(other),
                           shortcut: other == .terminal ? ActionKeys.terminal : nil) { self.run(cmd, mode: other) }
-        } + [PaletteAction(id: "copy", title: "Copy Command", symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
+        } + [PaletteAction(id: "copy", title: String(localized: "Copy Command"), symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
             Launch.copy(cmd)
             return .dismiss
         }]
         return PaletteItem(
             id: "shell:run:\(mode.rawValue):\(cmd)", title: title, subtitle: "/bin/zsh -l · \(mode.title)",
-            icon: .symbol(symbol(mode), .graphite), providerID: id, accessory: "Shell", score: score,
-            primary: PaletteAction(id: "run", title: "Run", symbol: symbol(mode)) { self.run(cmd, mode: mode) },
+            icon: .symbol(symbol(mode), .graphite), providerID: id, accessory: name, score: score,
+            primary: PaletteAction(id: "run", title: Labels.run, symbol: symbol(mode)) { self.run(cmd, mode: mode) },
             actions: actions,
             details: ItemDetails(icon: .symbol("terminal.fill", .graphite), title: cmd, subtitle: mode.title, body: cmd,
                                  bodyMonospaced: true),
@@ -105,11 +107,13 @@ final class ShellProvider: SearchProvider {
             Task {
                 let r = await AsyncProcess.shell(cmd, timeout: 600)
                 if r.ok {
-                    let last = r.text.split(separator: "\n").last.map(String.init) ?? "Done"
+                    let last = r.text.split(separator: "\n").last.map(String.init)
+                        ?? String(localized: "Done", comment: "HUD: a silent shell command finished without output")
                     HUD.show(String(last.prefix(80)), symbol: "checkmark.circle")
+                } else if r.timedOut {
+                    HUD.show("Timed out: \(cmd)", symbol: "exclamationmark.triangle", duration: 3)
                 } else {
-                    HUD.show(r.timedOut ? "Timed out: \(cmd)" : "Exit \(r.status): \(String(r.text.prefix(70)))",
-                             symbol: "exclamationmark.triangle", duration: 3)
+                    HUD.show("Exit \(r.status): \(String(r.text.prefix(70)))", symbol: "exclamationmark.triangle", duration: 3)
                 }
             }
             return .dismiss

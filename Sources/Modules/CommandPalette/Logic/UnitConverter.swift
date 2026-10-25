@@ -6,9 +6,19 @@ enum UnitCategory: String, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .dataSize: "Data size"
-        case .duration: "Time"
-        default: rawValue.capitalized
+        case .length: String(localized: "Length", comment: "Unit category")
+        case .mass: String(localized: "Mass", comment: "Unit category")
+        case .temperature: String(localized: "Temperature", comment: "Unit category")
+        case .volume: String(localized: "Volume", comment: "Unit category: liters, gallons…")
+        case .area: String(localized: "Area", comment: "Unit category")
+        case .speed: String(localized: "Speed", comment: "Unit category")
+        case .dataSize: String(localized: "Data size", comment: "Unit category: bytes, megabytes…")
+        case .duration: String(localized: "Time", comment: "Unit category: seconds, hours, days…")
+        case .angle: String(localized: "Angle", comment: "Unit category")
+        case .pressure: String(localized: "Pressure", comment: "Unit category")
+        case .energy: String(localized: "Energy", comment: "Unit category")
+        case .power: String(localized: "Power", comment: "Unit category: watts, horsepower…")
+        case .acceleration: String(localized: "Acceleration", comment: "Unit category")
         }
     }
 }

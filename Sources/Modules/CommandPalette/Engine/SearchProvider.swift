@@ -46,22 +46,39 @@ extension SearchProvider {
 
     /// The page that searches only this provider (for commands, filters and aliases).
     var page: ListPage {
-        ListPage(id: "\(id):page", title: name, placeholder: "Search \(name)…", icon: icon) { [weak self] text in
+        ListPage(id: "\(id):page", title: name, placeholder: String(localized: "Search \(name)…", comment: "Search field placeholder; %@ is a provider name such as “Calculator”"),
+                 icon: icon) { [weak self] text in
             guard let self else { return [] }
             return await self.search(SearchQuery(text: text, scoped: true, frontEnd: .palette))
         }
     }
 
-    /// A top-level command that opens this provider's page.
-    func pageCommand(title: String? = nil, subtitle: String? = nil, keywords: [String] = [],
+    /// A top-level command that opens this provider's page. The title's English text stays searchable.
+    func pageCommand(title: Phrase, subtitle: String? = nil, keywords: [String] = [],
                      page: ListPage? = nil) -> PaletteItem {
         let target = page ?? self.page
         return PaletteItem(
-            id: target.id, title: title ?? name, subtitle: subtitle ?? summary, icon: icon, providerID: id,
-            section: "Commands", accessory: "Command",
-            primary: PaletteAction(id: "open", title: "Open", symbol: "arrow.right.circle") { .push(target) },
-            keywords: keywords)
+            id: target.id, title: title.text, subtitle: subtitle ?? summary, icon: icon, providerID: id,
+            section: Labels.commands, accessory: Labels.command,
+            primary: PaletteAction(id: "open", title: Labels.open, symbol: "arrow.right.circle") { .push(target) },
+            keywords: title.englishTerms + keywords)
     }
+}
+
+/// A built-in title in the UI language, with its English source kept so that searches typed in
+/// English still match after it is translated. String literals are extracted into the catalog.
+struct Phrase: Hashable, Sendable {
+    let text: String
+    let english: String
+
+    init(_ resource: LocalizedStringResource) {
+        text = String(localized: resource)
+        // No table has this name, so the lookup falls back to the source (English) text.
+        english = String(localized: resource.defaultValue, table: "EnglishSource")
+    }
+
+    /// The English text when it differs from the shown one: extra search keywords.
+    var englishTerms: [String] { english == text ? [] : [english] }
 }
 
 /// Fuzzy-filters items by title, subtitle and keywords; for providers with a fixed list.

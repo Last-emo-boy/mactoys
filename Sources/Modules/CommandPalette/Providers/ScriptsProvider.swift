@@ -9,17 +9,22 @@ struct ScriptCommand: Sendable, Hashable {
 }
 
 enum ScriptLibrary {
-    static let example = """
+    /// Metadata values in the UI language (the palette shows them); the script's comments and code stay English.
+    static var example: String {
+        let title = metadataValue(String(localized: "Say Hello", comment: "Title of the example script command"))
+        let subtitle = metadataValue(String(localized: "Example script command · edit or delete me"))
+        let argument = metadataValue(String(localized: "Name", comment: "Argument placeholder of the example script: the name to greet"))
+        return """
     #!/bin/zsh
     # A MacToys Script Command. Executable scripts in this folder become commands in
     # Command Palette and Run. Metadata lines near the top look like the ones below
     # (Raycast's "@raycast." keys work too).
     #
-    # @mactoys.title Say Hello
-    # @mactoys.subtitle Example script command · edit or delete me
+    # @mactoys.title \(title)
+    # @mactoys.subtitle \(subtitle)
     # @mactoys.icon hand.wave.fill
     # @mactoys.mode output
-    # @mactoys.argument Name (optional)
+    # @mactoys.argument \(argument) (optional)
     # @mactoys.keywords greet example
     #
     # Modes: silent (a HUD shows the last line), output (shows the full output), inline (the first
@@ -34,11 +39,15 @@ enum ScriptLibrary {
     echo "Edit me: $0"
 
     """
+    }
 
-    static let template = """
+    static var template: String {
+        let title = metadataValue(String(localized: "New Script", comment: "Title of a new script command, until the user edits it"))
+        let subtitle = metadataValue(String(localized: "What it does", comment: "Subtitle of a new script command, until the user edits it"))
+        return """
     #!/bin/zsh
-    # @mactoys.title New Script
-    # @mactoys.subtitle What it does
+    # @mactoys.title \(title)
+    # @mactoys.subtitle \(subtitle)
     # @mactoys.icon terminal.fill
     # @mactoys.mode silent
     # Optional: @mactoys.argument Placeholder
@@ -46,6 +55,12 @@ enum ScriptLibrary {
     echo "Done"
 
     """
+    }
+
+    /// A metadata line holds one line of text.
+    private static func metadataValue(_ text: String) -> String {
+        text.components(separatedBy: .newlines).joined(separator: " ")
+    }
 
     static func scan(_ folder: URL) -> [ScriptCommand] {
         let fm = FileManager.default
@@ -86,11 +101,13 @@ enum ScriptLibrary {
 @MainActor
 final class ScriptsProvider: SearchProvider {
     let id = "scripts"
-    let name = "Script Commands"
-    let summary = "Your own commands: executable scripts in the Script Commands folder"
+    let name = String(localized: "Script Commands")
+    let summary = String(localized: "Your own commands: executable scripts in the Script Commands folder")
     let icon = ItemIcon.symbol("scroll.fill", .green)
     let defaultKeyword = ":"
-    let examples = [": say hello", ":  (all scripts)"]
+    var examples: [String] {
+        [": say hello", String(localized: "\(":")  (all scripts)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     private var scripts: [ScriptCommand] = []
@@ -182,25 +199,30 @@ final class ScriptsProvider: SearchProvider {
             let out = await ScriptLibrary.execute(s, argument: nil)
             guard let self else { return }
             self.refreshing.remove(s.url)
-            let line = out.text.split(separator: "\n").first.map(String.init) ?? (out.ok ? "" : "Exit \(out.status)")
+            let line = out.text.split(separator: "\n").first.map(String.init)
+                ?? (out.ok ? "" : String(localized: "Exit \(out.status)", comment: "A command or script ended; %d is its exit status"))
             self.inline[s.url] = (line, Date())
             self.engine.notifyChange(self.id)
         }
     }
 
     var commands: [PaletteItem] {
-        scripts.map { item($0, score: 0) } + [
-            PaletteItem(id: "scripts:folder", title: "Open Script Commands Folder", subtitle: (folder.path as NSString).abbreviatingWithTildeInPath,
-                        icon: .file(folder.path), providerID: id, section: "Commands", accessory: "Folder",
-                        primary: PaletteAction(id: "open", title: "Open", symbol: "folder") {
+        let openFolder = Phrase("Open Script Commands Folder"), create = Phrase("Create Script Command")
+        return scripts.map { item($0, score: 0) } + [
+            PaletteItem(id: "scripts:folder", title: openFolder.text,
+                        subtitle: (folder.path as NSString).abbreviatingWithTildeInPath,
+                        icon: .file(folder.path), providerID: id, section: Labels.commands, accessory: Labels.folder,
+                        primary: PaletteAction(id: "open", title: Labels.open, symbol: "folder") {
                             self.prepareFolder()
                             Launch.open(self.folder)
                             return .dismiss
-                        }, keywords: ["scripts", "extensions"]),
-            PaletteItem(id: "scripts:new", title: "Create Script Command", subtitle: "Start a new script from a template",
-                        icon: .symbol("plus.square.fill", .green), providerID: id, section: "Commands", accessory: "Command",
-                        primary: PaletteAction(id: "create", title: "Create", symbol: "plus") { self.createScript() },
-                        keywords: ["new script", "extension", "create extension"]),
+                        }, keywords: openFolder.englishTerms + ["scripts", "extensions"]),
+            PaletteItem(id: "scripts:new", title: create.text,
+                        subtitle: String(localized: "Start a new script from a template"),
+                        icon: .symbol("plus.square.fill", .green), providerID: id, section: Labels.commands, accessory: Labels.command,
+                        primary: PaletteAction(id: "create", title: String(localized: "Create", comment: "Action: create a new script"),
+                                               symbol: "plus") { self.createScript() },
+                        keywords: create.englishTerms + ["new script", "extension", "create extension"]),
         ]
     }
 
@@ -221,7 +243,7 @@ final class ScriptsProvider: SearchProvider {
             if lower.hasPrefix(title + " ") {
                 let arg = String(text.dropFirst(title.count + 1))
                 var it = item(s, score: 990, argument: arg)
-                it.title = "\(s.meta.title) “\(arg)”"
+                it.title = String(localized: "\(s.meta.title) “\(arg)”", comment: "A script with its argument; %1$@ is the script, %2$@ the argument")
                 out.append(it)
             }
         }
@@ -246,37 +268,40 @@ final class ScriptsProvider: SearchProvider {
             icon = self.icon
         }
         var subtitle = m.subtitle ?? m.mode.title
-        if m.mode == .inline { subtitle = inline[s.url]?.text ?? "Loading…" }
+        if m.mode == .inline { subtitle = inline[s.url]?.text ?? String(localized: "Loading…") }
         let path = s.url
         let o = engine.options.value
         return PaletteItem(
             id: "scripts:\(s.url.path)", title: m.title, subtitle: subtitle, icon: icon, providerID: id, section: name,
-            accessory: m.argument != nil ? "Argument" : "Script", score: score,
-            primary: PaletteAction(id: "run", title: "Run Script", symbol: "play.fill") { self.run(s, argument: argument) },
+            accessory: m.argument != nil ? String(localized: "Argument", comment: "A script's argument: its placeholder, a detail row or a row label")
+                : String(localized: "Script", comment: "Result row label: a script command"), score: score,
+            primary: PaletteAction(id: "run", title: String(localized: "Run Script"), symbol: "play.fill") { self.run(s, argument: argument) },
             actions: [
-                PaletteAction(id: "terminal", title: "Run in \(o.terminal.title)", symbol: "terminal", shortcut: ActionKeys.terminal) {
+                PaletteAction(id: "terminal", title: Labels.runIn(o.terminal.title), symbol: "terminal", shortcut: ActionKeys.terminal) {
                     let cmd = Shell.quote(path.path) + (argument.map { " " + Shell.quote($0) } ?? "")
                     Launch.runInTerminal(cmd, app: o.terminal, keepOpen: true, directory: path.deletingLastPathComponent())
                     return .dismiss
                 },
-                PaletteAction(id: "edit", title: "Edit Script", symbol: "pencil", shortcut: ActionKeys.openWith) {
+                PaletteAction(id: "edit", title: String(localized: "Edit Script"), symbol: "pencil", shortcut: ActionKeys.openWith) {
                     Self.openInEditor(path)
                     return .dismiss
                 },
-                PaletteAction(id: "reveal", title: "Show in Finder", symbol: "folder", shortcut: ActionKeys.secondary) {
+                PaletteAction(id: "reveal", title: Labels.showInFinder, symbol: "folder", shortcut: ActionKeys.secondary) {
                     Launch.reveal(path)
                     return .dismiss
                 },
-                PaletteAction(id: "copypath", title: "Copy Path", symbol: "doc.on.doc", shortcut: ActionKeys.copyPath) {
+                PaletteAction(id: "copypath", title: Labels.copyPath, symbol: "doc.on.doc", shortcut: ActionKeys.copyPath) {
                     Launch.copy(path.path)
                     return .dismiss
                 },
             ],
             details: ItemDetails(icon: icon, title: m.title, subtitle: m.subtitle, rows: [
-                DetailRow(label: "Mode", value: m.mode.title, monospaced: false),
-                DetailRow(label: "Argument", value: m.argument.map { $0 + (m.argumentOptional ? " (optional)" : "") } ?? "None",
+                DetailRow(label: String(localized: "Mode", comment: "Detail row: how a script shows its output"), value: m.mode.title, monospaced: false),
+                DetailRow(label: String(localized: "Argument", comment: "A script's argument: its placeholder, a detail row or a row label"),
+                          value: m.argument.map { m.argumentOptional ? String(localized: "\($0) (optional)", comment: "%@ is an argument placeholder") : $0 }
+                              ?? String(localized: "None", comment: "Detail row value: the script takes no argument"),
                           monospaced: false),
-                DetailRow(label: "File", value: path.lastPathComponent),
+                DetailRow(label: Labels.file, value: path.lastPathComponent),
             ]),
             keywords: m.keywords)
     }
@@ -286,7 +311,8 @@ final class ScriptsProvider: SearchProvider {
             return .push(argumentPage(s, placeholder: placeholder))
         }
         if s.meta.needsConfirmation {
-            return .confirm(Confirmation(title: "Run “\(s.meta.title)”?", message: s.url.lastPathComponent, confirmTitle: "Run",
+            return .confirm(Confirmation(title: String(localized: "Run “\(s.meta.title)”?", comment: "Confirmation prompt; %@ is a command"),
+                                         message: s.url.lastPathComponent, confirmTitle: Labels.run,
                                          destructive: false) { self.execute(s, argument: argument) })
         }
         return execute(s, argument: argument)
@@ -300,10 +326,13 @@ final class ScriptsProvider: SearchProvider {
                 let out = await ScriptLibrary.execute(s, argument: argument)
                 let last = out.text.split(separator: "\n").last.map(String.init)
                 if out.ok {
-                    HUD.show(String((last ?? "\(s.meta.title) done").prefix(90)), symbol: "checkmark.circle")
+                    let done = String(localized: "\(s.meta.title) done", comment: "HUD: a silent script finished without output; %@ is its title")
+                    HUD.show(String((last ?? done).prefix(90)), symbol: "checkmark.circle")
+                } else if out.timedOut {
+                    HUD.show("\(s.meta.title) timed out", symbol: "exclamationmark.triangle", duration: 3)
                 } else {
-                    HUD.show(out.timedOut ? "\(s.meta.title) timed out" : String((last ?? "Exit \(out.status)").prefix(90)),
-                             symbol: "exclamationmark.triangle", duration: 3)
+                    let failed = String(localized: "Exit \(out.status)", comment: "A command or script ended; %d is its exit status")
+                    HUD.show(String((last ?? failed).prefix(90)), symbol: "exclamationmark.triangle", duration: 3)
                 }
             }
             return .dismiss
@@ -327,17 +356,20 @@ final class ScriptsProvider: SearchProvider {
             guard let self else { return [] }
             let arg = text.trimmingCharacters(in: .whitespaces)
             guard !arg.isEmpty || s.meta.argumentOptional else {
-                return [PaletteItem(id: "scripts:argument:hint", title: "Type \(placeholder.lowercased())", subtitle: s.meta.title,
-                                    icon: self.icon, providerID: self.id, score: 1,
-                                    primary: PaletteAction(id: "none", title: "OK", symbol: "checkmark", recordsUsage: false) { .stay },
+                return [PaletteItem(id: "scripts:argument:hint",
+                                    title: String(localized: "Type \(placeholder.lowercased())", comment: "Hint; %@ is a script's argument placeholder such as “name”"),
+                                    subtitle: s.meta.title, icon: self.icon, providerID: self.id, score: 1,
+                                    primary: PaletteAction(id: "none", title: Labels.ok, symbol: "checkmark", recordsUsage: false) { .stay },
                                     isPinnable: false)]
             }
             var it = self.item(s, score: 1000, argument: arg)
-            it.title = arg.isEmpty ? "Run \(s.meta.title)" : "Run \(s.meta.title) with “\(arg)”"
+            it.title = arg.isEmpty ? String(localized: "Run \(s.meta.title)", comment: "%@ is a script command")
+                : String(localized: "Run \(s.meta.title) with “\(arg)”", comment: "%1$@ is a script command, %2$@ its argument")
             it.isPinnable = false
-            it.primary = PaletteAction(id: "run", title: "Run", symbol: "play.fill") {
+            it.primary = PaletteAction(id: "run", title: Labels.run, symbol: "play.fill") {
                 if s.meta.needsConfirmation {
-                    return .confirm(Confirmation(title: "Run “\(s.meta.title)”?", message: arg, confirmTitle: "Run", destructive: false) {
+                    return .confirm(Confirmation(title: String(localized: "Run “\(s.meta.title)”?", comment: "Confirmation prompt; %@ is a command"),
+                                                 message: arg, confirmTitle: Labels.run, destructive: false) {
                         self.execute(s, argument: arg)
                     })
                 }

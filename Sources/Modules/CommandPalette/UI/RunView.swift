@@ -144,22 +144,27 @@ struct RunView: View {
         }
     }
 
+    /// Scrolls sideways when translated labels don't fit, instead of truncating them.
     private var hintRow: some View {
-        HStack(spacing: 6) {
-            ForEach(hints) { h in
-                HStack(spacing: 4) {
-                    Text(h.keyword).font(.system(size: 11.5, weight: .semibold, design: .monospaced)).foregroundStyle(Color.accentColor)
-                    Text(h.label).font(.system(size: 11.5)).foregroundStyle(LauncherStyle.secondary)
+        ScrollView(.horizontal) {
+            HStack(spacing: 6) {
+                ForEach(hints) { h in
+                    HStack(spacing: 4) {
+                        Text(verbatim: h.keyword).font(.system(size: 11.5, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(Color.accentColor)
+                        Text(verbatim: h.label).font(.system(size: 11.5)).foregroundStyle(LauncherStyle.secondary)
+                    }
+                    .fixedSize()
+                    .padding(.horizontal, 7)
+                    .frame(height: 24)
+                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.white.opacity(0.06)))
+                    .contentShape(Rectangle())
+                    .onTapGesture { model.query = h.keyword + " " ; model.focusRequest += 1; model.selectOnFocus = false }
                 }
-                .padding(.horizontal, 7)
-                .frame(height: 24)
-                .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.white.opacity(0.06)))
-                .contentShape(Rectangle())
-                .onTapGesture { model.query = h.keyword + " " ; model.focusRequest += 1; model.selectOnFocus = false }
             }
-            Spacer(minLength: 0)
+            .padding(.horizontal, 12)
         }
-        .padding(.horizontal, 12)
+        .scrollIndicators(.never)
         .frame(height: RunLayout.hintsHeight)
     }
 }

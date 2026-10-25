@@ -10,6 +10,7 @@ enum ValueGenerator {
         let value: String
     }
 
+    /// Why nothing was generated; the payload is the message to show.
     enum Failure: Error, Equatable {
         case missingInput(String)
         case invalid(String)
@@ -39,59 +40,70 @@ enum ValueGenerator {
             switch version {
             case 3, 5:
                 let parts = argument.split(separator: " ", maxSplits: 1).map(String.init)
-                guard parts.count == 2 else { return .failure(.missingInput("namespace and name, e.g. ns:DNS example.com")) }
-                guard let ns = namespace(parts[0]) else { return .failure(.invalid("Unknown namespace “\(parts[0])”")) }
+                guard parts.count == 2 else {
+                    return .failure(.missingInput(String(localized: "Type a namespace and a name, e.g. \("ns:DNS example.com")", comment: "%@ is an example input (not translated)")))
+                }
+                guard let ns = namespace(parts[0]) else {
+                    return .failure(.invalid(String(localized: "Unknown namespace “\(parts[0])”", comment: "%@ is what the user typed")))
+                }
                 let id = nameBased(version: version, namespace: ns, name: parts[1])
-                return .success([Output(title: "UUID v\(version)", value: id.uuidString.lowercased())])
+                return .success([Output(title: uuidTitle(version), value: id.uuidString.lowercased())])
             default:
                 let count = min(max(Int(argument) ?? 1, 1), 20)
                 return .success((0..<count).map { _ in
-                    Output(title: "UUID v\(version)", value: uuid(version: version, now: now).uuidString.lowercased())
+                    Output(title: uuidTitle(version), value: uuid(version: version, now: now).uuidString.lowercased())
                 })
             }
         }
 
         switch command {
         case "md5", "sha1", "sha256", "sha384", "sha512":
-            guard !argument.isEmpty else { return .failure(.missingInput("text to hash")) }
+            guard !argument.isEmpty else { return .failure(.missingInput(String(localized: "Type text to hash"))) }
             return .success([Output(title: command.uppercased(), value: hash(command, argument))])
         case "hash":
-            guard !argument.isEmpty else { return .failure(.missingInput("text to hash")) }
+            guard !argument.isEmpty else { return .failure(.missingInput(String(localized: "Type text to hash"))) }
             return .success(["md5", "sha1", "sha256", "sha512"].map { Output(title: $0.uppercased(), value: hash($0, argument)) })
         case "base64":
-            guard !argument.isEmpty else { return .failure(.missingInput("text to encode")) }
+            guard !argument.isEmpty else { return .failure(.missingInput(String(localized: "Type text to encode"))) }
             return .success([Output(title: "Base64", value: Data(argument.utf8).base64EncodedString())])
         case "base64d":
-            guard !argument.isEmpty else { return .failure(.missingInput("Base64 to decode")) }
-            guard let s = base64Decode(argument) else { return .failure(.invalid("Not valid Base64 text")) }
-            return .success([Output(title: "Decoded Base64", value: s)])
+            guard !argument.isEmpty else { return .failure(.missingInput(String(localized: "Type Base64 to decode"))) }
+            guard let s = base64Decode(argument) else { return .failure(.invalid(String(localized: "Not valid Base64 text"))) }
+            return .success([Output(title: String(localized: "Decoded Base64"), value: s)])
         case "url":
-            guard !argument.isEmpty else { return .failure(.missingInput("text to encode")) }
-            return .success([Output(title: "URL encoded", value: formEncode(argument))])
+            guard !argument.isEmpty else { return .failure(.missingInput(String(localized: "Type text to encode"))) }
+            return .success([Output(title: String(localized: "URL encoded"), value: formEncode(argument))])
         case "urld":
-            guard !argument.isEmpty else { return .failure(.missingInput("text to decode")) }
+            guard !argument.isEmpty else { return .failure(.missingInput(String(localized: "Type text to decode"))) }
             guard let s = argument.replacingOccurrences(of: "+", with: " ").removingPercentEncoding else {
-                return .failure(.invalid("Not valid URL encoding"))
+                return .failure(.invalid(String(localized: "Not valid URL encoding")))
             }
-            return .success([Output(title: "URL decoded", value: s)])
+            return .success([Output(title: String(localized: "URL decoded"), value: s)])
         case "esc:data":
-            guard !argument.isEmpty else { return .failure(.missingInput("text to escape")) }
-            return .success([Output(title: "Escaped data string", value: escapeData(argument))])
+            guard !argument.isEmpty else { return .failure(.missingInput(String(localized: "Type text to escape"))) }
+            return .success([Output(title: String(localized: "Escaped data string"), value: escapeData(argument))])
         case "uesc:data":
-            guard let s = argument.removingPercentEncoding, !argument.isEmpty else { return .failure(.invalid("Not a valid escaped string")) }
-            return .success([Output(title: "Unescaped data string", value: s)])
+            guard let s = argument.removingPercentEncoding, !argument.isEmpty else {
+                return .failure(.invalid(String(localized: "Not a valid escaped string")))
+            }
+            return .success([Output(title: String(localized: "Unescaped data string"), value: s)])
         case "esc:hex":
-            guard let c = argument.unicodeScalars.first else { return .failure(.missingInput("a character")) }
+            guard let c = argument.unicodeScalars.first else { return .failure(.missingInput(String(localized: "Type a character"))) }
             let hex = String(c).utf8.map { String(format: "%%%02X", $0) }.joined()
-            return .success([Output(title: "Escaped hex character", value: hex)])
+            return .success([Output(title: String(localized: "Escaped hex character"), value: hex)])
         case "uesc:hex":
             guard argument.hasPrefix("%"), let s = argument.removingPercentEncoding, let first = s.first else {
-                return .failure(.invalid("Expected a %XX sequence"))
+                return .failure(.invalid(String(localized: "Expected a \("%XX") sequence", comment: "%@ is the literal text “%XX”")))
             }
-            return .success([Output(title: "Unescaped hex character", value: String(first))])
+            return .success([Output(title: String(localized: "Unescaped hex character"), value: String(first))])
         default:
             return nil
         }
+    }
+
+    /// "UUID v4".
+    static func uuidTitle(_ version: Int) -> String {
+        String(localized: "UUID v\(version)", comment: "Label of a generated UUID; %lld is its version (1, 3, 4, 5, 7)")
     }
 
     /// `uuid`, `guid`, `uuidv7`, `guid7`, `uuid4` → version number.

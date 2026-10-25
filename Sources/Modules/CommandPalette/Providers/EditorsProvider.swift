@@ -110,11 +110,13 @@ enum EditorHistory {
 @MainActor
 final class EditorsProvider: SearchProvider {
     let id = "editors"
-    let name = "Code Workspaces"
-    let summary = "Reopen recent VS Code, Cursor, Windsurf and VSCodium folders and workspaces"
+    let name = String(localized: "Code Workspaces")
+    let summary = String(localized: "Reopen recent VS Code, Cursor, Windsurf and VSCodium folders and workspaces")
     let icon = ItemIcon.symbol("chevron.left.forwardslash.chevron.right", .blue)
     let defaultKeyword = "{"
-    let examples = ["{ mactoys", "{  (every recent workspace)"]
+    var examples: [String] {
+        ["{ mactoys", String(localized: "\("{")  (every recent workspace)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     private var workspaces: [EditorWorkspace] = []
@@ -123,8 +125,11 @@ final class EditorsProvider: SearchProvider {
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        installed.isEmpty ? [] : [pageCommand(title: "Code Workspaces", subtitle: "Recent folders in \(installed.map(\.title).joined(separator: ", "))",
-                                              keywords: ["vscode", "code", "cursor", "projects", "recent"])]
+        let editors = installed
+        guard !editors.isEmpty else { return [] }
+        let names = editors.map(\.title).formatted(.list(type: .and, width: .narrow))
+        return [pageCommand(title: Phrase("Code Workspaces"), subtitle: String(localized: "Recent folders in \(names)", comment: "%@ lists code editors"),
+                            keywords: ["vscode", "code", "cursor", "projects", "recent"])]
     }
 
     private var installed: [CodeEditor] {
@@ -164,28 +169,29 @@ final class EditorsProvider: SearchProvider {
     func item(_ w: EditorWorkspace, score: Double) -> PaletteItem {
         let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: w.editor.bundleID)
         let symbol = w.kind == .file ? "doc.text" : w.kind == .workspace ? "square.stack.3d.up.fill" : "folder.fill"
-        let where_ = w.remote.map { "Remote · \($0)" } ?? w.displayPath
+        let where_ = w.remote.map { String(localized: "Remote · \($0)", comment: "A remote workspace; %@ is its host, e.g. ssh-remote+box") } ?? w.displayPath
         var actions: [PaletteAction] = []
         if let url = w.url, url.isFileURL {
-            actions.append(PaletteAction(id: "reveal", title: "Show in Finder", symbol: "folder", shortcut: ActionKeys.secondary) {
+            actions.append(PaletteAction(id: "reveal", title: Labels.showInFinder, symbol: "folder", shortcut: ActionKeys.secondary) {
                 Launch.reveal(url)
                 return .dismiss
             })
-            actions.append(PaletteAction(id: "terminal", title: "Open in \(engine.options.value.terminal.title)", symbol: "terminal",
+            actions.append(PaletteAction(id: "terminal", title: Labels.openIn(engine.options.value.terminal.title), symbol: "terminal",
                                          shortcut: ActionKeys.terminal) {
                 Launch.openTerminal(at: w.kind == .folder ? url : url.deletingLastPathComponent(), app: self.engine.options.value.terminal)
                 return .dismiss
             })
         }
-        actions.append(PaletteAction(id: "copy", title: "Copy Path", symbol: "doc.on.doc", shortcut: ActionKeys.copyPath) {
+        actions.append(PaletteAction(id: "copy", title: Labels.copyPath, symbol: "doc.on.doc", shortcut: ActionKeys.copyPath) {
             Launch.copy(w.url?.isFileURL == true ? (w.url?.path ?? w.uri) : w.uri)
             return .dismiss
         })
         return PaletteItem(
             id: "editors:\(w.editor.rawValue):\(w.uri)", title: w.name, subtitle: "\(where_) · \(w.editor.title)",
             icon: app.map { .file($0.path) } ?? .symbol(symbol, .blue), providerID: id,
-            accessory: w.kind == .workspace ? "Workspace" : w.kind == .file ? "File" : "Folder", score: score,
-            primary: PaletteAction(id: "open", title: "Open in \(w.editor.title)", symbol: "chevron.left.forwardslash.chevron.right") {
+            accessory: w.kind == .workspace ? String(localized: "Workspace", comment: "Result row label: a VS Code workspace")
+                : w.kind == .file ? Labels.file : Labels.folder, score: score,
+            primary: PaletteAction(id: "open", title: Labels.openIn(w.editor.title), symbol: "chevron.left.forwardslash.chevron.right") {
                 self.open(w, app: app)
                 return .dismiss
             },

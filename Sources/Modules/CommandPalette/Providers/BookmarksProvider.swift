@@ -111,9 +111,9 @@ enum BookmarkReader {
             return
         }
         var name = dict["Title"] as? String ?? ""
-        if name == "com.apple.ReadingList" { name = "Reading List" }
-        if name == "BookmarksBar" { name = "Favorites" }
-        if name == "BookmarksMenu" { name = "Bookmarks Menu" }
+        if name == "com.apple.ReadingList" { name = String(localized: "Reading List", comment: "Safari's Reading List; use Safari's name for it") }
+        if name == "BookmarksBar" { name = String(localized: "Favorites", comment: "Safari's Favorites bar; use Safari's name for it") }
+        if name == "BookmarksMenu" { name = String(localized: "Bookmarks Menu", comment: "Safari's Bookmarks menu; use Safari's name for it") }
         let path = folder.isEmpty ? name : (name.isEmpty ? folder : "\(folder) › \(name)")
         for child in dict["Children"] as? [Any] ?? [] { walkSafari(child, folder: path, into: &out) }
     }
@@ -123,11 +123,13 @@ enum BookmarkReader {
 @MainActor
 final class BookmarksProvider: SearchProvider {
     let id = "bookmarks"
-    let name = "Bookmarks"
-    let summary = "Open bookmarks from Safari, Chrome, Edge, Brave, Vivaldi and Arc"
+    let name = String(localized: "Bookmarks")
+    let summary = String(localized: "Open bookmarks from Safari, Chrome, Edge, Brave, Vivaldi and Arc")
     let icon = ItemIcon.symbol("bookmark.fill", .orange)
     let defaultKeyword = "bm"
-    let examples = ["bm github", "bm  (all bookmarks)"]
+    var examples: [String] {
+        ["bm github", String(localized: "\("bm")  (all bookmarks)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     private var bookmarks: [Bookmark] = []
@@ -139,7 +141,7 @@ final class BookmarksProvider: SearchProvider {
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Search Bookmarks", subtitle: "Browser bookmarks", keywords: ["bookmarks", "favorites"])]
+        [pageCommand(title: Phrase("Search Bookmarks"), subtitle: String(localized: "Browser bookmarks"), keywords: ["bookmarks", "favorites"])]
     }
 
     func isEnabled(_ b: BrowserKind) -> Bool { engine.options.value.bookmarkBrowsers[b.rawValue] ?? true }
@@ -190,10 +192,11 @@ final class BookmarksProvider: SearchProvider {
         let text = query.text.trimmingCharacters(in: .whitespaces)
         var out: [PaletteItem] = []
         if query.scoped, safariBlocked, isEnabled(.safari) {
-            out.append(PaletteItem(id: "bookmarks:access", title: "Allow Full Disk Access to read Safari bookmarks",
-                                   subtitle: "Privacy & Security › Full Disk Access › MacToys",
+            out.append(PaletteItem(id: "bookmarks:access", title: String(localized: "Allow Full Disk Access to read Safari bookmarks"),
+                                   subtitle: String(localized: "Privacy & Security › Full Disk Access › MacToys",
+                                                    comment: "Where to find the setting in System Settings; use the names macOS shows"),
                                    icon: .symbol("lock.shield.fill", .orange), providerID: id, section: "Safari", score: 2000,
-                                   primary: PaletteAction(id: "open", title: "Open Settings", symbol: "gearshape") {
+                                   primary: PaletteAction(id: "open", title: Labels.openSettings, symbol: "gearshape") {
                                        PermissionCenter.shared.openSettings(.fullDiskAccess)
                                        return .dismiss
                                    }, isPinnable: false))
@@ -227,32 +230,36 @@ final class BookmarksProvider: SearchProvider {
         let place = b.folder.isEmpty ? b.browser.title : "\(b.browser.title) › \(b.folder)"
         return PaletteItem(
             id: "bookmarks:\(b.browser.rawValue):\(b.url)", title: b.title, subtitle: "\(url?.host ?? b.url) · \(place)",
-            icon: appPath.map { .file($0) } ?? icon, providerID: id, accessory: "Bookmark", score: score,
-            primary: PaletteAction(id: "open", title: "Open in \(b.browser.title)", symbol: "safari") {
+            icon: appPath.map { .file($0) } ?? icon, providerID: id,
+            accessory: String(localized: "Bookmark", comment: "Result row label: a browser bookmark"), score: score,
+            primary: PaletteAction(id: "open", title: Labels.openIn(b.browser.title), symbol: "safari") {
                 if let url { Launch.open(url, bundleID: appPath == nil ? nil : b.browser.bundleID) }
                 return .dismiss
             },
             actions: [
-                PaletteAction(id: "opendefault", title: "Open in Default Browser", symbol: "globe", shortcut: ActionKeys.secondary) {
+                PaletteAction(id: "opendefault", title: String(localized: "Open in Default Browser"), symbol: "globe",
+                              shortcut: ActionKeys.secondary) {
                     if let url { Launch.open(url) }
                     return .dismiss
                 },
-                PaletteAction(id: "copy", title: "Copy URL", symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
+                PaletteAction(id: "copy", title: Labels.copyURL, symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
                     Launch.copy(b.url)
                     HUD.show("URL copied", symbol: "link")
                     return .dismiss
                 },
-                PaletteAction(id: "copytitle", title: "Copy Title", symbol: "textformat") {
+                PaletteAction(id: "copytitle", title: String(localized: "Copy Title"), symbol: "textformat") {
                     Launch.copy(b.title)
                     return .dismiss
                 },
-                PaletteAction(id: "markdown", title: "Copy as Markdown Link", symbol: "link") {
+                PaletteAction(id: "markdown", title: String(localized: "Copy as Markdown Link"), symbol: "link") {
                     Launch.copy("[\(b.title)](\(b.url))")
                     return .dismiss
                 },
             ],
             details: ItemDetails(icon: appPath.map { .file($0) } ?? icon, title: b.title, subtitle: place,
-                                 rows: [DetailRow(label: "URL", value: b.url), DetailRow(label: "Browser", value: b.browser.title, monospaced: false)]
-                                     + (b.folder.isEmpty ? [] : [DetailRow(label: "Folder", value: b.folder, monospaced: false)])))
+                                 rows: [DetailRow(label: "URL", value: b.url),
+                                        DetailRow(label: String(localized: "Browser", comment: "Detail row: the web browser"), value: b.browser.title,
+                                                  monospaced: false)]
+                                     + (b.folder.isEmpty ? [] : [DetailRow(label: Labels.folder, value: b.folder, monospaced: false)])))
     }
 }

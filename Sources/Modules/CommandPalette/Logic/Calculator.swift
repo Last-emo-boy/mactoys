@@ -7,24 +7,28 @@ enum CalcError: Error, Equatable, LocalizedError {
     case unexpectedEnd
     case unknownFunction(String)
     case unknownIdentifier(String)
+    /// A function and how many arguments it takes ("2 arguments", already localized).
     case argumentCount(String, expected: String)
     case divisionByZero
+    /// A function (or operator) outside its domain; empty for the expression as a whole.
     case domain(String)
     case invalidNumber(String)
     case overflow
 
     var errorDescription: String? {
         switch self {
-        case .empty: "Type an expression"
-        case .unexpectedToken(let t): "Unexpected “\(t)”"
-        case .unexpectedEnd: "The expression is incomplete"
-        case .unknownFunction(let f): "Unknown function “\(f)”"
-        case .unknownIdentifier(let i): "Unknown name “\(i)”"
-        case .argumentCount(let f, let n): "\(f) takes \(n)"
-        case .divisionByZero: "Division by zero"
-        case .domain(let f): "\(f) is not defined for this value"
-        case .invalidNumber(let n): "Invalid number “\(n)”"
-        case .overflow: "The result is too large"
+        case .empty: String(localized: "Type an expression")
+        case .unexpectedToken(let t): String(localized: "Unexpected “\(t)”", comment: "Calculator error; %@ is a character or word of the expression")
+        case .unexpectedEnd: String(localized: "The expression is incomplete")
+        case .unknownFunction(let f): String(localized: "Unknown function “\(f)”", comment: "Calculator error; %@ is a function name")
+        case .unknownIdentifier(let i): String(localized: "Unknown name “\(i)”", comment: "Calculator error; %@ is a name such as “pi”")
+        case .argumentCount(let f, let n):
+            String(localized: "\(f) takes \(n)", comment: "Calculator error; first %@ is a function name, second how many arguments it takes, e.g. “2 arguments”")
+        case .divisionByZero: String(localized: "Division by zero")
+        case .domain(let f) where f.isEmpty: String(localized: "The expression is not defined for this value")
+        case .domain(let f): String(localized: "\(f) is not defined for this value", comment: "Calculator error; %@ is a function or operator such as sqrt")
+        case .invalidNumber(let n): String(localized: "Invalid number “\(n)”", comment: "Calculator error; %@ is what the user typed")
+        case .overflow: String(localized: "The result is too large")
         }
     }
 }
@@ -53,10 +57,10 @@ enum NumberBase: String, Codable, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .decimal: "Decimal"
-        case .hex: "Hexadecimal"
-        case .binary: "Binary"
-        case .octal: "Octal"
+        case .decimal: String(localized: "Decimal", comment: "Number base")
+        case .hex: String(localized: "Hexadecimal", comment: "Number base")
+        case .binary: String(localized: "Binary", comment: "Number base")
+        case .octal: String(localized: "Octal", comment: "Number base")
         }
     }
 }
@@ -65,7 +69,13 @@ enum NumberBase: String, Codable, CaseIterable, Sendable {
 enum AngleUnit: String, Codable, CaseIterable, Sendable {
     case radians, degrees, gradians
 
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .radians: String(localized: "Radians", comment: "Angle unit")
+        case .degrees: String(localized: "Degrees", comment: "Angle unit")
+        case .gradians: String(localized: "Gradians", comment: "Angle unit")
+        }
+    }
 
     /// Factor that converts this unit to radians.
     var toRadians: Double {
@@ -108,7 +118,7 @@ struct Calculator {
         var parser = Parser(tokens: tokens)
         let node = try parser.parse()
         let value = try eval(node)
-        guard !value.isNaN else { throw CalcError.domain("The expression") }
+        guard !value.isNaN else { throw CalcError.domain("") }
         guard value.isFinite else { throw CalcError.overflow }
         // A bare decimal number is trivial; "0xFF" or "255 in hex" is a conversion worth showing.
         let radixLiteral = tokens.contains { token in
@@ -197,7 +207,7 @@ struct Calculator {
     private func call(_ name: String, _ a: [Double]) throws -> Double {
         func arity(_ n: Int) throws {
             guard a.count == n else {
-                throw CalcError.argumentCount(name, expected: n == 1 ? "1 argument" : "\(n) arguments")
+                throw CalcError.argumentCount(name, expected: String(localized: "\(n) arguments", comment: "How many arguments a calculator function takes"))
             }
         }
         func checked(_ v: Double) throws -> Double {
@@ -253,7 +263,9 @@ struct Calculator {
         case "ceil": try arity(1); return a[0].rounded(.up)
         case "trunc": try arity(1); return a[0].rounded(.towardZero)
         case "round":
-            guard a.count == 1 || a.count == 2 else { throw CalcError.argumentCount(name, expected: "1 or 2 arguments") }
+            guard a.count == 1 || a.count == 2 else {
+                throw CalcError.argumentCount(name, expected: String(localized: "1 or 2 arguments", comment: "How many arguments round() takes"))
+            }
             if a.count == 2 {
                 let f = Foundation.pow(10, a[1].rounded())
                 return (a[0] * f).rounded() / f
@@ -261,7 +273,9 @@ struct Calculator {
             return a[0].rounded()
         case "sign", "sgn": try arity(1); return a[0] > 0 ? 1 : a[0] < 0 ? -1 : 0
         case "min", "max", "sum", "avg", "mean":
-            guard !a.isEmpty else { throw CalcError.argumentCount(name, expected: "at least 1 argument") }
+            guard !a.isEmpty else {
+                throw CalcError.argumentCount(name, expected: String(localized: "at least 1 argument", comment: "How many arguments min(), max() and sum() take"))
+            }
             switch name {
             case "min": return a.min() ?? 0
             case "max": return a.max() ?? 0

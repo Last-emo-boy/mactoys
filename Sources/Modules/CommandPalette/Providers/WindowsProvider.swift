@@ -66,11 +66,14 @@ enum WindowCollector {
 @MainActor
 final class WindowsProvider: SearchProvider {
     let id = "windows"
-    let name = "Windows"
-    let summary = "Switch to, close or minimize open windows of any app"
+    let name = String(localized: "Windows", comment: "Provider name: open windows")
+    let summary = String(localized: "Switch to, close or minimize open windows of any app")
     let icon = ItemIcon.symbol("macwindow.on.rectangle", .indigo)
     let defaultKeyword = "<"
-    let examples = ["< safari", "< readme", "<  (every window)"]
+    var examples: [String] {
+        ["< safari", "< readme",
+         String(localized: "\("<")  (every window)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     private var cache: [WindowSnapshot] = []
@@ -79,7 +82,8 @@ final class WindowsProvider: SearchProvider {
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Switch Windows", subtitle: "Every open window of every app", keywords: ["windows", "window walker", "switch"])]
+        [pageCommand(title: Phrase("Switch Windows"), subtitle: String(localized: "Every open window of every app"),
+                     keywords: ["windows", "window walker", "switch"])]
     }
 
     func launcherWillShow() { cachedAt = nil }
@@ -110,16 +114,16 @@ final class WindowsProvider: SearchProvider {
     func item(_ w: WindowSnapshot, score: Double) -> PaletteItem {
         let app = NSRunningApplication(processIdentifier: w.pid)
         var notes = [w.appName]
-        if w.minimized { notes.append("Minimized") }
-        if w.hidden { notes.append("Hidden") }
+        if w.minimized { notes.append(String(localized: "Minimized", comment: "Window state")) }
+        if w.hidden { notes.append(String(localized: "Hidden", comment: "Window state: its app is hidden")) }
         var actions: [PaletteAction] = []
         if let ref = w.ref {
-            actions.append(PaletteAction(id: "close", title: "Close Window", symbol: "xmark.square", shortcut: ActionKeys.close) {
+            actions.append(PaletteAction(id: "close", title: String(localized: "Close Window"), symbol: "xmark.square", shortcut: ActionKeys.close) {
                 ref.close()
                 self.cachedAt = nil
                 return .refresh
             })
-            actions.append(PaletteAction(id: "minimize", title: w.minimized ? "Restore Window" : "Minimize Window",
+            actions.append(PaletteAction(id: "minimize", title: w.minimized ? String(localized: "Restore Window") : String(localized: "Minimize Window"),
                                          symbol: "minus.square", shortcut: Shortcut.cmd(0x2E /* kVK_ANSI_M */)) {
                 ref.minimize(!w.minimized)
                 self.cachedAt = nil
@@ -127,19 +131,21 @@ final class WindowsProvider: SearchProvider {
             })
         }
         if let app {
-            actions.append(PaletteAction(id: "hide", title: "Hide \(w.appName)", symbol: "eye.slash") {
+            actions.append(PaletteAction(id: "hide", title: String(localized: "Hide \(w.appName)", comment: "Action; %@ is an app name"), symbol: "eye.slash") {
                 app.hide()
                 self.cachedAt = nil
                 return .refresh
             })
-            actions.append(PaletteAction(id: "quit", title: "Quit \(w.appName)", symbol: "xmark.circle", shortcut: ActionKeys.quit) {
+            actions.append(PaletteAction(id: "quit", title: String(localized: "Quit \(w.appName)", comment: "Action; %@ is an app name"),
+                                         symbol: "xmark.circle", shortcut: ActionKeys.quit) {
                 app.terminate()
                 self.cachedAt = nil
                 return .refresh
             })
-            actions.append(PaletteAction(id: "kill", title: "Kill Process", symbol: "xmark.octagon", destructive: true) {
-                .confirm(Confirmation(title: "Kill \(w.appName)?", message: "The app quits immediately; unsaved changes are lost.",
-                                      confirmTitle: "Kill") {
+            actions.append(PaletteAction(id: "kill", title: String(localized: "Kill Process"), symbol: "xmark.octagon", destructive: true) {
+                .confirm(Confirmation(title: String(localized: "Kill \(w.appName)?", comment: "Confirmation prompt; %@ is an app name"),
+                                      message: String(localized: "The app quits immediately; unsaved changes are lost."),
+                                      confirmTitle: String(localized: "Kill", comment: "Confirmation button: force a process to stop")) {
                     app.forceTerminate()
                     self.cachedAt = nil
                     return .refresh
@@ -147,23 +153,25 @@ final class WindowsProvider: SearchProvider {
             })
         }
         if let path = w.appPath {
-            actions.append(PaletteAction(id: "reveal", title: "Show App in Finder", symbol: "folder") {
+            actions.append(PaletteAction(id: "reveal", title: String(localized: "Show App in Finder"), symbol: "folder") {
                 Launch.reveal(URL(fileURLWithPath: path))
                 return .dismiss
             })
         }
         let frame = w.frame
-        var rows = [DetailRow(label: "App", value: w.appName, monospaced: false),
+        var rows = [DetailRow(label: Labels.app, value: w.appName, monospaced: false),
                     DetailRow(label: "PID", value: String(w.pid))]
         if let frame {
-            rows.append(DetailRow(label: "Position", value: "\(Int(frame.minX)), \(Int(frame.minY))"))
-            rows.append(DetailRow(label: "Size", value: "\(Int(frame.width)) × \(Int(frame.height))"))
+            rows.append(DetailRow(label: String(localized: "Position", comment: "Detail row: window position in points"),
+                                  value: "\(Int(frame.minX)), \(Int(frame.minY))"))
+            rows.append(DetailRow(label: Labels.size,
+                                  value: "\(Int(frame.width)) × \(Int(frame.height))"))
         }
         return PaletteItem(
             id: "windows:\(w.pid):\(w.windowID ?? 0)", title: w.title.isEmpty ? w.appName : w.title,
             subtitle: notes.joined(separator: " · "), icon: w.appPath.map { .file($0) } ?? icon, providerID: id,
-            accessory: "Window", score: score,
-            primary: PaletteAction(id: "focus", title: "Switch to Window", symbol: "macwindow") {
+            accessory: String(localized: "Window", comment: "Result row label: an open window"), score: score,
+            primary: PaletteAction(id: "focus", title: String(localized: "Switch to Window"), symbol: "macwindow") {
                 .dismissThen {
                     if let ref = w.ref {
                         if w.minimized { ref.minimize(false) }

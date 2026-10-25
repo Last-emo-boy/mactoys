@@ -5,18 +5,22 @@ import MacToysCore
 @MainActor
 final class HistoryProvider: SearchProvider {
     let id = "history"
-    let name = "History"
-    let summary = "Results you selected before, from any provider"
+    let name = String(localized: "History", comment: "Provider name: results selected before")
+    let summary = String(localized: "Results you selected before, from any provider")
     let icon = ItemIcon.symbol("clock.arrow.circlepath", .graphite)
     let defaultKeyword = "!!"
     let globalByDefault = false
-    let examples = ["!! 333  (part of a URL you opened)", "!!  (everything)"]
+    var examples: [String] {
+        [String(localized: "\("!! 333")  (part of a URL you opened)", comment: "Run help example: %@ is what to type, the parentheses explain it"),
+         String(localized: "\("!!")  (everything)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Search History", subtitle: "Everything you ran from the palette and Run", keywords: ["recent", "history"])]
+        [pageCommand(title: Phrase("Search History"), subtitle: String(localized: "Everything you ran from the palette and Run"),
+                     keywords: ["recent", "history"])]
     }
 
     private static let relative: RelativeDateTimeFormatter = {
@@ -41,7 +45,7 @@ final class HistoryProvider: SearchProvider {
 
     func item(_ e: UsageStore.HistoryEntry, score: Double) -> PaletteItem {
         let usage = engine.usage
-        let primary = PaletteAction(id: "run", title: "Run Again", symbol: "arrow.uturn.backward", recordsUsage: false) {
+        let primary = PaletteAction(id: "run", title: String(localized: "Run Again"), symbol: "arrow.uturn.backward", recordsUsage: false) {
             if let item = self.engine.resolve(e.id) {
                 usage.record(item, query: e.query)
                 return item.primary.perform()
@@ -51,12 +55,13 @@ final class HistoryProvider: SearchProvider {
         return PaletteItem(
             id: "history:\(e.id)", title: e.title,
             subtitle: [e.subtitle, Self.relative.localizedString(for: e.date, relativeTo: Date())].filter { !$0.isEmpty }.joined(separator: " · "),
-            icon: e.icon, providerID: id, accessory: "History", score: score, primary: primary,
+            icon: e.icon, providerID: id, accessory: name, score: score, primary: primary,
             actions: [
-                PaletteAction(id: "query", title: "Search “\(e.query)” Again", symbol: "magnifyingglass", recordsUsage: false) {
+                PaletteAction(id: "query", title: String(localized: "Search “\(e.query)” Again", comment: "%@ is a past search text"),
+                              symbol: "magnifyingglass", recordsUsage: false) {
                     .setQuery(e.query)
                 },
-                PaletteAction(id: "remove", title: "Remove from History", symbol: "trash", shortcut: ActionKeys.trash,
+                PaletteAction(id: "remove", title: Labels.removeFromHistory, symbol: "trash", shortcut: ActionKeys.trash,
                               recordsUsage: false) {
                     usage.remove(e.id)
                     return .refresh

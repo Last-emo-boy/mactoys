@@ -25,10 +25,10 @@ struct ScriptMetadata: Hashable, Sendable {
 
         var title: String {
             switch self {
-            case .silent: "Silent"
-            case .output: "Show output"
-            case .inline: "Inline"
-            case .terminal: "Terminal"
+            case .silent: String(localized: "Silent", comment: "Script mode: runs in the background, a HUD shows the last line")
+            case .output: String(localized: "Show output", comment: "Script mode: shows the full output")
+            case .inline: String(localized: "Inline", comment: "Script mode: the first output line becomes the command's subtitle")
+            case .terminal: TerminalApp.terminal.title
             }
         }
     }
@@ -70,7 +70,7 @@ struct ScriptMetadata: Hashable, Sendable {
                 argumentFound = true
                 if value.hasPrefix("{"), let data = value.data(using: .utf8),
                    let obj = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
-                    meta.argument = (obj["placeholder"] as? String) ?? "Argument"
+                    meta.argument = (obj["placeholder"] as? String) ?? defaultArgument
                     meta.argumentOptional = (obj["optional"] as? Bool) ?? false
                 } else {
                     var placeholder = value
@@ -78,7 +78,7 @@ struct ScriptMetadata: Hashable, Sendable {
                         meta.argumentOptional = true
                         placeholder = String(placeholder.dropLast("(optional)".count)).trimmingCharacters(in: .whitespaces)
                     }
-                    meta.argument = placeholder.isEmpty ? "Argument" : placeholder
+                    meta.argument = placeholder.isEmpty ? defaultArgument : placeholder
                 }
             case "optional":
                 meta.argumentOptional = ["true", "yes", "1"].contains(value.lowercased())
@@ -135,6 +135,8 @@ struct ScriptMetadata: Hashable, Sendable {
         if let m = multipliers[unit], let n = Double(v.dropLast()) { return max(n * m, 1) }
         return Double(v).map { max($0, 1) }
     }
+
+    static var defaultArgument: String { String(localized: "Argument", comment: "A script's argument: its placeholder, a detail row or a row label") }
 
     /// "say-hello.sh" → "Say Hello".
     static func humanize(_ fileName: String) -> String {

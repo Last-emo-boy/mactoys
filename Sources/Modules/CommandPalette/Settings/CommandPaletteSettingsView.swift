@@ -80,7 +80,7 @@ struct CommandPaletteSettingsView: View {
             }
             Picker(selection: $settings.value.numberKeys) {
                 ForEach(CommandPaletteSettings.NumberKeys.allCases) { Text($0.title).tag($0) }
-            } label: { RowLabel("⌥1…⌥9", subtitle: "⌥⇧1…⌥⇧9 always selects") }
+            } label: { RowLabel(title: Text(verbatim: "⌥1…⌥9"), subtitle: Text("⌥⇧1…⌥⇧9 always selects")) }
             Toggle(isOn: $settings.value.hideOnResign) { RowLabel("Close when clicking outside") }
         }
     }
@@ -96,7 +96,7 @@ struct CommandPaletteSettingsView: View {
                 RowLabel("Quick access shelf", subtitle: "Pinned commands under the search box; ⌥1…⌥9 run them")
             }
             Stepper(value: $settings.value.maxPins, in: 0...20) {
-                RowLabel("Maximum pinned items on the shelf", subtitle: "\(settings.value.maxPins)")
+                RowLabel(title: Text("Maximum pinned items on the shelf"), subtitle: Text(settings.value.maxPins, format: .number))
             }
             Picker(selection: $settings.value.shelfRecents) {
                 ForEach(CommandPaletteSettings.RecentPlacement.allCases) { Text($0.title).tag($0) }
@@ -105,7 +105,7 @@ struct CommandPaletteSettingsView: View {
                 ForEach(CommandPaletteSettings.RecentPlacement.allCases) { Text($0.title).tag($0) }
             } label: { RowLabel("Recent items on Home") }
             Stepper(value: $settings.value.maxRecents, in: 1...10) {
-                RowLabel("Maximum recent items", subtitle: "\(settings.value.maxRecents)")
+                RowLabel(title: Text("Maximum recent items"), subtitle: Text(settings.value.maxRecents, format: .number))
             }
             LabeledContent { Button("Clear History") { engine.usage.clearHistory() } } label: {
                 RowLabel("Recent items and ranking", subtitle: "What you ran rises in the results")
@@ -115,7 +115,7 @@ struct CommandPaletteSettingsView: View {
                 RowLabel("Results per provider", subtitle: "\(settings.value.resultsPerSection) in the main search; pages and filters show all")
             }
             SliderRow("Background opacity", value: $settings.value.backgroundOpacity, in: 0.2...0.95,
-                      format: { "\(Int(($0 * 100).rounded()))%" })
+                      format: { $0.formatted(.percent.precision(.fractionLength(0))) })
         }
     }
 
@@ -127,13 +127,13 @@ struct CommandPaletteSettingsView: View {
             ForEach(Array(settings.value.pins.enumerated()), id: \.element.id) { i, pin in
                 HStack(spacing: 10) {
                     ItemIconView(icon: pin.icon, size: 22)
-                    TextField("Title", text: Binding(get: { pin.title }, set: { v in
+                    TextField(String(localized: "Title", comment: "Placeholder: the pin's title on the shelf"), text: Binding(get: { pin.title }, set: { v in
                         if i < settings.value.pins.count { settings.value.pins[i].title = v }
                     }))
                     .textFieldStyle(.plain)
                     .labelsHidden()
                     Spacer()
-                    if i < 9 { Keycaps(["⌥", "\(i + 1)"]) }
+                    if i < 9 { Keycaps(["⌥", String(i + 1)]) }
                     Button { settings.value.pins.swapAt(i, i - 1) } label: { Image(systemName: "chevron.up") }
                         .buttonStyle(.borderless).disabled(i == 0)
                     Button { settings.value.pins.swapAt(i, i + 1) } label: { Image(systemName: "chevron.down") }
@@ -158,7 +158,7 @@ struct CommandPaletteSettingsView: View {
         Section {
             ForEach(Array(settings.value.aliases.enumerated()), id: \.offset) { i, alias in
                 HStack(spacing: 10) {
-                    TextField("alias", text: Binding(get: { alias.alias }, set: { v in
+                    TextField(String(localized: "alias", comment: "Placeholder: the alias to type, e.g. cb"), text: Binding(get: { alias.alias }, set: { v in
                         guard i < settings.value.aliases.count else { return }
                         let trimmed = v.replacingOccurrences(of: " ", with: "")
                         settings.value.aliases[i].alias = trimmed
@@ -168,7 +168,7 @@ struct CommandPaletteSettingsView: View {
                     .labelsHidden()
                     .frame(width: 80)
                     Image(systemName: "arrow.right").foregroundStyle(.tertiary)
-                    Text(alias.title).lineLimit(1)
+                    Text(verbatim: alias.title).lineLimit(1)
                     Spacer()
                     Toggle("Direct", isOn: Binding(get: { alias.direct }, set: { v in
                         if i < settings.value.aliases.count { settings.value.aliases[i].direct = v }
@@ -182,7 +182,7 @@ struct CommandPaletteSettingsView: View {
             let duplicates = Dictionary(grouping: settings.value.aliases.map { $0.alias.lowercased() }.filter { !$0.isEmpty }, by: { $0 })
                 .filter { $0.value.count > 1 }.keys.sorted()
             if !duplicates.isEmpty {
-                InfoBar(.warning, title: "Duplicate aliases", message: duplicates.joined(separator: ", "))
+                InfoBar(.warning, title: Text("Duplicate aliases"), message: Text(verbatim: duplicates.joined(separator: ", ")))
             }
             HStack {
                 CommandMenu(title: "Add Alias", engine: engine) { item in
@@ -193,7 +193,7 @@ struct CommandPaletteSettingsView: View {
         } header: {
             Text("Aliases")
         } footer: {
-            Text("Typing an alias opens its page right away: “cb ” shows clipboard history, “=” the calculator. Symbol aliases are direct, so “=2+2” works.")
+            Text("Typing an alias opens its page right away: “\("cb ")” shows clipboard history, “\("=")” the calculator. Symbol aliases are direct, so “\("=2+2")” works.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
     }
@@ -216,7 +216,7 @@ struct CommandPaletteSettingsView: View {
                     HStack(spacing: 10) {
                         ItemIconView(icon: hk.icon, size: 22)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(hk.title)
+                            Text(verbatim: hk.title)
                             if let s = hk.shortcut, !HotkeyCenter.shared.conflicts(for: s, excluding: "cmdpal.command.\(i)").isEmpty {
                                 Text("Also used by another shortcut").font(.system(size: 11.5)).foregroundStyle(.orange)
                             } else if hk.shortcut != nil, HotkeyCenter.shared.failed.contains("cmdpal.command.\(i)") {
@@ -254,7 +254,8 @@ struct CommandPaletteSettingsView: View {
     private var links: some View {
         Section {
             Toggle(isOn: $settings.value.enableCommandLinks) {
-                RowLabel("Enable command links", subtitle: "mactoys://cmdpal/run?id=… links run commands after you confirm. ⌘K › Copy Command Link creates one.")
+                RowLabel("Enable command links",
+                         subtitle: "\("mactoys://cmdpal/run?id=…") links run commands after you confirm. ⌘K › Copy Command Link creates one.")
             }
             ForEach(settings.value.allowedLinks, id: \.self) { id in
                 LabeledContent {
@@ -294,7 +295,7 @@ private struct ProviderRow: View {
             HStack {
                 ProviderHeader(provider: provider, detail: aliases.isEmpty ? nil : "\(provider.summary) · \(aliases.joined(separator: " "))")
                 Spacer()
-                Toggle("", isOn: Binding(get: { t.enabled }, set: { v in update { $0.enabled = v } }))
+                Toggle(isOn: Binding(get: { t.enabled }, set: { v in update { $0.enabled = v } })) { Text(verbatim: provider.name) }
                     .toggleStyle(.switch).labelsHidden()
             }
         }
@@ -309,7 +310,7 @@ private struct ProviderRow: View {
 
 /// A menu listing commands to pick for pins, aliases and hotkeys.
 struct CommandMenu: View {
-    let title: String
+    let title: LocalizedStringKey
     let engine: LauncherEngine
     let onPick: (PaletteItem) -> Void
 
@@ -317,11 +318,15 @@ struct CommandMenu: View {
         Menu(title) {
             let commands = engine.commands { _ in true }.filter(\.isPinnable)
             Section("Commands") {
-                ForEach(commands.sorted { $0.title < $1.title }, id: \.id) { c in Button(c.title) { onPick(c) } }
+                ForEach(commands.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }, id: \.id) { c in
+                    Button(c.title) { onPick(c) }
+                }
             }
             let quick = (engine.provider("mactoys") as? MacToysProvider)?.allItems() ?? []
-            Section("MacToys") {
+            Section {
                 ForEach(quick, id: \.id) { c in Button(c.title) { onPick(c) } }
+            } header: {
+                Text(verbatim: "MacToys")
             }
             let system = (engine.provider("system") as? SystemCommandsProvider)?.allCommands ?? []
             Section("System") {

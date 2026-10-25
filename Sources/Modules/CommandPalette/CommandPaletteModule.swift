@@ -177,7 +177,7 @@ public final class CommandPaletteModule: ToyModule {
             }
             if var item = engine.resolve(m.target), m.rest.isEmpty {
                 item.score = 5000
-                item.section = "Alias"
+                item.section = String(localized: "Alias", comment: "Section heading: the command an alias points to")
                 extra.append(item)
             }
         }
@@ -199,17 +199,17 @@ public final class CommandPaletteModule: ToyModule {
         var out: [ResultSection] = []
         if !s.showShelf {
             let pins = resolvedPins()
-            if !pins.isEmpty { out.append(ResultSection(id: "home:pinned", title: "Pinned", items: pins)) }
+            if !pins.isEmpty { out.append(ResultSection(id: "home:pinned", title: Labels.pinned, items: pins)) }
         }
         if s.homeRecents == .afterPinned {
             let pinned = Set(s.pins.map(\.id))
             let recent = recentItems(limit: s.maxRecents, excluding: pinned)
-            if !recent.isEmpty { out.append(ResultSection(id: "home:recent", title: "Recent", items: recent)) }
+            if !recent.isEmpty { out.append(ResultSection(id: "home:recent", title: Labels.recent, items: recent)) }
         }
         let enabledIDs = Set(enabledProviders.map(\.id))
         let commands = engine.commands { enabledIDs.contains($0.id) }
             .sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
-        out.append(ResultSection(id: "home:commands", title: "Commands", items: commands))
+        out.append(ResultSection(id: "home:commands", title: Labels.commands, items: commands))
         return out
     }
 
@@ -218,7 +218,7 @@ public final class CommandPaletteModule: ToyModule {
         for e in engine.usage.history where !excluding.contains(e.id) {
             guard out.count < limit else { break }
             guard var item = engine.resolve(e.id), item.isPinnable else { continue }
-            item.section = "Recent"
+            item.section = Labels.recent
             out.append(item)
         }
         return out
@@ -228,14 +228,14 @@ public final class CommandPaletteModule: ToyModule {
         settings.value.pins.prefix(max(0, settings.value.maxPins)).map { pin in
             if var item = engine.resolve(pin.id) {
                 // The pin keeps the (short) title it was pinned with.
-                item.section = "Pinned"
+                item.section = Labels.pinned
                 item.title = pin.title
                 return item
             }
-            return PaletteItem(id: pin.id, title: pin.title, subtitle: "Not available", icon: pin.icon, providerID: "cmdpal",
-                               section: "Pinned",
-                               primary: PaletteAction(id: "none", title: "Unavailable", symbol: "exclamationmark.triangle",
-                                                      recordsUsage: false) {
+            return PaletteItem(id: pin.id, title: pin.title, subtitle: String(localized: "Not available", comment: "A pinned command that can't be found"),
+                               icon: pin.icon, providerID: "cmdpal", section: Labels.pinned,
+                               primary: PaletteAction(id: "none", title: String(localized: "Unavailable", comment: "Action of a pinned command that can't be found"),
+                                                      symbol: "exclamationmark.triangle", recordsUsage: false) {
                                    HUD.show("“\(pin.title)” isn’t available", symbol: "exclamationmark.triangle")
                                    return .stay
                                })
@@ -260,25 +260,25 @@ public final class CommandPaletteModule: ToyModule {
         let s = settings.value
         let id = item.id
         if let index = s.pins.firstIndex(where: { $0.id == id }) {
-            out.append(PaletteAction(id: "meta.unpin", title: "Unpin from Quick Access", symbol: "pin.slash", shortcut: ActionKeys.pin,
+            out.append(PaletteAction(id: "meta.unpin", title: String(localized: "Unpin from Quick Access"), symbol: "pin.slash", shortcut: ActionKeys.pin,
                                      recordsUsage: false) { [weak self] in
                 self?.settings.value.pins.removeAll { $0.id == id }
                 return .refresh
             })
             if index > 0 {
-                out.append(PaletteAction(id: "meta.left", title: "Move Pin Left", symbol: "arrow.left", recordsUsage: false) { [weak self] in
+                out.append(PaletteAction(id: "meta.left", title: String(localized: "Move Pin Left"), symbol: "arrow.left", recordsUsage: false) { [weak self] in
                     self?.settings.value.pins.swapAt(index, index - 1)
                     return .refresh
                 })
             }
             if index < s.pins.count - 1 {
-                out.append(PaletteAction(id: "meta.right", title: "Move Pin Right", symbol: "arrow.right", recordsUsage: false) { [weak self] in
+                out.append(PaletteAction(id: "meta.right", title: String(localized: "Move Pin Right"), symbol: "arrow.right", recordsUsage: false) { [weak self] in
                     self?.settings.value.pins.swapAt(index, index + 1)
                     return .refresh
                 })
             }
         } else {
-            out.append(PaletteAction(id: "meta.pin", title: "Pin to Quick Access", symbol: "pin", shortcut: ActionKeys.pin,
+            out.append(PaletteAction(id: "meta.pin", title: String(localized: "Pin to Quick Access"), symbol: "pin", shortcut: ActionKeys.pin,
                                      recordsUsage: false) { [weak self] in
                 self?.settings.value.pins.append(PinnedCommand(id: id, title: item.title, icon: item.icon))
                 HUD.show("Pinned “\(item.title)”", symbol: "pin.fill")
@@ -286,16 +286,19 @@ public final class CommandPaletteModule: ToyModule {
             })
         }
         if engine.usage.history.contains(where: { $0.id == id }) {
-            out.append(PaletteAction(id: "meta.forget", title: "Remove from Recent", symbol: "clock.badge.xmark", recordsUsage: false) { [weak self] in
+            out.append(PaletteAction(id: "meta.forget", title: String(localized: "Remove from Recent"), symbol: "clock.badge.xmark",
+                                     recordsUsage: false) { [weak self] in
                 self?.engine.usage.remove(id)
                 return .refresh
             })
         }
-        out.append(PaletteAction(id: "meta.alias", title: "Add Alias…", symbol: "character.cursor.ibeam", recordsUsage: false) { [weak self] in
+        out.append(PaletteAction(id: "meta.alias", title: String(localized: "Add Alias…"), symbol: "character.cursor.ibeam",
+                                 recordsUsage: false) { [weak self] in
             guard let self else { return .stay }
             return .push(self.aliasPage(for: item))
         })
-        out.append(PaletteAction(id: "meta.hotkey", title: s.hotkeys.contains { $0.target == id } ? "Change Hotkey…" : "Assign Hotkey…",
+        out.append(PaletteAction(id: "meta.hotkey",
+                                 title: s.hotkeys.contains { $0.target == id } ? String(localized: "Change Hotkey…") : String(localized: "Assign Hotkey…"),
                                  symbol: "keyboard", recordsUsage: false) { [weak self] in
             guard let self else { return .stay }
             if !self.settings.value.hotkeys.contains(where: { $0.target == id }) {
@@ -304,7 +307,7 @@ public final class CommandPaletteModule: ToyModule {
             let moduleID = self.info.id
             return .dismissThen { ModuleRegistry.shared.showSettings?(moduleID) }
         })
-        out.append(PaletteAction(id: "meta.link", title: "Copy Command Link", symbol: "link", recordsUsage: false) {
+        out.append(PaletteAction(id: "meta.link", title: String(localized: "Copy Command Link"), symbol: "link", recordsUsage: false) {
             Launch.copy(AppCommand(module: "cmdpal", action: "run", parameters: ["id": id]).url.absoluteString)
             HUD.show("Command link copied", symbol: "link")
             return .dismiss
@@ -313,26 +316,32 @@ public final class CommandPaletteModule: ToyModule {
     }
 
     private func aliasPage(for item: PaletteItem) -> ListPage {
-        ListPage(id: "cmdpal:alias:\(item.id)", title: "Alias for \(item.title)", placeholder: "Type an alias, e.g. cb",
+        ListPage(id: "cmdpal:alias:\(item.id)", title: String(localized: "Alias for \(item.title)", comment: "Page title; %@ is a command"),
+                 placeholder: String(localized: "Type an alias, e.g. \("cb")", comment: "%@ is an example alias"),
                  icon: .symbol("character.cursor.ibeam", .blue)) { [weak self] text in
             guard let self else { return [] }
             let alias = text.trimmingCharacters(in: .whitespaces)
             let existing = self.settings.value.aliases.filter { $0.target == item.id }.map(\.alias)
             guard !alias.isEmpty, !alias.contains(" ") else {
-                return [PaletteItem(id: "cmdpal:alias:hint", title: alias.contains(" ") ? "An alias can’t contain spaces" : "Type the alias",
-                                    subtitle: existing.isEmpty ? "Typing it in the palette jumps to “\(item.title)”"
-                                        : "Current: " + existing.joined(separator: ", "),
+                return [PaletteItem(id: "cmdpal:alias:hint",
+                                    title: alias.contains(" ") ? String(localized: "An alias can’t contain spaces") : String(localized: "Type the alias"),
+                                    subtitle: existing.isEmpty
+                                        ? String(localized: "Typing it in the palette jumps to “\(item.title)”", comment: "%@ is a command")
+                                        : String(localized: "Current: \(existing.formatted(.list(type: .and, width: .narrow)))", comment: "%@ lists the command's aliases"),
                                     icon: .symbol("character.cursor.ibeam", .blue), providerID: "cmdpal",
-                                    primary: PaletteAction(id: "none", title: "OK", symbol: "checkmark", recordsUsage: false) { .stay },
+                                    primary: PaletteAction(id: "none", title: Labels.ok, symbol: "checkmark", recordsUsage: false) { .stay },
                                     isPinnable: false)]
             }
             let clash = self.settings.value.aliases.first { $0.alias.lowercased() == alias.lowercased() && $0.target != item.id }
             let direct = KeywordParser.isSymbolic(alias)
             return [PaletteItem(
-                id: "cmdpal:alias:set", title: "Use “\(alias)” for \(item.title)",
-                subtitle: clash.map { "Replaces the alias of \($0.title)" } ?? (direct ? "Direct alias: works without a space" : "Type “\(alias) ” to jump there"),
-                icon: item.icon, providerID: "cmdpal", accessory: "Save",
-                primary: PaletteAction(id: "save", title: "Save Alias", symbol: "checkmark", recordsUsage: false) { [weak self] in
+                id: "cmdpal:alias:set",
+                title: String(localized: "Use “\(alias)” for \(item.title)", comment: "%1$@ is the alias typed, %2$@ the command"),
+                subtitle: clash.map { String(localized: "Replaces the alias of \($0.title)", comment: "%@ is another command") }
+                    ?? (direct ? String(localized: "Direct alias: works without a space")
+                        : String(localized: "Type “\(alias) ” to jump there", comment: "%@ is the alias; keep the space before the closing quote")),
+                icon: item.icon, providerID: "cmdpal", accessory: String(localized: "Save", comment: "Result row label: ↵ saves the alias"),
+                primary: PaletteAction(id: "save", title: String(localized: "Save Alias"), symbol: "checkmark", recordsUsage: false) { [weak self] in
                     self?.settings.update { s in
                         s.aliases.removeAll { $0.alias.lowercased() == alias.lowercased() }
                         s.aliases.append(CommandAlias(alias: alias, target: item.id, title: item.title, direct: direct))
@@ -382,14 +391,15 @@ public final class CommandPaletteModule: ToyModule {
         let title = engine.resolve(id)?.title ?? engine.page(for: id).map(\.title) ?? id
         open()
         model.handle(.confirm(Confirmation(
-            title: "Run “\(title)”?", message: "A link or another app asked to run this command. Continue only if you expected it.",
-            confirmTitle: "Run Once", destructive: false,
+            title: String(localized: "Run “\(title)”?", comment: "Confirmation prompt; %@ is a command"),
+            message: String(localized: "A link or another app asked to run this command. Continue only if you expected it."),
+            confirmTitle: String(localized: "Run Once", comment: "Confirmation button: run the linked command this time"), destructive: false,
             perform: { [weak self] in
                 self?.window.dismissLauncher(restoreFocus: true)
                 self?.runCommand(id)
                 return .stay
             },
-            alternateTitle: "Always Allow",
+            alternateTitle: String(localized: "Always Allow", comment: "Confirmation button: run this command from links without asking"),
             alternate: { [weak self] in
                 self?.settings.value.allowedLinks.append(id)
                 self?.window.dismissLauncher(restoreFocus: true)

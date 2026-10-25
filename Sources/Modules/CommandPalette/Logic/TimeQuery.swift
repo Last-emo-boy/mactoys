@@ -222,8 +222,16 @@ enum TimeZoneLookup {
 /// Builds the displayed formats of a moment.
 enum TimeFormats {
     struct Row: Equatable, Hashable {
+        /// Stable name of the format (`Unix`, `Week`, a custom format's name); `label` is what is shown.
+        let id: String
         let label: String
         let value: String
+
+        init(id: String, label: String? = nil, value: String) {
+            self.id = id
+            self.label = label ?? id
+            self.value = value
+        }
     }
 
     /// One custom format: `Name=pattern` or `Name=UTC:pattern`.
@@ -285,15 +293,17 @@ enum TimeFormats {
         return m == 0 ? "UTC\(sign)\(h)" : String(format: "UTC%@%d:%02d", sign, h, m)
     }
 
-    /// "8 hours behind", "5 h 30 min ahead", "same time".
-    static func difference(_ other: TimeZone, from local: TimeZone, at date: Date) -> String {
+    /// "8 hours behind", "5 hr, 30 min ahead", "same time".
+    static func difference(_ other: TimeZone, from local: TimeZone, at date: Date, locale: Locale = .current) -> String {
         let delta = other.secondsFromGMT(for: date) - local.secondsFromGMT(for: date)
-        if delta == 0 { return "same time" }
+        if delta == 0 { return String(localized: "same time", comment: "Time zone difference: the other zone shows the same time") }
         let a = Swift.abs(delta)
-        let h = a / 3600, m = (a % 3600) / 60
-        let amount: String
-        if m == 0 { amount = h == 1 ? "1 hour" : "\(h) hours" } else { amount = h == 0 ? "\(m) min" : "\(h) h \(m) min" }
-        return "\(amount) \(delta < 0 ? "behind" : "ahead")"
+        // Whole hours read "8 hours"; with minutes the abbreviated form keeps it short: "5 hr, 30 min".
+        let width: Duration.UnitsFormatStyle.UnitWidth = a % 3600 == 0 ? .wide : .abbreviated
+        let amount = Duration.seconds(a).formatted(.units(allowed: [.hours, .minutes], width: width).locale(locale))
+        return delta < 0
+            ? String(localized: "\(amount) behind", comment: "Time zone difference; %@ is a duration such as “8 hours”")
+            : String(localized: "\(amount) ahead", comment: "Time zone difference; %@ is a duration such as “8 hours”")
     }
 
     static func formatter(_ pattern: String? = nil, date: DateFormatter.Style = .none, time: DateFormatter.Style = .none,
@@ -313,19 +323,24 @@ enum TimeFormats {
         cal.timeZone = zone
         let dayOfYear = cal.ordinality(of: .day, in: .year, for: date) ?? 0
         let daysInYear = cal.range(of: .day, in: .year, for: date)?.count ?? 365
+        // Standard names (ISO 8601, Unix, UTC, RFC 2822) are shown as they are.
         var rows = [
-            Row(label: "ISO 8601", value: iso8601(date, zone: zone)),
-            Row(label: "Unix", value: unix(date)),
-            Row(label: "Week", value: "\(week.week) of \(week.of)"),
-            Row(label: "UTC", value: formatter("HH:mm:ss", zone: utc, locale: Locale(identifier: "en_US_POSIX")).string(from: date)),
-            Row(label: "Unix (ms)", value: String(Int64((date.timeIntervalSince1970 * 1000).rounded(.down)))),
-            Row(label: "Day of year", value: "\(dayOfYear) of \(daysInYear)"),
-            Row(label: "RFC 2822", value: formatter("EEE, dd MMM yyyy HH:mm:ss Z", zone: zone,
-                                                    locale: Locale(identifier: "en_US_POSIX")).string(from: date)),
-            Row(label: "Time zone", value: "\(zone.identifier) · \(offsetLabel(zone.secondsFromGMT(for: date)))"),
+            Row(id: "ISO 8601", value: iso8601(date, zone: zone)),
+            Row(id: "Unix", value: unix(date)),
+            Row(id: "Week", label: String(localized: "Week", comment: "Time format row: the ISO calendar week"),
+                value: String(localized: "\(week.week) of \(week.of)", comment: "A number out of a total: “43 of 53” (ISO week of the weeks in the year), “297 of 365” (day of the days in the year)")),
+            Row(id: "UTC", value: formatter("HH:mm:ss", zone: utc, locale: Locale(identifier: "en_US_POSIX")).string(from: date)),
+            Row(id: "Unix (ms)", value: String(Int64((date.timeIntervalSince1970 * 1000).rounded(.down)))),
+            Row(id: "Day of year", label: String(localized: "Day of year", comment: "Time format row: the day's number in the year"),
+                value: String(localized: "\(dayOfYear) of \(daysInYear)", comment: "A number out of a total: “43 of 53” (ISO week of the weeks in the year), “297 of 365” (day of the days in the year)")),
+            Row(id: "RFC 2822", value: formatter("EEE, dd MMM yyyy HH:mm:ss Z", zone: zone,
+                                                 locale: Locale(identifier: "en_US_POSIX")).string(from: date)),
+            Row(id: "Time zone", label: String(localized: "Time zone", comment: "Time format row: the time zone and its UTC offset"),
+                value: "\(zone.identifier) · \(offsetLabel(zone.secondsFromGMT(for: date)))"),
         ]
         for c in custom {
-            rows.append(Row(label: c.name, value: format(date, pattern: c.pattern, zone: c.utc ? utc : zone, locale: locale)))
+            rows.append(Row(id: c.name,
+                            value: format(date, pattern: c.pattern, zone: c.utc ? utc : zone, locale: locale)))
         }
         return rows
     }

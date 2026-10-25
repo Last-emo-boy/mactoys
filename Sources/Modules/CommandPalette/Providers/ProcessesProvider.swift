@@ -25,12 +25,14 @@ struct ProcessEntry: Sendable, Hashable {
 @MainActor
 final class ProcessesProvider: SearchProvider {
     let id = "processes"
-    let name = "Processes"
-    let summary = "Find running processes and quit or kill them"
+    let name = String(localized: "Processes")
+    let summary = String(localized: "Find running processes and quit or kill them")
     let icon = ItemIcon.symbol("cpu", .red)
     let defaultKeyword = "kill"
     let globalByDefault = false
-    let examples = ["kill chrome", "kill  (sorted by CPU)"]
+    var examples: [String] {
+        ["kill chrome", String(localized: "\("kill")  (sorted by CPU)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     private var cache: [ProcessEntry] = []
@@ -39,7 +41,8 @@ final class ProcessesProvider: SearchProvider {
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Running Processes", subtitle: "Quit or kill processes", keywords: ["kill", "task manager", "activity", "ps"])]
+        [pageCommand(title: Phrase("Running Processes"), subtitle: String(localized: "Quit or kill processes"),
+                     keywords: ["kill", "task manager", "activity", "ps"])]
     }
 
     func launcherWillShow() { cachedAt = nil }
@@ -75,57 +78,69 @@ final class ProcessesProvider: SearchProvider {
 
     func item(_ p: ProcessEntry, app: NSRunningApplication?, score: Double) -> PaletteItem {
         let memory = ByteCountFormatter.string(fromByteCount: p.memory, countStyle: .memory)
+        let cpu = (p.cpu / 100).formatted(.percent.precision(.fractionLength(1)))
         let title = app?.localizedName ?? p.name
         let confirmKill = engine.options.value.processesConfirmKill
         let iconPath = app?.bundleURL?.path
-        func signal(_ sig: Int32, _ label: String) -> ActionOutcome {
+        /// Sends a signal; `done` is the HUD message on success.
+        func signal(_ sig: Int32, _ done: String) -> ActionOutcome {
             if kill(p.pid, sig) == 0 {
-                HUD.show("\(label) \(title)", symbol: "xmark.circle")
+                HUD.show(done, symbol: "xmark.circle")
+            } else if errno == EPERM {
+                HUD.show("Not permitted to signal \(title)", symbol: "exclamationmark.triangle")
             } else {
-                HUD.show(errno == EPERM ? "Not permitted to signal \(title)" : "Couldn’t signal \(title)",
-                         symbol: "exclamationmark.triangle")
+                HUD.show("Couldn’t signal \(title)", symbol: "exclamationmark.triangle")
             }
             cachedAt = nil
             return .refresh
         }
-        let killAction = PaletteAction(id: "kill", title: "Kill Process", symbol: "xmark.octagon", shortcut: ActionKeys.trash,
+        let killed = String(localized: "Killed \(title)", comment: "HUD; %@ is a process or app name")
+        let killAction = PaletteAction(id: "kill", title: String(localized: "Kill Process"), symbol: "xmark.octagon", shortcut: ActionKeys.trash,
                                        destructive: true) {
-            guard confirmKill else { return signal(SIGKILL, "Killed") }
-            return .confirm(Confirmation(title: "Kill \(title) (\(p.pid))?", message: "It stops immediately; unsaved work is lost.",
-                                         confirmTitle: "Kill") { signal(SIGKILL, "Killed") })
+            guard confirmKill else { return signal(SIGKILL, killed) }
+            return .confirm(Confirmation(title: String(localized: "Kill \(title) (\(p.pid))?", comment: "Confirmation prompt; %1$@ is a process name, %2$d its process ID"),
+                                         message: String(localized: "It stops immediately; unsaved work is lost."),
+                                         confirmTitle: String(localized: "Kill", comment: "Confirmation button: force a process to stop")) {
+                signal(SIGKILL, killed)
+            })
         }
-        let quit = PaletteAction(id: "quit", title: app != nil ? "Quit App" : "Terminate Process", symbol: "xmark.circle") {
+        let quit = PaletteAction(id: "quit", title: app != nil ? String(localized: "Quit App") : String(localized: "Terminate Process"),
+                                 symbol: "xmark.circle") {
             if let app {
                 app.terminate()
                 self.cachedAt = nil
                 return .refresh
             }
-            return signal(SIGTERM, "Terminated")
+            return signal(SIGTERM, String(localized: "Terminated \(title)", comment: "HUD; %@ is a process name"))
         }
         var actions = [killAction,
-                       PaletteAction(id: "copypid", title: "Copy PID", symbol: "number", shortcut: ActionKeys.copy) {
+                       PaletteAction(id: "copypid", title: String(localized: "Copy PID", comment: "Action: copy the process ID"), symbol: "number",
+                                     shortcut: ActionKeys.copy) {
                            Launch.copy(String(p.pid))
                            return .dismiss
                        },
-                       PaletteAction(id: "reveal", title: "Show Executable in Finder", symbol: "folder", shortcut: ActionKeys.secondary) {
+                       PaletteAction(id: "reveal", title: String(localized: "Show Executable in Finder"), symbol: "folder",
+                                     shortcut: ActionKeys.secondary) {
                            Launch.reveal(URL(fileURLWithPath: p.path))
                            return .dismiss
                        }]
         if app != nil {
-            actions.insert(PaletteAction(id: "activate", title: "Switch to App", symbol: "macwindow") {
+            actions.insert(PaletteAction(id: "activate", title: String(localized: "Switch to App"), symbol: "macwindow") {
                 .dismissThen { app?.activate() }
             }, at: 0)
         }
         return PaletteItem(
-            id: "processes:\(p.pid)", title: title, subtitle: "PID \(p.pid) · \(String(format: "%.1f", p.cpu))% CPU · \(memory) · \(p.user)",
+            id: "processes:\(p.pid)", title: title,
+            subtitle: String(localized: "PID \(p.pid) · \(cpu) CPU · \(memory) · \(p.user)",
+                             comment: "Process details: %1$d process ID, %2$@ CPU use such as “4.2%”, %3$@ memory, %4$@ user name"),
             icon: iconPath.map { .file($0) } ?? .symbol("gearshape.2.fill", .graphite), providerID: id,
-            accessory: String(format: "%.1f%%", p.cpu), score: score, primary: quit, actions: actions,
+            accessory: cpu, score: score, primary: quit, actions: actions,
             details: ItemDetails(icon: iconPath.map { .file($0) } ?? .symbol("gearshape.2.fill", .graphite), title: title,
                                  subtitle: p.path, rows: [
                                      DetailRow(label: "PID", value: String(p.pid)),
-                                     DetailRow(label: "CPU", value: String(format: "%.1f %%", p.cpu)),
-                                     DetailRow(label: "Memory", value: memory),
-                                     DetailRow(label: "User", value: p.user),
+                                     DetailRow(label: "CPU", value: cpu),
+                                     DetailRow(label: String(localized: "Memory", comment: "Detail row: memory a process uses"), value: memory),
+                                     DetailRow(label: String(localized: "User", comment: "Detail row: the account a process runs as"), value: p.user),
                                  ]),
             isPinnable: false)
     }

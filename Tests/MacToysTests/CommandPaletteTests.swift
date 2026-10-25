@@ -443,9 +443,10 @@ import Testing
         let kolkata = try #require(TimeZone(identifier: "Asia/Kolkata"))
         #expect(TimeFormats.offsetLabel(28_800) == "UTC+8")
         #expect(TimeFormats.offsetLabel(-16_200) == "UTC−4:30")
-        #expect(TimeFormats.difference(london, from: shanghai, at: d) == "7 hours behind")   // BST until 25 Oct
-        #expect(TimeFormats.difference(kolkata, from: shanghai, at: d) == "2 h 30 min behind")
-        #expect(TimeFormats.difference(shanghai, from: shanghai, at: d) == "same time")
+        let en = Locale(identifier: "en_US")
+        #expect(TimeFormats.difference(london, from: shanghai, at: d, locale: en) == "7 hours behind")   // BST until 25 Oct
+        #expect(TimeFormats.difference(kolkata, from: shanghai, at: d, locale: en) == "2 hr, 30 min behind")
+        #expect(TimeFormats.difference(shanghai, from: shanghai, at: d, locale: en) == "same time")
     }
 
     @Test func customFormats() throws {
