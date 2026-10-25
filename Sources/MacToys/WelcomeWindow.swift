@@ -83,6 +83,7 @@ struct WelcomeView: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.separator))
                 Spacer()
                 HStack {
+                    LanguagePicker { Relaunch.now() }.controlSize(.small)
                     Spacer()
                     Button("Get Started", action: onDone).buttonStyle(.borderedProminent).controlSize(.large)
                 }

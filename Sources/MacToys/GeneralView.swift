@@ -32,6 +32,10 @@ struct GeneralView: View {
                 }
             }
 
+            Section("Language") {
+                LanguagePicker { Relaunch.now() }
+            }
+
             Section("Appearance") {
                 Picker(selection: $general.value.appearance) {
                     Text("System").tag(GeneralSettings.Appearance.system)

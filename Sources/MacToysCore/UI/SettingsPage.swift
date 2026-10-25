@@ -45,8 +45,8 @@ public struct SettingsPage<Content: View, Hero: View>: View {
                     let missing = permissions.missing(info.permissions).filter { !$0.isOptional }
                     if enabled, !missing.isEmpty {
                         ForEach(missing) { p in
-                            InfoBar(.warning, title: "\(p.title) access required", message: p.reason,
-                                    actionTitle: "Grant Access") { permissions.request(p) }
+                            InfoBar(.warning, title: Text("\(p.title) access required"), message: Text(verbatim: p.reason),
+                                    actionTitle: Text("Grant Access")) { permissions.request(p) }
                         }
                     }
                     hero.disabled(!enabled)
@@ -90,21 +90,40 @@ public struct HeroCard<Content: View>: View {
     }
 }
 
+// Every component below takes its text three ways, like SwiftUI's own `Text`:
+// a `LocalizedStringKey` (string literals: extracted into the String Catalog and translated),
+// `Text` (when mixing a literal with a runtime value), and a disfavored `String` that is shown
+// as is (runtime values; localize them at the source with `String(localized:)`).
+
 /// Title + optional subtitle label used across rows.
 public struct RowLabel: View {
-    let title: String
-    let subtitle: String?
+    let title: Text
+    let subtitle: Text?
 
-    public init(_ title: String, subtitle: String? = nil) {
+    public init(title: Text, subtitle: Text? = nil) {
         self.title = title
         self.subtitle = subtitle
     }
 
+    public init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil) {
+        self.init(title: Text(title), subtitle: subtitle.map { Text($0) })
+    }
+
+    @_disfavoredOverload
+    public init(_ title: LocalizedStringKey, subtitle: String?) {
+        self.init(title: Text(title), subtitle: subtitle.flatMap { $0.isEmpty ? nil : Text(verbatim: $0) })
+    }
+
+    @_disfavoredOverload
+    public init(_ title: String, subtitle: String? = nil) {
+        self.init(title: Text(verbatim: title), subtitle: subtitle.flatMap { $0.isEmpty ? nil : Text(verbatim: $0) })
+    }
+
     public var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-            if let subtitle, !subtitle.isEmpty {
-                Text(subtitle).font(.system(size: 11.5)).foregroundStyle(.secondary)
+            title
+            if let subtitle {
+                subtitle.font(.system(size: 11.5)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -113,13 +132,22 @@ public struct RowLabel: View {
 
 /// A row with a shortcut recorder.
 public struct ShortcutRow: View {
-    let title: String
-    let subtitle: String?
+    let label: RowLabel
     @Binding var shortcut: Shortcut?
 
+    public init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil, shortcut: Binding<Shortcut?>) {
+        self.label = RowLabel(title, subtitle: subtitle)
+        self._shortcut = shortcut
+    }
+
+    @_disfavoredOverload
     public init(_ title: String, subtitle: String? = nil, shortcut: Binding<Shortcut?>) {
-        self.title = title
-        self.subtitle = subtitle
+        self.label = RowLabel(title, subtitle: subtitle)
+        self._shortcut = shortcut
+    }
+
+    public init(label: RowLabel, shortcut: Binding<Shortcut?>) {
+        self.label = label
         self._shortcut = shortcut
     }
 
@@ -127,21 +155,29 @@ public struct ShortcutRow: View {
         LabeledContent {
             ShortcutRecorder(shortcut: $shortcut)
         } label: {
-            RowLabel(title, subtitle: subtitle)
+            label
         }
     }
 }
 
 /// A color row: system color well plus the hex value.
 public struct ColorRow: View {
-    let title: String
-    let subtitle: String?
+    let label: RowLabel
     let supportsOpacity: Bool
     @Binding var color: RGBA
 
+    public init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil, color: Binding<RGBA>,
+                supportsOpacity: Bool = true) {
+        self.init(label: RowLabel(title, subtitle: subtitle), color: color, supportsOpacity: supportsOpacity)
+    }
+
+    @_disfavoredOverload
     public init(_ title: String, subtitle: String? = nil, color: Binding<RGBA>, supportsOpacity: Bool = true) {
-        self.title = title
-        self.subtitle = subtitle
+        self.init(label: RowLabel(title, subtitle: subtitle), color: color, supportsOpacity: supportsOpacity)
+    }
+
+    public init(label: RowLabel, color: Binding<RGBA>, supportsOpacity: Bool = true) {
+        self.label = label
         self._color = color
         self.supportsOpacity = supportsOpacity
     }
@@ -149,28 +185,38 @@ public struct ColorRow: View {
     public var body: some View {
         LabeledContent {
             HStack(spacing: 8) {
-                Text(color.hex).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.secondary)
+                Text(verbatim: color.hex).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.secondary)
                 ColorPicker("", selection: RGBA.binding($color), supportsOpacity: supportsOpacity).labelsHidden()
             }
         } label: {
-            RowLabel(title, subtitle: subtitle)
+            label
         }
     }
 }
 
 /// A slider row with a formatted value.
 public struct SliderRow: View {
-    let title: String
-    let subtitle: String?
+    let label: RowLabel
     let range: ClosedRange<Double>
     let step: Double?
     let format: (Double) -> String
     @Binding var value: Double
 
+    public init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil, value: Binding<Double>,
+                in range: ClosedRange<Double>, step: Double? = nil,
+                format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
+        self.init(label: RowLabel(title, subtitle: subtitle), value: value, in: range, step: step, format: format)
+    }
+
+    @_disfavoredOverload
     public init(_ title: String, subtitle: String? = nil, value: Binding<Double>, in range: ClosedRange<Double>,
                 step: Double? = nil, format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
-        self.title = title
-        self.subtitle = subtitle
+        self.init(label: RowLabel(title, subtitle: subtitle), value: value, in: range, step: step, format: format)
+    }
+
+    public init(label: RowLabel, value: Binding<Double>, in range: ClosedRange<Double>, step: Double? = nil,
+                format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
+        self.label = label
         self._value = value
         self.range = range
         self.step = step
@@ -182,11 +228,11 @@ public struct SliderRow: View {
             HStack(spacing: 10) {
                 if let step { Slider(value: $value, in: range, step: step).frame(width: 180) }
                 else { Slider(value: $value, in: range).frame(width: 180) }
-                Text(format(value)).font(.system(size: 12).monospacedDigit()).foregroundStyle(.secondary)
+                Text(verbatim: format(value)).font(.system(size: 12).monospacedDigit()).foregroundStyle(.secondary)
                     .frame(minWidth: 44, alignment: .trailing)
             }
         } label: {
-            RowLabel(title, subtitle: subtitle)
+            label
         }
     }
 }
@@ -196,18 +242,31 @@ public enum InfoKind { case info, warning, error, success }
 /// Inline banner (`InfoBar` component in the design system).
 public struct InfoBar: View {
     let kind: InfoKind
-    let title: String
-    let message: String?
-    let actionTitle: String?
+    let title: Text
+    let message: Text?
+    let actionTitle: Text?
     let action: (() -> Void)?
 
-    public init(_ kind: InfoKind, title: String, message: String? = nil, actionTitle: String? = nil,
+    public init(_ kind: InfoKind, title: Text, message: Text? = nil, actionTitle: Text? = nil,
                 action: (() -> Void)? = nil) {
         self.kind = kind
         self.title = title
         self.message = message
         self.actionTitle = actionTitle
         self.action = action
+    }
+
+    public init(_ kind: InfoKind, title: LocalizedStringKey, message: LocalizedStringKey? = nil,
+                actionTitle: LocalizedStringKey? = nil, action: (() -> Void)? = nil) {
+        self.init(kind, title: Text(title), message: message.map { Text($0) },
+                  actionTitle: actionTitle.map { Text($0) }, action: action)
+    }
+
+    @_disfavoredOverload
+    public init(_ kind: InfoKind, title: String, message: String? = nil, actionTitle: String? = nil,
+                action: (() -> Void)? = nil) {
+        self.init(kind, title: Text(verbatim: title), message: message.map { Text(verbatim: $0) },
+                  actionTitle: actionTitle.map { Text(verbatim: $0) }, action: action)
     }
 
     var tint: Color {
@@ -232,11 +291,11 @@ public struct InfoBar: View {
         HStack(spacing: 10) {
             Image(systemName: symbol).font(.system(size: 17)).foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).fontWeight(.semibold)
-                if let message { Text(message).font(.system(size: 12)).foregroundStyle(.secondary) }
+                title.fontWeight(.semibold)
+                if let message { message.font(.system(size: 12)).foregroundStyle(.secondary) }
             }
             Spacer(minLength: 8)
-            if let actionTitle, let action { Button(actionTitle, action: action) }
+            if let actionTitle, let action { Button(action: action) { actionTitle } }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -249,16 +308,22 @@ public struct InfoBar: View {
 public struct ExcludedAppsEditor: View {
     @Binding var apps: [String]
     @State private var text = ""
-    let title: String
+    let title: Text
 
-    public init(_ title: String = "Excluded apps", apps: Binding<[String]>) {
-        self.title = title
+    public init(_ title: LocalizedStringKey = "Excluded apps", apps: Binding<[String]>) {
+        self.title = Text(title)
+        self._apps = apps
+    }
+
+    @_disfavoredOverload
+    public init(_ title: String, apps: Binding<[String]>) {
+        self.title = Text(verbatim: title)
         self._apps = apps
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            RowLabel(title, subtitle: "One app name or bundle identifier per line.")
+            RowLabel(title: title, subtitle: Text("One app name or bundle identifier per line."))
             TextEditor(text: $text)
                 .font(.system(size: 12, design: .monospaced))
                 .frame(minHeight: 70)

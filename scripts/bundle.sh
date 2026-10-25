@@ -24,6 +24,15 @@ BUILD_NUMBER=$(git rev-list --count HEAD 2>/dev/null || echo 1)
 [[ -d Resources/App/Bundle ]] && cp -R Resources/App/Bundle/ "$APP/Contents/Resources/"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
+# Localizations: compiled String Catalogs for the app and each extension (they read Bundle.main).
+# PSEUDO=1 adds the "eo" pseudo-language (⟦wrapped⟧ strings) for spotting unlocalized text.
+python3 scripts/i18n.py compile "$APP/Contents/Resources" ${PSEUDO:+--pseudo}
+/usr/libexec/PlistBuddy -c "Delete :CFBundleLocalizations" "$APP/Contents/Info.plist" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations array" "$APP/Contents/Info.plist"
+for lang in $(python3 scripts/i18n.py languages); do
+  /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations: string $lang" "$APP/Contents/Info.plist"
+done
+
 for ext in QuickLook Thumbnails FinderSync; do
   EXE="MacToys$ext"
   X="$APP/Contents/PlugIns/$EXE.appex"
@@ -31,6 +40,8 @@ for ext in QuickLook Thumbnails FinderSync; do
   cp "$BIN/$EXE" "$X/Contents/MacOS/$EXE"
   cp "Resources/Extensions/$ext/Info.plist" "$X/Contents/Info.plist"
   /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$X/Contents/Info.plist"
+  mkdir -p "$X/Contents/Resources"
+  cp -R "$APP"/Contents/Resources/*.lproj "$X/Contents/Resources/"
 done
 
 "$ROOT/scripts/dev-identity.sh"

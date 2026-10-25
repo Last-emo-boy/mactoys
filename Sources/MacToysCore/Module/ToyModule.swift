@@ -6,11 +6,11 @@ public enum ModuleCategory: String, CaseIterable, Codable, Sendable, Identifiabl
     public var id: String { rawValue }
     public var title: String {
         switch self {
-        case .systemTools: "System Tools"
-        case .windowing: "Windowing & Layouts"
-        case .inputOutput: "Input / Output"
-        case .fileManagement: "File Management"
-        case .advanced: "Advanced"
+        case .systemTools: String(localized: "System Tools")
+        case .windowing: String(localized: "Windowing & Layouts")
+        case .inputOutput: String(localized: "Input / Output")
+        case .fileManagement: String(localized: "File Management")
+        case .advanced: String(localized: "Advanced")
         }
     }
 }
@@ -31,11 +31,24 @@ public struct ModuleInfo: Identifiable, Sendable {
     /// Extra search terms for the Settings search field.
     public let keywords: [String]
 
-    public init(id: String, name: String, summary: String, symbol: String, tint: Tint, category: ModuleCategory,
-                permissions: [Permission] = [], enabledByDefault: Bool = true, keywords: [String] = []) {
+    /// `name` and `summary` are localized (string literals are extracted into the catalog).
+    public init(id: String, name: String.LocalizationValue, summary: String.LocalizationValue, symbol: String,
+                tint: Tint, category: ModuleCategory, permissions: [Permission] = [], enabledByDefault: Bool = true,
+                keywords: [String] = []) {
+        self.init(id: id, name: String(localized: name) as String, summary: String(localized: summary), symbol: symbol,
+                  tint: tint, category: category, permissions: permissions, enabledByDefault: enabledByDefault,
+                  keywords: keywords)
+    }
+
+    /// Already-localized or runtime text. (Generic so that string literals prefer the
+    /// `LocalizationValue` initializer — a plain `String` overload would win even when disfavored.)
+    @_disfavoredOverload
+    public init<S: StringProtocol>(id: String, name: S, summary: S, symbol: String, tint: Tint,
+                                   category: ModuleCategory, permissions: [Permission] = [],
+                                   enabledByDefault: Bool = true, keywords: [String] = []) {
         self.id = id
-        self.name = name
-        self.summary = summary
+        self.name = String(name)
+        self.summary = String(summary)
         self.symbol = symbol
         self.tint = tint
         self.category = category
@@ -58,11 +71,20 @@ public struct QuickAction: Identifiable {
     public let detail: (@MainActor () -> String)?
     public let perform: @MainActor () -> Void
 
-    public init(id: String, title: String, symbol: String, tint: Tint = .blue, shortcut: Shortcut? = nil,
-                isOn: (@MainActor () -> Bool)? = nil, detail: (@MainActor () -> String)? = nil,
-                perform: @escaping @MainActor () -> Void) {
+    public init(id: String, title: String.LocalizationValue, symbol: String, tint: Tint = .blue,
+                shortcut: Shortcut? = nil, isOn: (@MainActor () -> Bool)? = nil,
+                detail: (@MainActor () -> String)? = nil, perform: @escaping @MainActor () -> Void) {
+        self.init(id: id, title: String(localized: title) as String, symbol: symbol, tint: tint, shortcut: shortcut,
+                  isOn: isOn, detail: detail, perform: perform)
+    }
+
+    @_disfavoredOverload
+    public init<S: StringProtocol>(id: String, title: S, symbol: String, tint: Tint = .blue,
+                                   shortcut: Shortcut? = nil, isOn: (@MainActor () -> Bool)? = nil,
+                                   detail: (@MainActor () -> String)? = nil,
+                                   perform: @escaping @MainActor () -> Void) {
         self.id = id
-        self.title = title
+        self.title = String(title)
         self.symbol = symbol
         self.tint = tint
         self.shortcut = shortcut
@@ -79,13 +101,23 @@ public struct ShortcutBinding: Identifiable {
     /// Keycaps, e.g. `["⌃", "⌥", "C"]`, or descriptive keys like `["Hold", "⌘"]`.
     public let keys: [String]
 
-    public init(_ title: String, _ shortcut: Shortcut?) {
-        self.title = title
+    public init(_ title: String.LocalizationValue, _ shortcut: Shortcut?) {
+        self.init(String(localized: title) as String, shortcut)
+    }
+
+    public init(_ title: String.LocalizationValue, keys: [String]) {
+        self.init(String(localized: title) as String, keys: keys)
+    }
+
+    @_disfavoredOverload
+    public init<S: StringProtocol>(_ title: S, _ shortcut: Shortcut?) {
+        self.title = String(title)
         self.keys = shortcut?.keys ?? []
     }
 
-    public init(_ title: String, keys: [String]) {
-        self.title = title
+    @_disfavoredOverload
+    public init<S: StringProtocol>(_ title: S, keys: [String]) {
+        self.title = String(title)
         self.keys = keys
     }
 }

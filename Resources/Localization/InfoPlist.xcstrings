@@ -1,0 +1,78 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSAppleEventsUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys controls Finder (selection for Peek, PowerRename and New+, Empty Trash), System Events (Dark Mode for Light Switch, mute) and the login window (restart, shut down and log out from Command Palette)."
+          }
+        }
+      }
+    },
+    "NSLocalNetworkUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse Without Borders finds and connects to your other Macs on the local network."
+          }
+        }
+      }
+    },
+    "NSLocationUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light Switch uses your location to compute sunrise and sunset."
+          }
+        }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light Switch uses your location to compute sunrise and sunset."
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt records audio with screen recordings and transcribes snip dictation."
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt transcribes snip dictation on this Mac."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

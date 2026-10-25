@@ -1,4 +1,5 @@
 // swift-tools-version: 6.2
+import Foundation
 import PackageDescription
 
 /// One SwiftPM target per utility. Each compiles on its own against MacToysCore,
@@ -18,14 +19,23 @@ let extraDependencies: [String: [Target.Dependency]] = [
     "Peek": ["PreviewKit"],
 ]
 
-let settings: [SwiftSetting] = [.swiftLanguageMode(.v5)]
+/// Every target writes its localizable strings (Text("…"), String(localized:), LocalizedStringKey
+/// parameters…) as .stringsdata into .build/strings/<target>; scripts/i18n.sh merges them into
+/// Resources/Localization/Localizable.xcstrings.
+let packageRoot = URL(fileURLWithPath: #filePath).deletingLastPathComponent().path
+func swiftSettings(_ target: String) -> [SwiftSetting] {
+    [
+        .swiftLanguageMode(.v5),
+        .unsafeFlags(["-emit-localized-strings", "-emit-localized-strings-path", "\(packageRoot)/.build/strings/\(target)"]),
+    ]
+}
 
 let moduleTargets: [Target] = toyModules.map { name in
     .target(
         name: name,
         dependencies: ["MacToysCore"] + (extraDependencies[name] ?? []),
         path: "Sources/Modules/\(name)",
-        swiftSettings: settings
+        swiftSettings: swiftSettings(name)
     )
 }
 
@@ -36,7 +46,7 @@ func appExtension(_ name: String, path: String, dependencies: [Target.Dependency
         name: name,
         dependencies: dependencies,
         path: path,
-        swiftSettings: settings,
+        swiftSettings: swiftSettings(name),
         linkerSettings: [.unsafeFlags(["-Xlinker", "-e", "-Xlinker", "_NSExtensionMain"])]
     )
 }
@@ -55,7 +65,7 @@ let package = Package(
         .target(
             name: "MacToysCore",
             path: "Sources/MacToysCore",
-            swiftSettings: settings,
+            swiftSettings: swiftSettings("MacToysCore"),
             linkerSettings: [
                 .linkedFramework("Carbon"),
                 .linkedFramework("ApplicationServices"),
@@ -63,24 +73,24 @@ let package = Package(
                 .linkedFramework("ServiceManagement"),
             ]
         ),
-        .target(name: "PreviewKit", path: "Sources/PreviewKit", swiftSettings: settings),
+        .target(name: "PreviewKit", path: "Sources/PreviewKit", swiftSettings: swiftSettings("PreviewKit")),
         .target(
             name: "MacToysModules",
             dependencies: ["MacToysCore"] + toyModules.map { .target(name: $0) },
             path: "Sources/MacToysModules",
-            swiftSettings: settings
+            swiftSettings: swiftSettings("MacToysModules")
         ),
         .executableTarget(
             name: "MacToys",
             dependencies: ["MacToysCore", "MacToysModules"],
             path: "Sources/MacToys",
-            swiftSettings: settings
+            swiftSettings: swiftSettings("MacToys")
         ),
         .executableTarget(
             name: "MacToysCLI",
             dependencies: ["MacToysCore", "MacToysModules"] + toyModules.map { .target(name: $0) },
             path: "Sources/MacToysCLI",
-            swiftSettings: settings
+            swiftSettings: swiftSettings("MacToysCLI")
         ),
         appExtension("MacToysQuickLook", path: "Sources/Extensions/QuickLookPreview", dependencies: ["PreviewKit"]),
         appExtension("MacToysThumbnails", path: "Sources/Extensions/QuickLookThumbnail", dependencies: ["PreviewKit"]),
@@ -89,7 +99,7 @@ let package = Package(
             name: "MacToysTests",
             dependencies: ["MacToysCore", "PreviewKit"] + toyModules.map { .target(name: $0) },
             path: "Tests/MacToysTests",
-            swiftSettings: settings
+            swiftSettings: swiftSettings("MacToysTests")
         ),
     ] + moduleTargets
 )

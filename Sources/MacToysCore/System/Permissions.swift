@@ -18,25 +18,25 @@ public enum Permission: String, CaseIterable, Codable, Sendable, Identifiable {
 
     public var title: String {
         switch self {
-        case .accessibility: "Accessibility"
-        case .inputMonitoring: "Input Monitoring"
-        case .screenRecording: "Screen Recording"
-        case .automation: "Automation"
-        case .fullDiskAccess: "Full Disk Access"
-        case .microphone: "Microphone"
-        case .location: "Location"
+        case .accessibility: String(localized: "Accessibility")
+        case .inputMonitoring: String(localized: "Input Monitoring")
+        case .screenRecording: String(localized: "Screen Recording")
+        case .automation: String(localized: "Automation")
+        case .fullDiskAccess: String(localized: "Full Disk Access")
+        case .microphone: String(localized: "Microphone")
+        case .location: String(localized: "Location")
         }
     }
 
     public var reason: String {
         switch self {
-        case .accessibility: "Move windows, listen for shortcuts, remap keys"
-        case .inputMonitoring: "Watch keys for Quick Accent and mouse utilities"
-        case .screenRecording: "Color Picker, Screen Ruler, OCR, ZoomIt, mirrors"
-        case .automation: "Read the Finder selection, switch appearance"
-        case .fullDiskAccess: "Optional · let File Locksmith see protected files"
-        case .microphone: "ZoomIt recording audio and snip dictation"
-        case .location: "Light Switch sunrise and sunset times"
+        case .accessibility: String(localized: "Move windows, listen for shortcuts, remap keys")
+        case .inputMonitoring: String(localized: "Watch keys for Quick Accent and mouse utilities")
+        case .screenRecording: String(localized: "Color Picker, Screen Ruler, OCR, ZoomIt, mirrors")
+        case .automation: String(localized: "Read the Finder selection, switch appearance")
+        case .fullDiskAccess: String(localized: "Optional · let File Locksmith see protected files")
+        case .microphone: String(localized: "ZoomIt recording audio and snip dictation")
+        case .location: String(localized: "Light Switch sunrise and sunset times")
         }
     }
 

@@ -7,7 +7,15 @@ public enum HUD {
     private static var panel: OverlayPanel?
     private static var hideWork: DispatchWorkItem?
 
-    public static func show(_ text: String, symbol: String? = nil, duration: TimeInterval = 1.4) {
+    /// Localized message (string literals are extracted into the catalog).
+    public static func show(_ text: String.LocalizationValue, symbol: String? = nil, duration: TimeInterval = 1.4) {
+        show(String(localized: text) as String, symbol: symbol, duration: duration)
+    }
+
+    /// A message that is already localized or is runtime data.
+    @_disfavoredOverload
+    public static func show<S: StringProtocol>(_ message: S, symbol: String? = nil, duration: TimeInterval = 1.4) {
+        let text = String(message)
         let screen = NSScreen.underMouse ?? NSScreen.main!
         let size = CGSize(width: 520, height: 80)
         let frame = CGRect(x: screen.frame.midX - size.width / 2, y: screen.frame.minY + 120,
@@ -37,7 +45,7 @@ struct HUDView: View {
     var body: some View {
         HStack(spacing: 10) {
             if let symbol { Image(systemName: symbol).font(.system(size: 15, weight: .semibold)) }
-            Text(text).font(.system(size: 14, weight: .semibold))
+            Text(verbatim: text).font(.system(size: 14, weight: .semibold))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 11)
