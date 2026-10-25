@@ -59,7 +59,7 @@ final class LaunchProgressPanel {
         p.isReleasedWhenClosed = false
         p.isMovableByWindowBackground = true
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
-        p.title = "Launching workspace"
+        p.title = String(localized: "Launching workspace")
         return p
     }
 }
@@ -74,10 +74,12 @@ struct LaunchProgressView: View {
             HStack(spacing: 10) {
                 ModuleIcon(symbol: "rectangle.split.2x2.fill", tint: .blue, size: 28)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(session.isFinished ? "“\(session.workspaceName)”" : "Launching “\(session.workspaceName)”")
+                    (session.isFinished
+                        ? Text("“\(session.workspaceName)”", comment: "Launch progress title when done: the workspace name in quotes")
+                        : Text("Launching “\(session.workspaceName)”", comment: "Launch progress title; %@ is the workspace name"))
                         .font(.system(size: 13, weight: .semibold))
                         .lineLimit(1)
-                    Text(session.summary).font(.system(size: 11.5)).foregroundStyle(.secondary)
+                    Text(verbatim: session.summary).font(.system(size: 11.5)).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 8)
             }
@@ -87,8 +89,8 @@ struct LaunchProgressView: View {
                     HStack(spacing: 10) {
                         Image(nsImage: AppIcons.icon(path: row.appPath)).resizable().frame(width: 22, height: 22)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(row.name).font(.system(size: 12.5, weight: .medium)).lineLimit(1)
-                            Text(row.status.isFinal && !row.status.isSuccess ? row.status.label : row.detail)
+                            Text(verbatim: row.name).font(.system(size: 12.5, weight: .medium)).lineLimit(1)
+                            Text(verbatim: row.status.isFinal && !row.status.isSuccess ? row.status.label : row.detail)
                                 .font(.system(size: 11))
                                 .foregroundStyle(failed(row.status) ? Color.red : Color.secondary)
                                 .lineLimit(1)
@@ -103,9 +105,11 @@ struct LaunchProgressView: View {
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
             HStack {
                 Spacer()
-                Button(session.isFinished ? "Done" : "Cancel") {
+                Button {
                     if !session.isFinished { session.cancel() }
                     onDismiss()
+                } label: {
+                    session.isFinished ? Text("Done") : Text("Cancel")
                 }
                 .keyboardShortcut(session.isFinished ? .defaultAction : .cancelAction)
             }

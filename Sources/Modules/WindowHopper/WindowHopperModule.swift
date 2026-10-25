@@ -203,7 +203,7 @@ public final class WindowHopperModule: ToyModule {
         let s = Session(token: nextToken, windows: windows, hold: hold)
         session = s
         let canPreview = settings.value.showPreviews && CGPreflightScreenCaptureAccess()
-        model.appName = app.localizedName ?? "App"
+        model.appName = app.localizedName ?? String(localized: "App", comment: "Name shown for an app that has no name")
         model.appIcon = app.icon
         model.cards = windows.map { HopperModel.Card(id: $0.id, title: $0.title, isMinimized: $0.isMinimized) }
         model.thumbnails = [:]

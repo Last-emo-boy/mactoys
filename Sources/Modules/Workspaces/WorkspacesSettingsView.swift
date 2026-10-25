@@ -45,8 +45,12 @@ struct WorkspacesSettingsView: View {
                             RowLabel(ws.name, subtitle: WorkspaceText.summary(of: ws))
                             Spacer()
                             if let sc = ws.shortcut { Keycaps(sc) }
-                            Button("Edit") { module.openEditor(selecting: ws.id) }
-                            Button("Launch") { module.launch(ws.id) }
+                            Button { module.openEditor(selecting: ws.id) } label: {
+                                Text("Edit", comment: "Button: edit the workspace")
+                            }
+                            Button { module.launch(ws.id) } label: {
+                                Text("Launch", comment: "Button: launch the workspace")
+                            }
                         }
                     }
                 }
@@ -65,7 +69,9 @@ struct WorkspacesSettingsView: View {
                              subtitle: "Apps that are already open have their windows moved instead of opening new ones")
                 }
                 SliderRow("Wait for windows", subtitle: "How long to wait for a launched app's windows to appear",
-                          value: $s.value.windowTimeout, in: 5...60, step: 5) { "\(Int($0)) s" }
+                          value: $s.value.windowTimeout, in: 5...60, step: 5) {
+                    Duration.seconds(Int($0)).formatted(.units(allowed: [.seconds], width: .narrow))
+                }
                 Toggle(isOn: $s.value.showProgress) {
                     RowLabel("Show launch progress", subtitle: "A small window lists each app as it launches and moves into place")
                 }

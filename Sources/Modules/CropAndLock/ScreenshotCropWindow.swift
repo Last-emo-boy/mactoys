@@ -20,7 +20,7 @@ final class ScreenshotCropWindow: NSPanel, NSWindowDelegate {
         let content = CropGeometry.keep(CGRect(origin: rect.origin, size: pointSize), inside: visible)
         super.init(contentRect: ScreenGeometry.toCocoa(content), styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
                    backing: .buffered, defer: false)
-        title = "Screenshot crop of \(sourceName)"
+        title = CropMode.screenshot.windowTitle(of: sourceName)
         titleVisibility = .hidden
         titlebarAppearsTransparent = true
         standardWindowButton(.miniaturizeButton)?.isHidden = true
@@ -136,13 +136,19 @@ struct ScreenshotCropView: View {
                 .gesture(WindowDragGesture())
             if hovering || alwaysShowToolbar {
                 HStack(spacing: 2) {
-                    toolButton(copied ? "checkmark" : "doc.on.doc", copied ? "Copied" : "Copy") {
+                    toolButton(copied ? "checkmark" : "doc.on.doc",
+                               copied ? Text("Copied", comment: "Screenshot crop toolbar: the image was copied")
+                                      : Text("Copy", comment: "Screenshot crop toolbar: copy the image")) {
                         onCopy()
                         copied = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { copied = false }
                     }
-                    toolButton("square.and.arrow.down", "Save…", action: onSave)
-                    Label("Drag", systemImage: "hand.draw")
+                    toolButton("square.and.arrow.down", Text("Save…"), action: onSave)
+                    Label {
+                        Text("Drag", comment: "Screenshot crop toolbar: drag the image into another app")
+                    } icon: {
+                        Image(systemName: "hand.draw")
+                    }
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 10)
@@ -166,9 +172,9 @@ struct ScreenshotCropView: View {
         .onHover { inside in withAnimation(.easeOut(duration: 0.15)) { hovering = inside } }
     }
 
-    private func toolButton(_ symbol: String, _ title: String, action: @escaping () -> Void) -> some View {
+    private func toolButton(_ symbol: String, _ title: Text, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Label(title, systemImage: symbol)
+            Label { title } icon: { Image(systemName: symbol) }
                 .font(.system(size: 12, weight: .semibold))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)

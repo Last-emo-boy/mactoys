@@ -54,7 +54,7 @@ final class LiveCropWindow: NSPanel, NSWindowDelegate {
         var style: NSWindow.StyleMask = [.titled, .closable, .fullSizeContentView, .nonactivatingPanel]
         if mode == .thumbnail { style.insert(.resizable) }
         super.init(contentRect: ScreenGeometry.toCocoa(content), styleMask: style, backing: .buffered, defer: false)
-        title = "\(mode.title) crop of \(source.title.flatMap { $0.isEmpty ? nil : $0 } ?? source.appName)"
+        title = mode.windowTitle(of: source.title.flatMap { $0.isEmpty ? nil : $0 } ?? source.appName)
         titleVisibility = .hidden
         titlebarAppearsTransparent = true
         standardWindowButton(.miniaturizeButton)?.isHidden = true
@@ -228,12 +228,15 @@ final class LiveCropWindow: NSPanel, NSWindowDelegate {
 
     private func contextMenu() -> NSMenu {
         let menu = NSMenu()
-        menu.addItem(withTitle: "Show Original Window", action: #selector(menuShowOriginal), keyEquivalent: "").target = self
+        menu.addItem(withTitle: String(localized: "Show Original Window"), action: #selector(menuShowOriginal),
+                     keyEquivalent: "").target = self
         if mode == .thumbnail {
-            menu.addItem(withTitle: "Actual Size", action: #selector(menuActualSize), keyEquivalent: "").target = self
+            menu.addItem(withTitle: String(localized: "Actual Size", comment: "Menu item: give the crop window its original size"),
+                         action: #selector(menuActualSize), keyEquivalent: "").target = self
         }
         menu.addItem(.separator())
-        menu.addItem(withTitle: "Close", action: #selector(menuClose), keyEquivalent: "").target = self
+        menu.addItem(withTitle: String(localized: "Close", comment: "Menu item: close the crop window"),
+                     action: #selector(menuClose), keyEquivalent: "").target = self
         return menu
     }
 

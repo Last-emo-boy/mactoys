@@ -20,13 +20,13 @@ final class LaunchSession: Identifiable {
 
         var label: String {
             switch self {
-            case .waiting: "Waiting"
-            case .launching: "Launching…"
-            case .arranging: "Arranging…"
-            case .launched: "Launched"
-            case .moved: "Moved into place"
+            case .waiting: String(localized: "Waiting", comment: "Launch status of a window: not started yet")
+            case .launching: String(localized: "Launching…", comment: "Launch status of a window: its app is starting")
+            case .arranging: String(localized: "Arranging…", comment: "Launch status of a window: moving it into place")
+            case .launched: String(localized: "Launched", comment: "Launch status of a window: done")
+            case .moved: String(localized: "Moved into place", comment: "Launch status of an existing window: done")
             case .failed(let why): why
-            case .cancelled: "Cancelled"
+            case .cancelled: String(localized: "Cancelled", comment: "Workspace launch status: cancelled")
             }
         }
     }
@@ -77,10 +77,16 @@ final class LaunchSession: Identifiable {
 
     var summary: String {
         let done = rows.filter(\.status.isFinal).count
-        guard isFinished else { return "\(done) of \(rows.count) ready" }
-        if rows.contains(where: { $0.status == .cancelled }) { return "Cancelled" }
+        guard isFinished else {
+            return String(localized: "\(done) of \(rows.count) ready",
+                          comment: "Workspace launch progress; the first number counts finished windows, the second all windows")
+        }
+        if rows.contains(where: { $0.status == .cancelled }) {
+            return String(localized: "Cancelled", comment: "Workspace launch status: cancelled")
+        }
         let failed = failedCount
-        return failed == 0 ? "All windows are in place" : failed == 1 ? "1 window couldn't be placed" : "\(failed) windows couldn't be placed"
+        return failed == 0 ? String(localized: "All windows are in place")
+            : String(localized: "\(failed) windows couldn't be placed")
     }
 }
 
@@ -130,7 +136,7 @@ enum WorkspaceLauncher {
         guard let first = entries.first else { return }
         func setAll(_ status: LaunchSession.Status) { for e in entries { session.set(e.id, status) } }
         guard let appURL = applicationURL(for: first) else {
-            setAll(.failed("App not found"))
+            setAll(.failed(String(localized: "App not found")))
             return
         }
         setAll(.launching)
@@ -154,7 +160,7 @@ enum WorkspaceLauncher {
             return
         }
         guard let app else {
-            setAll(.failed("The app didn't start"))
+            setAll(.failed(String(localized: "The app didn't start")))
             return
         }
         if app.isHidden && entries.contains(where: { $0.state != .hidden }) { app.unhide() }
@@ -170,7 +176,7 @@ enum WorkspaceLauncher {
         let match = WindowMatcher.assign(saved: entries.map(\.windowTitle), windows: windows.map { $0.title ?? "" })
         for (k, entry) in entries.enumerated() {
             guard let j = match[k] else {
-                session.set(entry.id, entry.state == .hidden ? .launched : .failed("No window appeared"))
+                session.set(entry.id, entry.state == .hidden ? .launched : .failed(String(localized: "No window appeared")))
                 continue
             }
             session.set(entry.id, .arranging)
@@ -281,14 +287,16 @@ enum WorkspaceText {
     /// "Display 1 · left two thirds".
     static func placement(of app: WorkspaceApp, in ws: Workspace) -> String {
         let display = ws.displays.first { $0.id == app.displayID }
-        var parts = ["Display \(ws.displayNumber(of: app.displayID))"]
+        var parts = [String(localized: "Display \(ws.displayNumber(of: app.displayID))",
+                            comment: "A display of the workspace; %lld is its number")]
         switch app.state {
         case .saved:
             if let display { parts.append(PositionDescriber.describe(app.frame, in: display.visibleFrame)) }
-        case .minimized: parts.append("minimized")
-        case .fill: parts.append("fills the screen")
-        case .fullScreen: parts.append("full screen")
-        case .hidden: parts.append("hidden")
+        case .minimized: parts.append(String(localized: "minimized", comment: "Window placement: launched minimized"))
+        case .fill: parts.append(String(localized: "fills the screen", comment: "Window placement: launched filling the screen"))
+        case .fullScreen:
+            parts.append(String(localized: "full screen", comment: "Window placement: covers the whole screen, or is in full-screen mode"))
+        case .hidden: parts.append(String(localized: "hidden", comment: "Window placement: its app is launched hidden"))
         }
         return parts.joined(separator: " · ")
     }
@@ -296,27 +304,40 @@ enum WorkspaceText {
     /// Placement plus launch options: "Display 1 · top right · run: make dev".
     static func subtitle(of app: WorkspaceApp, in ws: Workspace) -> String {
         var parts = [placement(of: app, in: ws)]
-        if !app.openTarget.isEmpty { parts.append("open \(OpenTarget.display(app.openTarget))") }
-        if !app.arguments.isEmpty { parts.append("args: \(app.arguments)") }
+        if !app.openTarget.isEmpty {
+            parts.append(String(localized: "open \(OpenTarget.display(app.openTarget))",
+                                comment: "Workspace window detail; %@ is the file, folder or URL the app opens"))
+        }
+        if !app.arguments.isEmpty {
+            parts.append(String(localized: "args: \(app.arguments)",
+                                comment: "Workspace window detail; %@ is the app's command-line arguments"))
+        }
         return parts.joined(separator: " · ")
     }
 
     /// "3 apps · 2 displays", "2 apps · login item", "3 apps · last used Tue".
     static func summary(of ws: Workspace, now: Date = Date(), calendar: Calendar = .current, locale: Locale = .current) -> String {
         let n = ws.appCount
-        var parts = [n == 1 ? "1 app" : "\(n) apps"]
-        if ws.displays.count > 1 { parts.append("\(ws.displays.count) displays") }
+        var parts = [String(localized: "\(n) apps", comment: "Workspace summary: number of apps")]
+        if ws.displays.count > 1 {
+            parts.append(String(localized: "\(ws.displays.count) displays", comment: "Workspace summary: number of displays"))
+        }
         if ws.launchAtLogin {
-            parts.append("login item")
+            parts.append(String(localized: "login item", comment: "Workspace summary: it launches at login"))
         } else if let last = ws.lastLaunched {
-            parts.append("last used \(relativeDay(last, now: now, calendar: calendar, locale: locale))")
+            parts.append(String(localized: "last used \(relativeDay(last, now: now, calendar: calendar, locale: locale))",
+                                comment: "Workspace summary; %@ is today, yesterday, a weekday or a date"))
         }
         return parts.joined(separator: " · ")
     }
 
     static func relativeDay(_ date: Date, now: Date, calendar: Calendar, locale: Locale = .current) -> String {
-        if calendar.isDate(date, inSameDayAs: now) { return "today" }
-        if let y = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: y) { return "yesterday" }
+        if calendar.isDate(date, inSameDayAs: now) {
+            return String(localized: "today", comment: "Workspace summary: last used today (shown after “last used”)")
+        }
+        if let y = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: y) {
+            return String(localized: "yesterday", comment: "Workspace summary: last used yesterday (shown after “last used”)")
+        }
         let f = DateFormatter()
         f.calendar = calendar
         f.locale = locale

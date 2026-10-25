@@ -62,7 +62,8 @@ public final class WorkspacesModule: ToyModule {
         var actions = [QuickAction(id: "workspaces.editor", title: "Workspaces", symbol: info.symbol, tint: info.tint,
                                    shortcut: settings.value.editorShortcut) { [weak self] in self?.openEditor() }]
         for ws in settings.value.workspaces {
-            actions.append(QuickAction(id: "workspaces.launch.\(ws.id.uuidString)", title: "Launch \(ws.name)",
+            actions.append(QuickAction(id: "workspaces.launch.\(ws.id.uuidString)",
+                                       title: String(localized: "Launch \(ws.name)", comment: "Quick action; %@ is the workspace name"),
                                        symbol: "play.rectangle.fill", tint: info.tint, shortcut: ws.shortcut) {
                 [weak self] in self?.launch(ws.id)
             })
@@ -141,7 +142,9 @@ public final class WorkspacesModule: ToyModule {
         settings.value.workspaces.append(ws)
         editorState.selection = ws.id
         editorState.selectedApp = nil
-        HUD.show("Captured “\(n)” · \(ws.appCount) app\(ws.appCount == 1 ? "" : "s")", symbol: "rectangle.split.2x2.fill")
+        HUD.show(String(localized: "Captured “\(n)” · \(ws.appCount) apps",
+                        comment: "HUD after capturing a workspace; %@ is its name, %lld the number of apps"),
+                 symbol: "rectangle.split.2x2.fill")
     }
 
     private func recapture(_ id: UUID) {
@@ -161,7 +164,7 @@ public final class WorkspacesModule: ToyModule {
         guard let i = settings.value.workspaces.firstIndex(where: { $0.id == id }) else { return }
         var copy = settings.value.workspaces[i]
         copy.id = UUID()
-        copy.name = uniqueName(copy.name + " copy")
+        copy.name = uniqueName(String(localized: "\(copy.name) copy", comment: "Name of a duplicated workspace; %@ is the original name"))
         copy.shortcut = nil
         copy.launchAtLogin = false
         copy.lastLaunched = nil
@@ -173,10 +176,10 @@ public final class WorkspacesModule: ToyModule {
     private func confirmDelete(_ id: UUID) {
         guard let ws = settings.value.workspaces.first(where: { $0.id == id }) else { return }
         let alert = NSAlert()
-        alert.messageText = "Delete “\(ws.name)”?"
-        alert.informativeText = "Its apps keep running; only the saved layout is removed."
-        alert.addButton(withTitle: "Delete")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = String(localized: "Delete “\(ws.name)”?", comment: "Alert title; %@ is the workspace name")
+        alert.informativeText = String(localized: "Its apps keep running; only the saved layout is removed.")
+        alert.addButton(withTitle: String(localized: "Delete", comment: "Alert button: delete the workspace"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
         alert.buttons.first?.hasDestructiveAction = true
         let remove = { [weak self] in
             guard let self else { return }
@@ -197,8 +200,8 @@ public final class WorkspacesModule: ToyModule {
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
-        panel.prompt = "Choose"
-        panel.message = "Choose a file or folder to open with the app"
+        panel.prompt = String(localized: "Choose", comment: "Open panel button: use the selected file or folder")
+        panel.message = String(localized: "Choose a file or folder to open with the app")
         let apply = { [weak self] (url: URL) in
             guard let self, let i = self.settings.value.workspaces.firstIndex(where: { $0.id == wsID }),
                   let j = self.settings.value.workspaces[i].apps.firstIndex(where: { $0.id == appID }) else { return }
@@ -222,7 +225,8 @@ public final class WorkspacesModule: ToyModule {
         panel.nameFieldStringValue = WorkspaceExport.fileName(for: ws.name, kind: kind)
         panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
         panel.canCreateDirectories = true
-        panel.message = "Opening this file launches “\(ws.name)”."
+        panel.message = String(localized: "Opening this file launches “\(ws.name)”.",
+                               comment: "Save panel message; %@ is the workspace name")
         let write = { [weak self] (url: URL) in
             do {
                 try WorkspaceExport.write(kind, for: ws, to: url)
@@ -246,8 +250,11 @@ public final class WorkspacesModule: ToyModule {
 
     private func nextName() -> String {
         var n = settings.value.workspaces.count + 1
-        while settings.value.workspaces.contains(where: { $0.name == "Workspace \(n)" }) { n += 1 }
-        return "Workspace \(n)"
+        func name(_ n: Int) -> String {
+            String(localized: "Workspace \(n)", comment: "Default name of a newly captured workspace; %lld is a number")
+        }
+        while settings.value.workspaces.contains(where: { $0.name == name(n) }) { n += 1 }
+        return name(n)
     }
 
     private func uniqueName(_ base: String) -> String {

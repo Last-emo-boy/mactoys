@@ -25,9 +25,9 @@ struct CropAndLockSettingsView: View {
                     RowLabel("Show crop windows on every Space", subtitle: "They stay with you like Picture in Picture, also over full-screen apps")
                 }
                 Picker(selection: $s.value.frameRate) {
-                    Text("15 fps").tag(15)
-                    Text("30 fps").tag(30)
-                    Text("60 fps").tag(60)
+                    ForEach([15, 30, 60], id: \.self) { fps in
+                        Text("\(fps) fps", comment: "Frame rate: frames per second").tag(fps)
+                    }
                 } label: {
                     RowLabel("Live frame rate", subtitle: "Higher rates look smoother and use more energy")
                 }
@@ -62,8 +62,7 @@ private struct CropHero: View {
                      module.settings.value.screenshot)
             }
             HStack(spacing: 10) {
-                Text(counter.count == 0 ? "No crop windows open"
-                     : counter.count == 1 ? "1 crop window open" : "\(counter.count) crop windows open")
+                (counter.count == 0 ? Text("No crop windows open") : Text("\(counter.count) crop windows open"))
                     .font(.system(size: 12)).foregroundStyle(.secondary)
                 Spacer()
                 if counter.count > 0 {
@@ -73,7 +72,7 @@ private struct CropHero: View {
         }
     }
 
-    private func card(_ mode: CropMode, _ text: String, _ shortcut: Shortcut?) -> some View {
+    private func card(_ mode: CropMode, _ text: LocalizedStringKey, _ shortcut: Shortcut?) -> some View {
         Button {
             module.begin(mode)
         } label: {
@@ -83,7 +82,7 @@ private struct CropHero: View {
                     Spacer()
                     Keycaps(shortcut)
                 }
-                Text(mode.title).font(.system(size: 13, weight: .semibold))
+                Text(verbatim: mode.title).font(.system(size: 13, weight: .semibold))
                 Text(text).font(.system(size: 11.5)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
@@ -95,6 +94,6 @@ private struct CropHero: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Crop the focused window as a \(mode.title.lowercased())")
+        .help(mode.help)
     }
 }

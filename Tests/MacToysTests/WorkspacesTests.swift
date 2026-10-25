@@ -245,7 +245,8 @@ import Testing
         #expect(session.rows[0].status == .launched)
         session.isFinished = true
         #expect(session.failedCount == 1)
-        #expect(session.summary == "1 window couldn't be placed")
+        // One plural key; the catalog gives English "1 window", tests run without tables.
+        #expect(session.summary == String(localized: "\(1) windows couldn't be placed"))
     }
 
     // MARK: Shortcuts and login

@@ -10,13 +10,15 @@ struct WindowHopperSettingsView: View {
         SettingsPage(module: module) {
             HeroCard(tint: .indigo) {
                 VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 6) {
-                        Text("Hold").font(.system(size: 13, weight: .semibold))
-                        Keycaps(s.value.next.map { $0.modifiers.symbols } ?? [])
-                        Text("and press").font(.system(size: 13, weight: .semibold))
-                        Keycaps(s.value.next.map { [KeyCodes.name(for: $0.keyCode)] } ?? [])
-                        Text("to hop between the windows of the app you're using").font(.system(size: 13, weight: .semibold))
-                    }
+                    // One sentence (word order differs between languages), the keys set off in bold.
+                    let modifiers = Text(verbatim: s.value.next.map { $0.modifiers.symbols.joined() } ?? "")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
+                    let key = Text(verbatim: s.value.next.map { KeyCodes.name(for: $0.keyCode) } ?? "")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("Hold \(modifiers) and press \(key) to hop between the windows of the app you're using",
+                         comment: "Window Hopper; the first %@ is the modifier keys (such as ⌥), the second the key (such as `)")
+                        .font(.system(size: 13, weight: .semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("Keep pressing the key to move on, add ⇧ to go back, use the arrow keys or point at a window. Release to switch; esc closes without switching. It doesn't open when the app has fewer than two windows.")
                         .font(.system(size: 12)).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

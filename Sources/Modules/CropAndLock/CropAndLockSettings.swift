@@ -31,9 +31,32 @@ enum CropMode: String, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .thumbnail: "Thumbnail"
-        case .interactive: "Interactive"
-        case .screenshot: "Screenshot"
+        case .thumbnail:
+            String(localized: "Thumbnail", comment: "Crop And Lock mode: a live, read-only view of the area")
+        case .interactive:
+            String(localized: "Interactive", comment: "Crop And Lock mode: a live view you can click through")
+        case .screenshot: String(localized: "Screenshot", comment: "Crop And Lock mode: a frozen picture of the area")
+        }
+    }
+
+    /// Tooltip of the mode's card on the settings page.
+    var help: String {
+        switch self {
+        case .thumbnail: String(localized: "Crop the focused window as a thumbnail")
+        case .interactive: String(localized: "Crop the focused window as an interactive crop")
+        case .screenshot: String(localized: "Crop the focused window as a screenshot")
+        }
+    }
+
+    /// Title of a crop window (Window menu, accessibility); `source` is the cropped window's title or app name.
+    func windowTitle(of source: String) -> String {
+        switch self {
+        case .thumbnail:
+            String(localized: "Thumbnail crop of \(source)", comment: "Window title; %@ is the cropped window's title or app name")
+        case .interactive:
+            String(localized: "Interactive crop of \(source)", comment: "Window title; %@ is the cropped window's title or app name")
+        case .screenshot:
+            String(localized: "Screenshot crop of \(source)", comment: "Window title; %@ is the cropped window's title or app name")
         }
     }
 

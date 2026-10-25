@@ -6,13 +6,19 @@ public struct AlwaysOnTopSettings: Codable, Equatable, Sendable {
     /// Where the border color comes from.
     public enum ColorMode: String, Codable, CaseIterable, Sendable {
         case accent, custom
-        public var title: String { self == .accent ? "System accent color" : "Custom color" }
+        public var title: String {
+            self == .accent ? String(localized: "System accent color") : String(localized: "Custom color")
+        }
     }
 
     /// What brings the real window forward when its mirror is showing.
     public enum RaiseTrigger: String, Codable, CaseIterable, Sendable {
         case hover, click
-        public var title: String { self == .hover ? "Pointing at it" : "Clicking it" }
+        public var title: String {
+            self == .hover
+                ? String(localized: "Pointing at it", comment: "Always On Top: bring a pinned window forward by pointing at its mirror")
+                : String(localized: "Clicking it", comment: "Always On Top: bring a pinned window forward by clicking its mirror")
+        }
     }
 
     public var activation: Shortcut? = Shortcut(0x11, [.control, .command]) // kVK_ANSI_T
