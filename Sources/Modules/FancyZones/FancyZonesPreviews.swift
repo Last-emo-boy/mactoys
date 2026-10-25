@@ -66,7 +66,7 @@ enum FancyZonesPreviews {
         return ZStack(alignment: .topLeading) {
             fakeWindow.frame(width: 520, height: 340).position(x: 760, y: 430)
             ZoneFieldView(zones: zones, highlighted: [2], style: ZoneStyle(s))
-            LayoutNameBadge(name: "Priority Grid", textColor: .white, background: s.layoutNameBackground.color,
+            LayoutNameBadge(name: ZoneLayout.Kind.priorityGrid.title, textColor: .white, background: s.layoutNameBackground.color,
                             textSize: 36, padding: 12)
                 .position(x: 720, y: 80)
         }

@@ -10,15 +10,31 @@ public struct ZoneLayout: Codable, Hashable, Identifiable, Sendable {
 
         public var isTemplate: Bool { self != .customGrid && self != .canvas }
 
+        /// Localized name, shown for templates (`ZoneLayout.displayName`).
         public var title: String {
+            switch self {
+            case .blank: String(localized: "No layout", comment: "FancyZones layout template without zones")
+            case .focus: String(localized: "Focus", comment: "FancyZones layout template: cascaded, overlapping zones")
+            case .columns: String(localized: "Columns", comment: "FancyZones layout template: zones side by side")
+            case .rows: String(localized: "Rows", comment: "FancyZones layout template: zones stacked vertically")
+            case .grid, .customGrid:
+                String(localized: "Grid", comment: "FancyZones layout template or custom layout type: zones on a grid")
+            case .priorityGrid:
+                String(localized: "Priority Grid", comment: "FancyZones layout template: a wide center zone flanked by smaller ones")
+            case .canvas: String(localized: "Canvas", comment: "FancyZones custom layout type: free-form zones")
+            }
+        }
+
+        /// The name a template is stored under: English, so the saved library and URL/CLI lookups
+        /// don't depend on the UI language (the UI shows `title`).
+        var storedName: String {
             switch self {
             case .blank: "No layout"
             case .focus: "Focus"
             case .columns: "Columns"
             case .rows: "Rows"
-            case .grid: "Grid"
+            case .grid, .customGrid: "Grid"
             case .priorityGrid: "Priority Grid"
-            case .customGrid: "Grid"
             case .canvas: "Canvas"
             }
         }
@@ -68,7 +84,7 @@ public struct ZoneLayout: Codable, Hashable, Identifiable, Sendable {
         case .priorityGrid: count = 5
         default: count = 3
         }
-        return ZoneLayout(id: kind.rawValue, name: kind.title, kind: kind, zoneCount: count)
+        return ZoneLayout(id: kind.rawValue, name: kind.storedName, kind: kind, zoneCount: count)
     }
 
     /// Every template, with the quick keys MacToys ships with (Priority Grid ⌃⌥⇧1, Columns 2, Rows 3, Grid 4).
@@ -100,6 +116,9 @@ public struct ZoneLayout: Codable, Hashable, Identifiable, Sendable {
     }
 
     public var isTemplate: Bool { kind.isTemplate }
+
+    /// The name shown in the UI: templates in the UI language, custom layouts as the user named them.
+    public var displayName: String { isTemplate ? kind.title : name }
 
     /// Spacing actually applied between zones.
     public var effectiveSpacing: Double { showSpacing && kind != .canvas ? max(0, spacing) : 0 }

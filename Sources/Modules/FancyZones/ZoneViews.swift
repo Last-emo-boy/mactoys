@@ -53,7 +53,7 @@ struct ZoneFieldView: View {
             .overlay(shape.strokeBorder(on ? style.highlight : style.border.opacity(0.85), lineWidth: on ? 3 : 1.5))
             .overlay {
                 if style.showNumbers {
-                    Text("\(i + 1)")
+                    Text(verbatim: "\(i + 1)")
                         .font(.system(size: max(14, min(110, min(r.width, r.height) * 0.3)), weight: .bold, design: .rounded))
                         .foregroundStyle(on ? .white : style.number.opacity(0.75))
                 }
@@ -124,7 +124,7 @@ struct LayoutNameBadge: View {
     let padding: CGFloat
 
     var body: some View {
-        Text(name)
+        Text(verbatim: name)
             .font(.system(size: textSize, weight: .semibold))
             .foregroundStyle(textColor)
             .lineLimit(1)

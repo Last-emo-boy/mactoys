@@ -6,7 +6,7 @@ import SwiftUI
 /// Glass bar at the top of the grid and canvas editors: name, hints, actions.
 struct EditorToolbar: View {
     @Bindable var model: EditorModel
-    let hint: String
+    let hint: LocalizedStringKey
     var addZone: (() -> Void)?
 
     var body: some View {
@@ -58,9 +58,9 @@ private struct EditorZoneTile: View {
                                         lineWidth: selected ? 2.5 : 1.5))
             .overlay {
                 VStack(spacing: 4) {
-                    Text("\(number)")
+                    Text(verbatim: "\(number)")
                         .font(.system(size: max(16, min(96, min(size.width, size.height) * 0.28)), weight: .bold, design: .rounded))
-                    Text("\(Int(size.width)) × \(Int(size.height))")
+                    Text(verbatim: "\(Int(size.width)) × \(Int(size.height))")
                         .font(.system(size: 11, weight: .medium).monospacedDigit())
                         .opacity(size.height > 90 ? 0.7 : 0)
                 }
@@ -206,7 +206,7 @@ struct GridEditorView: View {
             let p = s.vertical ? v.location.x / size.width : v.location.y / size.height
             model.moveSplitter(s, to: Double(p))
         })
-        .accessibilityLabel(s.vertical ? "Vertical divider" : "Horizontal divider")
+        .accessibilityLabel(s.vertical ? Text("Vertical divider") : Text("Horizontal divider"))
     }
 
     private var mergeBar: some View {

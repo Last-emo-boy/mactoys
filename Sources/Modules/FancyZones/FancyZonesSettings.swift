@@ -6,30 +6,41 @@ import MacToysCore
 public struct FancyZonesSettings: Codable, Equatable, Sendable {
     public enum EditorDisplay: String, Codable, CaseIterable, Sendable {
         case mouse, activeWindow
-        public var title: String { self == .mouse ? "Display under the pointer" : "Display with the active window" }
+        public var title: String {
+            self == .mouse ? String(localized: "Display under the pointer") : String(localized: "Display with the active window")
+        }
     }
 
     public enum MoveMode: String, Codable, CaseIterable, Sendable {
         case zoneIndex, relativePosition
-        public var title: String { self == .zoneIndex ? "Zone index" : "Relative position" }
+        public var title: String {
+            self == .zoneIndex
+                ? String(localized: "Zone index", comment: "FancyZones keyboard moves: step through zones by their number")
+                : String(localized: "Relative position",
+                         comment: "FancyZones keyboard moves: go to the nearest zone in the arrow's direction")
+        }
     }
 
     public enum ZoneColors: String, Codable, CaseIterable, Sendable {
         case system, custom
-        public var title: String { self == .system ? "System accent" : "Custom colors" }
+        public var title: String {
+            self == .system
+                ? String(localized: "System accent", comment: "FancyZones zone colors: use the system accent color")
+                : String(localized: "Custom colors", comment: "FancyZones zone colors: use the colors chosen below")
+        }
     }
 
     public enum IndicatorPosition: String, Codable, CaseIterable, Sendable {
         case topLeft, topCenter, topRight, center, bottomLeft, bottomCenter, bottomRight
         public var title: String {
             switch self {
-            case .topLeft: "Top left"
-            case .topCenter: "Top center"
-            case .topRight: "Top right"
-            case .center: "Center"
-            case .bottomLeft: "Bottom left"
-            case .bottomCenter: "Bottom center"
-            case .bottomRight: "Bottom right"
+            case .topLeft: String(localized: "Top left", comment: "Position on screen")
+            case .topCenter: String(localized: "Top center", comment: "Position on screen")
+            case .topRight: String(localized: "Top right", comment: "Position on screen")
+            case .center: String(localized: "Center", comment: "Position on screen")
+            case .bottomLeft: String(localized: "Bottom left", comment: "Position on screen")
+            case .bottomCenter: String(localized: "Bottom center", comment: "Position on screen")
+            case .bottomRight: String(localized: "Bottom right", comment: "Position on screen")
             }
         }
     }

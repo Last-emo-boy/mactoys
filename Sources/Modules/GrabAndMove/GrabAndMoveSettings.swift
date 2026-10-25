@@ -20,11 +20,11 @@ public struct GrabAndMoveSettings: Codable, Equatable, Sendable {
 
         public var title: String {
             switch self {
-            case .controlCommand: "⌃⌘  Control-Command"
-            case .option: "⌥  Option"
-            case .controlOption: "⌃⌥  Control-Option"
-            case .commandOption: "⌥⌘  Option-Command"
-            case .function: "fn  Function"
+            case .controlCommand: String(localized: "⌃⌘  Control-Command", comment: "Modifier keys; keep the key symbols")
+            case .option: String(localized: "⌥  Option", comment: "Modifier key; keep the key symbol")
+            case .controlOption: String(localized: "⌃⌥  Control-Option", comment: "Modifier keys; keep the key symbols")
+            case .commandOption: String(localized: "⌥⌘  Option-Command", comment: "Modifier keys; keep the key symbols")
+            case .function: String(localized: "fn  Function", comment: "Modifier key; keep “fn”, the key's label")
             }
         }
     }

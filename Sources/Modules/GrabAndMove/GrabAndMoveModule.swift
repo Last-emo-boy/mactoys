@@ -43,9 +43,9 @@ public final class GrabAndMoveModule: ToyModule {
 
     public var shortcutBindings: [ShortcutBinding] {
         let s = settings.value
-        var list = [ShortcutBinding("Move a window", keys: ["Hold"] + s.activation.keys + ["Drag"])]
+        var list = [ShortcutBinding("Move a window", keys: [Keycap.hold] + s.activation.keys + [Keycap.drag])]
         if s.resizeWithRightDrag {
-            list.append(ShortcutBinding("Resize a window", keys: ["Hold"] + s.activation.keys + ["Right-drag"]))
+            list.append(ShortcutBinding("Resize a window", keys: [Keycap.hold] + s.activation.keys + [Keycap.rightDrag]))
         }
         return list
     }
@@ -74,9 +74,11 @@ struct GrabAndMoveSettingsView: View {
         SettingsPage(module: module) {
             HeroCard(tint: .mint) {
                 HStack(spacing: 28) {
-                    gesture("Move", keys: v.activation.keys + ["Drag"], symbol: "arrow.up.and.down.and.arrow.left.and.right")
+                    gesture(Text("Move", comment: "Grab And Move: the gesture that moves a window"),
+                            keys: v.activation.keys + [Keycap.drag], symbol: "arrow.up.and.down.and.arrow.left.and.right")
                     if v.resizeWithRightDrag {
-                        gesture("Resize", keys: v.activation.keys + ["Right-drag"], symbol: "arrow.up.left.and.arrow.down.right")
+                        gesture(Text("Resize", comment: "Grab And Move: the gesture that resizes a window"),
+                                keys: v.activation.keys + [Keycap.rightDrag], symbol: "arrow.up.left.and.arrow.down.right")
                     }
                     Spacer(minLength: 0)
                     Text("Grab a window anywhere — no need to aim for the title bar or a thin border.")
@@ -88,7 +90,7 @@ struct GrabAndMoveSettingsView: View {
         } content: {
             Section("Activation") {
                 Picker(selection: $s.value.activation) {
-                    ForEach(GrabAndMoveSettings.Activation.allCases, id: \.self) { Text($0.title).tag($0) }
+                    ForEach(GrabAndMoveSettings.Activation.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: {
                     RowLabel("Activation modifier", subtitle: "Hold it, then drag inside any window")
                 }
@@ -114,12 +116,19 @@ struct GrabAndMoveSettingsView: View {
         }
     }
 
-    private func gesture(_ title: String, keys: [String], symbol: String) -> some View {
+    private func gesture(_ title: Text, keys: [String], symbol: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(title, systemImage: symbol).font(.system(size: 13, weight: .semibold))
-            Keycaps(["Hold"] + keys)
+            Label { title } icon: { Image(systemName: symbol) }.font(.system(size: 13, weight: .semibold))
+            Keycaps([Keycap.hold] + keys)
         }
     }
+}
+
+/// Words shown as keycaps next to the modifier symbols.
+private enum Keycap {
+    static var hold: String { String(localized: "Hold", comment: "Keycap label: hold down the key that follows") }
+    static var drag: String { String(localized: "Drag", comment: "Keycap label: drag a window with the mouse") }
+    static var rightDrag: String { String(localized: "Right-drag", comment: "Keycap label: drag with the right mouse button") }
 }
 
 /// Snapshot scene: a window being dragged with the geometry readout next to the pointer.
@@ -136,7 +145,7 @@ private struct GrabAndMovePreview: View {
                 HStack(spacing: 7) {
                     ForEach([Color.red, .yellow, .green], id: \.self) { Circle().fill($0.opacity(0.85)).frame(width: 12, height: 12) }
                     Spacer()
-                    Text("Notes").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                    Text(verbatim: "Notes").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
                     Spacer()
                 }
                 .padding(.horizontal, 12)

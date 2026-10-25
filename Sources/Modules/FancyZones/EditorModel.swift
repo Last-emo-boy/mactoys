@@ -63,6 +63,9 @@ final class EditorModel {
         return screens.first { $0.contains(display.workArea.center) } ?? pickerScreen
     }
 
+    /// Default name of a new layout ("Custom layout 2" when taken).
+    private static var customLayoutName: String { String(localized: "Custom layout", comment: "Default name of a new layout") }
+
     // MARK: Picker
 
     func selectDisplay(_ key: String) {
@@ -94,7 +97,8 @@ final class EditorModel {
     }
 
     func duplicate(_ layout: ZoneLayout) {
-        let copy = layout.duplicated(name: library.uniqueName("\(layout.name) copy"),
+        let name = String(localized: "\(layout.displayName) copy", comment: "Name of a duplicated layout: the original's name")
+        let copy = layout.duplicated(name: library.uniqueName(name),
                                      reference: selectedDisplay.workArea.size)
         library.add(copy)
         onSave(library)
@@ -112,13 +116,13 @@ final class EditorModel {
     }
 
     func beginCreate() {
-        newName = library.uniqueName("Custom layout")
+        newName = library.uniqueName(Self.customLayoutName)
         mode = .creating
     }
 
     func create() {
         guard mode == .creating else { return }
-        let name = newName.trimmingCharacters(in: .whitespaces).isEmpty ? library.uniqueName("Custom layout") : newName
+        let name = newName.trimmingCharacters(in: .whitespaces).isEmpty ? library.uniqueName(Self.customLayoutName) : newName
         let size = selectedDisplay.workArea.size
         draft = newIsCanvas ? .newCanvas(name: name, reference: size) : .newGrid(name: name)
         draftIsNew = true
@@ -157,7 +161,7 @@ final class EditorModel {
 
     func saveDraft() {
         guard var d = draft else { return }
-        if d.name.trimmingCharacters(in: .whitespaces).isEmpty { d.name = library.uniqueName("Custom layout") }
+        if d.name.trimmingCharacters(in: .whitespaces).isEmpty { d.name = library.uniqueName(Self.customLayoutName) }
         d.grid = d.grid?.normalized()
         d.zoneCount = d.count
         if draftIsNew { library.add(d) } else { library.update(d) }

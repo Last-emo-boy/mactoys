@@ -8,10 +8,10 @@ public enum OverlapAlgorithm: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .smallest: "Activate the smallest zone by area"
-        case .largest: "Activate the largest zone by area"
-        case .closestCenter: "Activate the zone whose center is closest to the pointer"
-        case .positional: "Split the overlapped area into multiple activation targets"
+        case .smallest: String(localized: "Activate the smallest zone by area")
+        case .largest: String(localized: "Activate the largest zone by area")
+        case .closestCenter: String(localized: "Activate the zone whose center is closest to the pointer")
+        case .positional: String(localized: "Split the overlapped area into multiple activation targets")
         }
     }
 }

@@ -15,11 +15,11 @@ struct LayoutPickerCard: View {
         GlassPanel(cornerRadius: 22) {
             VStack(alignment: .leading, spacing: 12) {
                 header
-                sectionTitle("Templates")
+                sectionTitle(Text("Templates", comment: "Layout editor section: built-in layouts"))
                 LazyVGrid(columns: grid, alignment: .leading, spacing: 14) {
                     ForEach(model.library.templates) { card($0) }
                 }
-                sectionTitle("Custom")
+                sectionTitle(Text("Custom", comment: "Layout editor section: layouts the user made"))
                 customSection
                 Divider().overlay(Color.white.opacity(0.08))
                 footer
@@ -44,7 +44,7 @@ struct LayoutPickerCard: View {
                 Button { model.selectDisplay(d.key) } label: {
                     HStack(spacing: 6) {
                         Image(systemName: d.key == ZoneDisplay.allDisplaysKey ? "rectangle.on.rectangle" : "display")
-                        Text(model.displays.count > 1 ? "\(d.number)  \(d.name)" : d.name)
+                        Text(verbatim: model.displays.count > 1 ? "\(d.number)  \(d.name)" : d.name)
                     }
                     .font(.system(size: 12, weight: .medium))
                     .padding(.horizontal, 10).padding(.vertical, 5)
@@ -57,8 +57,8 @@ struct LayoutPickerCard: View {
         }
     }
 
-    private func sectionTitle(_ t: String) -> some View {
-        Text(t).font(.system(size: 12, weight: .semibold)).foregroundStyle(Color.white.opacity(0.55)).padding(.top, 2)
+    private func sectionTitle(_ t: Text) -> some View {
+        t.font(.system(size: 12, weight: .semibold)).foregroundStyle(Color.white.opacity(0.55)).padding(.top, 2)
     }
 
     // MARK: Cards
@@ -91,17 +91,18 @@ struct LayoutPickerCard: View {
             .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous)
                 .strokeBorder(selected ? Color.accentColor : Color.white.opacity(0.1), lineWidth: selected ? 2 : 1))
             HStack(spacing: 5) {
-                Text(layout.name)
+                Text(verbatim: layout.displayName)
                     .font(.system(size: 12.5, weight: selected ? .semibold : .regular))
                     .foregroundStyle(selected ? Color.white : Color.white.opacity(0.75))
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 2)
                 if let k = layout.quickKey {
-                    Text("\(k)").font(.system(size: 10, weight: .semibold).monospacedDigit())
+                    Text(verbatim: "\(k)").font(.system(size: 10, weight: .semibold).monospacedDigit())
                         .foregroundStyle(.white.opacity(0.6))
                         .frame(width: 16, height: 16)
                         .background(RoundedRectangle(cornerRadius: 4).strokeBorder(.white.opacity(0.2)))
-                        .help("⌃⌥⇧\(k)")
+                        .help(Text(verbatim: "⌃⌥⇧\(k)"))
                 }
                 if selected && !layout.isTemplate {
                     Button { model.edit(layout) } label: { Image(systemName: "pencil") }
@@ -120,7 +121,9 @@ struct LayoutPickerCard: View {
 
     @ViewBuilder
     private func menu(for layout: ZoneLayout) -> some View {
-        Button("Apply") { model.choose(layout) }
+        Button { model.choose(layout) } label: {
+            Text("Apply", comment: "Layout editor context menu: use this layout on the selected display")
+        }
         if !layout.isTemplate { Button("Edit Zones…") { model.choose(layout); model.edit(layout) } }
         Button("Duplicate") { model.duplicate(layout) }
         quickKeyMenu(for: layout)
@@ -134,12 +137,23 @@ struct LayoutPickerCard: View {
     }
 
     private func quickKeyMenu(for layout: ZoneLayout) -> some View {
-        Menu("Apply with") {
-            Button("None") { model.setQuickKey(nil, for: layout.id) }
-            ForEach(1...9, id: \.self) { n in
-                let owner = model.library.layout(quickKey: n)
-                Button(owner.map { "⌃⌥⇧\(n)  ·  \($0.name)" } ?? "⌃⌥⇧\(n)") { model.setQuickKey(n, for: layout.id) }
-            }
+        Menu {
+            quickKeyItems(for: layout)
+        } label: {
+            Text("Apply with", comment: "Layout editor: the quick-apply key (⌃⌥⇧ and a digit) of a layout")
+        }
+    }
+
+    /// "None", then ⌃⌥⇧1…9 with the layout that has each key.
+    @ViewBuilder
+    private func quickKeyItems(for layout: ZoneLayout) -> some View {
+        Button { model.setQuickKey(nil, for: layout.id) } label: {
+            Text("None", comment: "Layout editor: no quick-apply key")
+        }
+        ForEach(1...9, id: \.self) { n in
+            let owner = model.library.layout(quickKey: n)
+            let title = owner.map { "⌃⌥⇧\(n)  ·  \($0.displayName)" } ?? "⌃⌥⇧\(n)"
+            Button(title) { model.setQuickKey(n, for: layout.id) }
         }
     }
 
@@ -160,70 +174,87 @@ struct LayoutPickerCard: View {
 
     // MARK: Footer
 
+    /// The selected layout's parameters, then its actions; on two rows when a translation is too long for one.
     private var footer: some View {
         let layout = model.selectedLayout
-        return HStack(spacing: 16) {
-            if layout.isTemplate && layout.kind != .blank {
-                ValueStepper(title: "Zones", value: layout.zoneCount, unit: "", range: 1...20, step: 1) { v in
-                    model.updateSelected { $0.zoneCount = v }
-                }
+        return ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) {
+                parameters(layout)
+                Spacer(minLength: 8)
+                actions(layout)
             }
-            if layout.kind != .blank && layout.kind != .focus && layout.kind != .canvas {
-                Toggle(isOn: Binding(get: { layout.showSpacing },
-                                     set: { v in model.updateSelected { $0.showSpacing = v } })) {
-                    Text("Zone spacing")
-                }
-                .toggleStyle(.checkbox)
-                .font(.system(size: 12))
-                ValueStepper(title: nil, value: Int(layout.spacing), unit: "px", range: 0...100, step: 2) { v in
-                    model.updateSelected { $0.spacing = Double(v); $0.showSpacing = true }
-                }
-                .opacity(layout.showSpacing ? 1 : 0.45)
+            VStack(alignment: .trailing, spacing: 10) {
+                HStack(spacing: 16) { parameters(layout) }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 16) { actions(layout) }
             }
-            if layout.kind != .blank {
-                ValueStepper(title: "Highlight distance", value: Int(layout.highlightDistance), unit: "px",
-                             range: 0...100, step: 5) { v in
-                    model.updateSelected { $0.highlightDistance = Double(v) }
-                }
-            }
-            Spacer(minLength: 8)
-            if layout.kind != .blank {
-                HStack(spacing: 6) {
-                    Text("Apply with").font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.55)).fixedSize()
-                    if let k = layout.quickKey {
-                        Keycaps(["⌃", "⌥", "⇧", "\(k)"], dark: true)
-                    } else {
-                        Text("None").font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.8))
-                    }
-                    Menu {
-                        Button("None") { model.setQuickKey(nil, for: layout.id) }
-                        ForEach(1...9, id: \.self) { n in
-                            let owner = model.library.layout(quickKey: n)
-                            Button(owner.map { "⌃⌥⇧\(n)  ·  \($0.name)" } ?? "⌃⌥⇧\(n)") { model.setQuickKey(n, for: layout.id) }
-                        }
-                    } label: {
-                        Image(systemName: "chevron.up.chevron.down")
-                    }
-                    .menuStyle(.borderlessButton)
-                    .menuIndicator(.hidden)
-                    .fixedSize()
-                    .help("Choose the quick-apply key")
-                }
-            }
-            iconButton("plus.square.on.square", help: "Duplicate") { model.duplicate(layout) }
-            if !layout.isTemplate {
-                iconButton("square.and.pencil", help: "Edit zones") { model.edit(layout) }
-                iconButton(model.pendingDelete == layout.id ? "trash.fill" : "trash",
-                           help: model.pendingDelete == layout.id ? "Click again to delete" : "Delete",
-                           tint: model.pendingDelete == layout.id ? .red : nil) { model.delete(layout) }
-            }
-            Button("Done") { model.onClose() }
-                .buttonStyle(GlassButtonStyle(prominent: true))
         }
         .font(.system(size: 12))
     }
 
-    private func iconButton(_ symbol: String, help: String, tint: Color? = nil, action: @escaping () -> Void) -> some View {
+    @ViewBuilder
+    private func parameters(_ layout: ZoneLayout) -> some View {
+        if layout.isTemplate && layout.kind != .blank {
+            ValueStepper(title: Text("Zones", comment: "Layout editor: number of zones of a template"),
+                         value: layout.zoneCount, unit: "", range: 1...20, step: 1) { v in
+                model.updateSelected { $0.zoneCount = v }
+            }
+        }
+        if layout.kind != .blank && layout.kind != .focus && layout.kind != .canvas {
+            Toggle(isOn: Binding(get: { layout.showSpacing },
+                                 set: { v in model.updateSelected { $0.showSpacing = v } })) {
+                Text("Zone spacing")
+            }
+            .toggleStyle(.checkbox)
+            .font(.system(size: 12))
+            ValueStepper(title: nil, value: Int(layout.spacing), unit: "px", range: 0...100, step: 2) { v in
+                model.updateSelected { $0.spacing = Double(v); $0.showSpacing = true }
+            }
+            .opacity(layout.showSpacing ? 1 : 0.45)
+        }
+        if layout.kind != .blank {
+            ValueStepper(title: Text("Highlight distance"), value: Int(layout.highlightDistance), unit: "px",
+                         range: 0...100, step: 5) { v in
+                model.updateSelected { $0.highlightDistance = Double(v) }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func actions(_ layout: ZoneLayout) -> some View {
+        if layout.kind != .blank {
+            HStack(spacing: 6) {
+                Text("Apply with", comment: "Layout editor: the quick-apply key (⌃⌥⇧ and a digit) of a layout")
+                    .font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.55)).fixedSize()
+                if let k = layout.quickKey {
+                    Keycaps(["⌃", "⌥", "⇧", "\(k)"], dark: true)
+                } else {
+                    Text("None", comment: "Layout editor: no quick-apply key")
+                        .font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.8))
+                }
+                Menu {
+                    quickKeyItems(for: layout)
+                } label: {
+                    Image(systemName: "chevron.up.chevron.down")
+                }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .help("Choose the quick-apply key")
+            }
+        }
+        iconButton("plus.square.on.square", help: "Duplicate") { model.duplicate(layout) }
+        if !layout.isTemplate {
+            iconButton("square.and.pencil", help: "Edit zones") { model.edit(layout) }
+            iconButton(model.pendingDelete == layout.id ? "trash.fill" : "trash",
+                       help: model.pendingDelete == layout.id ? "Click again to delete" : "Delete",
+                       tint: model.pendingDelete == layout.id ? .red : nil) { model.delete(layout) }
+        }
+        Button("Done") { model.onClose() }
+            .buttonStyle(GlassButtonStyle(prominent: true))
+    }
+
+    private func iconButton(_ symbol: String, help: LocalizedStringKey, tint: Color? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: 13)).foregroundStyle(tint ?? Color.white.opacity(0.75))
                 .frame(width: 26, height: 22)
@@ -244,15 +275,27 @@ struct LayoutPickerCard: View {
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 300)
                     .onSubmit { model.create() }
-                Picker("Type", selection: $model.newIsCanvas) {
-                    Label("Grid", systemImage: "rectangle.split.3x3").tag(false)
-                    Label("Canvas", systemImage: "rectangle.on.rectangle").tag(true)
+                Picker(selection: $model.newIsCanvas) {
+                    Label {
+                        Text("Grid", comment: "FancyZones layout template or custom layout type: zones on a grid")
+                    } icon: {
+                        Image(systemName: "rectangle.split.3x3")
+                    }
+                    .tag(false)
+                    Label {
+                        Text("Canvas", comment: "FancyZones custom layout type: free-form zones")
+                    } icon: {
+                        Image(systemName: "rectangle.on.rectangle")
+                    }
+                    .tag(true)
+                } label: {
+                    Text("Type", comment: "Kind of a new layout: grid or canvas")
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
-                Text(model.newIsCanvas
-                     ? "Free-form zones you move and resize, which may overlap. Scales to other displays."
-                     : "Split and merge zones on a grid that keeps its proportions on any display.")
+                (model.newIsCanvas
+                     ? Text("Free-form zones you move and resize, which may overlap. Scales to other displays.")
+                     : Text("Split and merge zones on a grid that keeps its proportions on any display."))
                     .font(.system(size: 11.5)).foregroundStyle(Color.white.opacity(0.6))
                     .frame(width: 300, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
@@ -272,7 +315,7 @@ struct LayoutPickerCard: View {
 
 /// "Highlight distance  20 px  [– +]" in the editor footer.
 private struct ValueStepper: View {
-    let title: String?
+    let title: Text?
     let value: Int
     let unit: String
     let range: ClosedRange<Int>
@@ -281,8 +324,9 @@ private struct ValueStepper: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            if let title { Text(title).foregroundStyle(Color.white.opacity(0.55)) }
-            Text(unit.isEmpty ? "\(value)" : "\(value) \(unit)").monospacedDigit().frame(minWidth: unit.isEmpty ? 16 : 34, alignment: .trailing)
+            if let title { title.foregroundStyle(Color.white.opacity(0.55)) }
+            Text(verbatim: unit.isEmpty ? value.formatted() : "\(value.formatted()) \(unit)").monospacedDigit()
+                .frame(minWidth: unit.isEmpty ? 16 : 34, alignment: .trailing)
             Stepper("", onIncrement: { set(min(range.upperBound, value + step)) },
                     onDecrement: { set(max(range.lowerBound, value - step)) })
                 .labelsHidden()

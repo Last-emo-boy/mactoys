@@ -75,7 +75,7 @@ final class DragSnapper {
         highlighted = []
         spanAnchor = nil
         renderedIndex = nil
-        if zonesShown { engine.overlay.showLayoutName(layouts[i].name, on: displays[i], settings: engine.settings.value) }
+        if zonesShown { engine.overlay.showLayoutName(layouts[i].displayName, on: displays[i], settings: engine.settings.value) }
         update()
     }
 
