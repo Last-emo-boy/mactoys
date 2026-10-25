@@ -52,15 +52,31 @@ enum AssetExporter {
         SnapshotRenderer.render(AnyView(QuickAccessView().background(.regularMaterial)), size: CGSize(width: 380, height: 560),
                                 to: dir.appendingPathComponent("ui/quickaccess.png"))
 
+        // Content column only (the film draws the sidebar itself from `sidebar` in the manifest),
+        // 930 × 1400 so long pages can be scrolled in the film.
         let pages = ["home", "general"] + registry.modules.map(\.info.id)
         var captured = 0
         for page in pages {
-            let url = dir.appendingPathComponent("pages/\(page).png")
-            if await captureLiveWindow(page: page, to: url) {
+            let view: AnyView
+            switch page {
+            case "home": view = AnyView(HomeView())
+            case "general": view = AnyView(GeneralView())
+            default: view = registry.module(page)?.settingsView() ?? AnyView(EmptyView())
+            }
+            SnapshotRenderer.render(AnyView(view.background(Color(nsColor: .windowBackgroundColor))),
+                                    size: CGSize(width: 930, height: 1400),
+                                    to: dir.appendingPathComponent("pages/\(page).png"))
+            if await captureLiveWindow(page: page, to: dir.appendingPathComponent("pages/\(page).window.png")) {
                 captured += 1
-            } else {
-                SettingsNavigation.shared.selection = SidebarItem(page: page)
-                SnapshotRenderer.render(AnyView(SettingsRootView()), size: CGSize(width: 1180, height: 780), to: url)
+            }
+        }
+        let sidebar: [[String: Any]] = [
+            ["kind": "item", "id": "home", "title": String(localized: "Home"), "symbol": "house.fill", "tint": "graphite"],
+            ["kind": "item", "id": "general", "title": String(localized: "General", comment: "Settings page for app-wide options"),
+             "symbol": "gearshape.fill", "tint": "graphite"],
+        ] + ModuleCategory.allCases.flatMap { c -> [[String: Any]] in
+            [["kind": "header", "title": c.title]] + registry.modules(in: c).map {
+                ["kind": "item", "id": $0.info.id, "title": $0.info.name, "symbol": $0.info.symbol, "tint": $0.info.tint.rawValue]
             }
         }
 
@@ -70,6 +86,11 @@ enum AssetExporter {
             "languages": AppLanguage.available.filter { $0 != "eo" },
             "pagesCapturedLive": captured,
             "categories": ModuleCategory.allCases.map { ["id": $0.rawValue, "title": $0.title] },
+            "sidebar": sidebar,
+            "strings": [
+                "search": String(localized: "Search"),
+                "enabled": String(localized: "Enabled"),
+            ],
             "modules": modules,
         ]
         if let data = try? JSONSerialization.data(withJSONObject: manifest, options: [.prettyPrinted, .sortedKeys]) {
