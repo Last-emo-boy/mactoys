@@ -47,7 +47,7 @@ struct HomeView: View {
     private var header: some View {
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Home").font(.system(size: 24, weight: .bold)).kerning(-0.4)
+                Text(LocalizedStringResource("settings.home", defaultValue: "Home", comment: "Title of the Settings start page (dashboard), not the home folder")).font(.system(size: 24, weight: .bold)).kerning(-0.4)
                 let n = missingPermissions.count
                 Group {
                     if n > 0 {

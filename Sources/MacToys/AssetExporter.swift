@@ -71,7 +71,7 @@ enum AssetExporter {
             }
         }
         let sidebar: [[String: Any]] = [
-            ["kind": "item", "id": "home", "title": String(localized: "Home"), "symbol": "house.fill", "tint": "graphite"],
+            ["kind": "item", "id": "home", "title": String(localized: "settings.home", defaultValue: "Home", comment: "Title of the Settings start page (dashboard), not the home folder"), "symbol": "house.fill", "tint": "graphite"],
             ["kind": "item", "id": "general", "title": String(localized: "General", comment: "Settings page for app-wide options"),
              "symbol": "gearshape.fill", "tint": "graphite"],
         ] + ModuleCategory.allCases.flatMap { c -> [[String: Any]] in

@@ -67,7 +67,7 @@ struct SettingsRootView: View {
             List(selection: $nav.selection) {
                 if search.isEmpty {
                     Section {
-                        SidebarRow(title: String(localized: "Home"), symbol: "house.fill", tint: .graphite)
+                        SidebarRow(title: String(localized: "settings.home", defaultValue: "Home", comment: "Title of the Settings start page (dashboard), not the home folder"), symbol: "house.fill", tint: .graphite)
                             .tag(SidebarItem.home)
                         SidebarRow(title: String(localized: "General", comment: "Settings page for app-wide options"),
                                    symbol: "gearshape.fill", tint: .graphite)
