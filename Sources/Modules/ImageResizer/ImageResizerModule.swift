@@ -60,7 +60,11 @@ public final class ImageResizerModule: ToyModule {
             ModuleRegistry.shared.showSettings?(info.id)
         case "open", "show":
             guard isEnabled else { ModuleRegistry.shared.showSettings?(info.id); return true }
-            if command.files.isEmpty { openWithFinderSelection() } else { open(command.files, source: "from Finder") }
+            if command.files.isEmpty {
+                openWithFinderSelection()
+            } else {
+                open(command.files, source: String(localized: "from Finder", comment: "Image Resizer window subtitle: where the images came from"))
+            }
         case "resize":
             guard isEnabled else { return true }
             if command.files.isEmpty {
@@ -86,13 +90,18 @@ public final class ImageResizerModule: ToyModule {
 
     func openWithFinderSelection() {
         guard let urls = FinderSelection.selectionRequestingPermission() else { return }
-        open(urls, source: "from Finder selection")
+        open(urls, source: String(localized: "from Finder selection", comment: "Image Resizer window subtitle: where the images came from"))
     }
 
+    /// `source` is shown under the window title and must be localized.
     func open(_ urls: [URL], source: String) {
         let images = urls.filter(Self.isImage)
         guard !images.isEmpty else {
-            HUD.show(urls.isEmpty ? "Select images in Finder first" : "No images MacToys can resize", symbol: "photo.badge.exclamationmark")
+            if urls.isEmpty {
+                HUD.show("Select images in Finder first", symbol: "photo.badge.exclamationmark")
+            } else {
+                HUD.show("No images MacToys can resize", symbol: "photo.badge.exclamationmark")
+            }
             return
         }
         let model = ImageResizerModel(urls: images, source: source, settings: settings.value)
@@ -159,9 +168,11 @@ public final class ImageResizerModule: ToyModule {
                 return failed
             }.value
             let written = images.count - failures
-            HUD.show(failures == 0 ? "Resized \(written) image\(written == 1 ? "" : "s") · \(preset.name)"
-                                   : "Resized \(written) · \(failures) failed",
-                     symbol: failures == 0 ? "photo.on.rectangle.angled" : "exclamationmark.triangle")
+            if failures == 0 {
+                HUD.show("Resized \(written) images · \(preset.displayName)", symbol: "photo.on.rectangle.angled")
+            } else {
+                HUD.show("Resized \(written) · \(failures) failed", symbol: "exclamationmark.triangle")
+            }
         }
     }
 
@@ -186,7 +197,9 @@ public final class ImageResizerModule: ToyModule {
             PreviewScene("done", size: CGSize(width: 460, height: 230), wallpaper: false) {
                 let m = Self.sampleModel()
                 let outs = (1...11).map { URL(fileURLWithPath: "/tmp/IMG_\($0) (Medium).HEIC") }
-                m.showPhase(.finished(.init(outputs: outs, failures: ["scan.pdf: Not an image MacToys can read"], cancelled: false)))
+                let failure = ImageResizerEngine.FileError(url: URL(fileURLWithPath: "/tmp/scan.pdf"),
+                                                           message: String(localized: "Not an image MacToys can read"))
+                m.showPhase(.finished(.init(outputs: outs, failures: [failure.errorDescription ?? ""], cancelled: false)))
                 return AnyView(Self.previewWindow(m))
             },
         ]
@@ -208,7 +221,8 @@ public final class ImageResizerModule: ToyModule {
         s.options.shrinkOnly = true
         s.options.ignoreOrientation = true
         let urls = (1...12).map { URL(fileURLWithPath: "/tmp/IMG_\($0).HEIC") }
-        return ImageResizerModel(urls: urls, source: "from Finder selection", settings: s, live: false)
+        return ImageResizerModel(urls: urls, source: String(localized: "from Finder selection", comment: "Image Resizer window subtitle: where the images came from"),
+                                 settings: s, live: false)
     }
 }
 
@@ -228,7 +242,7 @@ private struct ImageResizerSettingsView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "square.and.arrow.down.on.square").font(.system(size: 22)).foregroundStyle(.green)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(dropTargeted ? "Release to resize" : "Drop images here").font(.headline)
+                        (dropTargeted ? Text("Release to resize") : Text("Drop images here")).font(.headline)
                         Text("Or select images in Finder and choose MacToys › Resize with Image Resizer.")
                             .foregroundStyle(.secondary).font(.system(size: 12))
                     }
@@ -238,7 +252,7 @@ private struct ImageResizerSettingsView: View {
                 }
             }
             .dropDestination(for: URL.self) { urls, _ in
-                module.open(urls, source: "dropped on Settings")
+                module.open(urls, source: String(localized: "dropped on Settings", comment: "Image Resizer window subtitle: where the images came from"))
                 return true
             } isTargeted: { dropTargeted = $0 }
         } content: {
@@ -254,13 +268,13 @@ private struct ImageResizerSettingsView: View {
                             .help("Delete this size")
                         }
                     } label: {
-                        TextField("Name", text: $preset.name).labelsHidden().textFieldStyle(.plain)
+                        TextField("Name", text: $preset.editableName).labelsHidden().textFieldStyle(.plain)
                             .font(.system(size: 13, weight: .medium))
                     }
                 }
                 HStack {
                     Button("Add Size") {
-                        settings.update { $0.presets.append(ResizePreset(name: "New size", width: 1024, height: 768)) }
+                        settings.update { $0.presets.append(ResizePreset(name: ResizePreset.newSizeName, width: 1024, height: 768)) }
                     }
                     Button("Restore Defaults") { settings.update { $0.presets = ResizePreset.defaults; $0.selectedIndex = 1 } }
                         .disabled(settings.value.presets == ResizePreset.defaults)
@@ -294,7 +308,7 @@ private struct ImageResizerSettingsView: View {
             }
             Section {
                 LabeledContent {
-                    TextField("File name format", text: $settings.value.options.fileNameFormat, prompt: Text("%1 (%2)"))
+                    TextField("File name format", text: $settings.value.options.fileNameFormat, prompt: Text(verbatim: "%1 (%2)"))
                         .labelsHidden()
                         .textFieldStyle(.roundedBorder)
                         .font(.system(size: 12, design: .monospaced))
@@ -339,14 +353,15 @@ private struct ImageResizerSettingsView: View {
 
     private var example: String {
         let p = settings.value.selectedPreset
-        let values = ResizeFileNamer.Values(original: "example", sizeName: p.name, selectedWidth: p.width,
+        let values = ResizeFileNamer.Values(original: String(localized: "example", comment: "Image Resizer: sample original file name in the file name format example"),
+                                            sizeName: p.displayName, selectedWidth: p.width,
                                             selectedHeight: p.height, actualWidth: Int(p.width), actualHeight: Int(p.height))
         return ResizeFileNamer.components(format: settings.value.options.fileNameFormat, values: values).joined(separator: "/") + ".jpg"
     }
 
-    private func token(_ t: String, _ meaning: String) -> some View {
+    private func token(_ t: String, _ meaning: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {
-            Text(t).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.primary)
+            Text(verbatim: t).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.primary)
             Text(meaning).foregroundStyle(.secondary)
         }
     }

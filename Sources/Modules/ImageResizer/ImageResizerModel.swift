@@ -18,7 +18,7 @@ final class ImageResizerModel {
     }
 
     let urls: [URL]
-    /// Shown under the title: "from Finder selection".
+    /// Shown under the title, localized: "from Finder selection".
     let source: String
     var presets: [ResizePreset]
     var custom: ResizePreset
@@ -47,7 +47,7 @@ final class ImageResizerModel {
         selectedIndex == -1 ? custom : (presets.indices.contains(selectedIndex) ? presets[selectedIndex] : custom)
     }
 
-    var title: String { "Resize \(urls.count) image\(urls.count == 1 ? "" : "s")" }
+    var title: String { String(localized: "Resize \(urls.count) images", comment: "Image Resizer window title") }
 
     func start() {
         guard live, !urls.isEmpty, phase == .choosing else { return }

@@ -81,7 +81,7 @@ public enum RenameExecutor {
                     outcome.done.append(op)
                 case .failure(let error):
                     if case .failure(let back) = move(temp, op.from) {
-                        outcome.failures.append(Failure(operation: op, message: "\(error.message); the item was left as “\(temp.lastPathComponent)”: \(back.message)"))
+                        outcome.failures.append(Failure(operation: op, message: String(localized: "\(error.message); the item was left as “\(temp.lastPathComponent)”: \(back.message)", comment: "PowerRename: a rename failed (first value: the reason), and moving the item back failed too (second value: the temporary name it keeps; third value: why)")))
                     } else {
                         outcome.failures.append(Failure(operation: op, message: error.message))
                     }
@@ -94,7 +94,7 @@ public enum RenameExecutor {
     struct POSIXFailure: Error {
         let code: Int32
         var message: String {
-            code == EEXIST ? "An item with that name already exists" : String(cString: strerror(code))
+            code == EEXIST ? String(localized: "An item with that name already exists") : String(cString: strerror(code))
         }
     }
 

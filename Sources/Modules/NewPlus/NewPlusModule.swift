@@ -179,7 +179,8 @@ public final class NewPlusModule: ToyModule {
         } catch {
             log.error("New+ failed: \(error.localizedDescription, privacy: .public)")
             let alert = NSAlert()
-            alert.messageText = "Couldn’t create “\(template.title(hideExtension: s.hideExtensions, hideLeadingDigits: s.hideLeadingDigits))”"
+            let title = template.title(hideExtension: s.hideExtensions, hideLeadingDigits: s.hideLeadingDigits)
+            alert.messageText = String(localized: "Couldn’t create “\(title)”", comment: "New+ error; the value is the template name")
             alert.informativeText = error.localizedDescription
             NSApp.activate()
             alert.runModal()
@@ -226,7 +227,7 @@ public final class NewPlusModule: ToyModule {
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.directoryURL = model.destination
-        panel.prompt = "Choose"
+        panel.prompt = String(localized: "Choose", comment: "Open panel button: create the new item in the chosen folder")
         picker.hidesOnResign = false
         if panel.runModal() == .OK, let url = panel.url { model.destination = url }
         picker.hidesOnResign = true
@@ -288,7 +289,8 @@ private struct NewPlusSettingsView: View {
                         Button("Change…") { chooseLocation() }
                     }
                 } label: {
-                    RowLabel("Templates location", subtitle: (settings.value.templatesFolder.path as NSString).abbreviatingWithTildeInPath)
+                    RowLabel(title: Text("Templates location"),
+                             subtitle: Text(verbatim: (settings.value.templatesFolder.path as NSString).abbreviatingWithTildeInPath))
                 }
                 ShortcutRow("New from template", subtitle: "Optional. Opens the template picker for the frontmost Finder folder.",
                             shortcut: $settings.value.activation)
@@ -327,7 +329,7 @@ private struct NewPlusSettingsView: View {
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.directoryURL = settings.value.templatesFolder
-        panel.prompt = "Use Folder"
+        panel.prompt = String(localized: "Use Folder", comment: "Open panel button: use the chosen folder for New+ templates")
         if panel.runModal() == .OK, let url = panel.url { settings.value.customTemplatesFolder = url.path }
     }
 }
@@ -335,11 +337,13 @@ private struct NewPlusSettingsView: View {
 private struct VariablesHelp: View {
     var body: some View {
         let date = DateTokens.help.filter { ["$YYYY", "$YY", "$MMMM", "$MMM", "$MM", "$DD", "$DDDD", "$hh", "$mm", "$ss", "$fff"].contains($0.token) }
-        let special: [(String, String)] = [("$PARENT_FOLDER_NAME", "Name of the folder it’s created in"),
-                                           ("%USERNAME%", "Your account name"),
-                                           ("%NAME%", "Any environment variable, e.g. %HOME%")]
+        let special: [(String, String)] = [
+            ("$PARENT_FOLDER_NAME", String(localized: "Name of the folder it’s created in")),
+            ("%USERNAME%", String(localized: "Your account name")),
+            ("%NAME%", String(localized: "Any environment variable, e.g. %HOME%", comment: "New+ variable help; keep %HOME% as it is")),
+        ]
         VStack(alignment: .leading, spacing: 6) {
-            Text("Example: “$YYYY-$MM-$DD Notes by %USERNAME%.md” → “\(example)”")
+            Text("Example: “\(sample)” → “\(example)”", comment: "New+: a template name with variables, then the name it creates")
             Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 2) {
                 ForEach(Array(stride(from: 0, to: date.count, by: 2)), id: \.self) { i in
                     GridRow {
@@ -356,14 +360,21 @@ private struct VariablesHelp: View {
         .foregroundStyle(.secondary)
     }
 
-    private var example: String {
-        NewPlusVariables.expand("$YYYY-$MM-$DD Notes by %USERNAME%.md", context: .init(parentFolderName: "Projects"))
+    /// A template name with variables; translators keep the `$…` and `%…%` variables.
+    private var sample: String {
+        String(localized: "$YYYY-$MM-$DD Notes by %USERNAME%.md",
+               comment: "New+ sample template name; keep $YYYY, $MM, $DD, %USERNAME% and .md as they are")
     }
 
+    private var example: String {
+        NewPlusVariables.expand(sample, context: .init(parentFolderName: "Projects"))
+    }
+
+    /// `meaning` is already localized.
     private func cell(_ token: String, _ meaning: String) -> some View {
         HStack(spacing: 6) {
-            Text(token).font(.system(size: 11, design: .monospaced)).foregroundStyle(.primary)
-            Text(meaning)
+            Text(verbatim: token).font(.system(size: 11, design: .monospaced)).foregroundStyle(.primary)
+            Text(verbatim: meaning)
         }
     }
 }

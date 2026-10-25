@@ -41,7 +41,7 @@ final class PowerRenameModel {
         recompute()
     }
 
-    var title: String { "PowerRename · \(items.count) item\(items.count == 1 ? "" : "s")" }
+    var title: String { String(localized: "PowerRename · \(items.count) items", comment: "PowerRename window title with the number of listed items") }
 
     var visibleRows: [RenamePreview] { onlyShowRenamed ? previews.filter(\.willRename) : previews }
     var renameCount: Int { previews.filter(\.willRename).count }
@@ -84,8 +84,9 @@ final class PowerRenameModel {
         canUndo = !outcome.done.isEmpty || canUndo
         let n = outcome.done.count
         resultMessage = outcome.failures.isEmpty
-            ? "Renamed \(n) item\(n == 1 ? "" : "s")"
-            : "Renamed \(n) of \(operations.count) · \(outcome.failures.count) failed"
+            ? String(localized: "Renamed \(n) items")
+            : String(localized: "Renamed \(n) of \(operations.count) · \(outcome.failures.count) failed",
+                     comment: "PowerRename result: renamed count, of planned count, then the failed count")
         reload(mapping: outcome.done)
     }
 
@@ -95,8 +96,9 @@ final class PowerRenameModel {
         canUndo = false
         let n = outcome.done.count
         resultMessage = outcome.failures.isEmpty
-            ? "Restored \(n) name\(n == 1 ? "" : "s")"
-            : "Restored \(n) · \(outcome.failures.count) could not be restored"
+            ? String(localized: "Restored \(n) names", comment: "PowerRename undo result: number of items given back their old name")
+            : String(localized: "Restored \(n) · \(outcome.failures.count) could not be restored",
+                     comment: "PowerRename undo result: restored count, then the count that failed")
         reload(mapping: outcome.done)
     }
 

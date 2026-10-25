@@ -98,10 +98,10 @@ public enum NewPlusCreator {
         let fm = FileManager.default
         var isDir: ObjCBool = false
         guard fm.fileExists(atPath: folder.path, isDirectory: &isDir), isDir.boolValue else {
-            throw Failure(message: "“\(folder.lastPathComponent)” is not a folder")
+            throw Failure(message: String(localized: "“\(folder.lastPathComponent)” is not a folder"))
         }
         guard fm.fileExists(atPath: template.url.path) else {
-            throw Failure(message: "The template “\(template.fileName)” no longer exists")
+            throw Failure(message: String(localized: "The template “\(template.fileName)” no longer exists"))
         }
         let base = targetName(for: template.fileName, isFolder: template.isFolder, folder: folder, options: options)
         let target = uniqueURL(base, isFolder: template.isFolder, in: folder)
@@ -129,7 +129,10 @@ public enum NewPlusCreator {
             name = NewPlusVariables.expand(name, context: .init(date: options.date, parentFolderName: folder.lastPathComponent))
         }
         name = name.trimmingCharacters(in: .whitespaces)
-        return name.isEmpty || name == "." || name == ".." ? (isFolder ? "untitled folder" : "untitled") : name
+        guard name.isEmpty || name == "." || name == ".." else { return name }
+        // Finder's names for new items, in the user's language.
+        return isFolder ? String(localized: "untitled folder", comment: "Name of a new folder, as Finder names it")
+                        : String(localized: "untitled", comment: "Name of a new file, as Finder names it")
     }
 
     static func uniqueURL(_ name: String, isFolder: Bool, in folder: URL) -> URL {

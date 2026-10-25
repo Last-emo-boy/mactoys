@@ -21,7 +21,7 @@ final class MacToysFinderSync: FIFinderSync {
     // MARK: Toolbar button
 
     override var toolbarItemName: String { "MacToys" }
-    override var toolbarItemToolTip: String { "MacToys tools for the selected items" }
+    override var toolbarItemToolTip: String { String(localized: "MacToys tools for the selected items") }
     override var toolbarItemImage: NSImage {
         NSImage(systemSymbolName: "puzzlepiece.extension.fill", accessibilityDescription: "MacToys") ?? NSImage()
     }
@@ -34,7 +34,7 @@ final class MacToysFinderSync: FIFinderSync {
         case .contextualMenuForItems:
             return wrap(itemsMenu(config), title: "MacToys", symbol: "puzzlepiece.extension")
         case .contextualMenuForContainer:
-            return wrap(newPlusMenu(config), title: "New+", symbol: "doc.badge.plus")
+            return wrap(newPlusMenu(config), title: String(localized: "New+"), symbol: "doc.badge.plus")
         case .toolbarItemMenu:
             let menu = NSMenu(title: "MacToys")
             if let items = itemsMenu(config) {
@@ -44,7 +44,7 @@ final class MacToysFinderSync: FIFinderSync {
             }
             if let newPlus = newPlusMenu(config) {
                 if !menu.items.isEmpty { menu.addItem(.separator()) }
-                let parent = NSMenuItem(title: "New+", action: nil, keyEquivalent: "")
+                let parent = NSMenuItem(title: String(localized: "New+"), action: nil, keyEquivalent: "")
                 parent.image = Self.symbol("doc.badge.plus")
                 parent.submenu = newPlus
                 menu.addItem(parent)
@@ -72,18 +72,20 @@ final class MacToysFinderSync: FIFinderSync {
         let option = NSEvent.modifierFlags.contains(.option)
         let menu = NSMenu(title: "MacToys")
         if config.shows("powerrename", optionHeld: option) {
-            menu.addItem(item("PowerRename", symbol: config.flag("powerrename", "showFinderMenuIcon", default: true)
+            menu.addItem(item(String(localized: "PowerRename"), symbol: config.flag("powerrename", "showFinderMenuIcon", default: true)
                                 ? "character.cursor.ibeam" : nil, action: #selector(powerRename(_:))))
         }
         if config.shows("imageresizer", optionHeld: option), selected.contains(where: Self.isImage) {
-            menu.addItem(item("Resize with Image Resizer", symbol: "photo.on.rectangle.angled", action: #selector(resizeImages(_:))))
+            menu.addItem(item(String(localized: "Resize with Image Resizer"), symbol: "photo.on.rectangle.angled", action: #selector(resizeImages(_:))))
         }
         if config.shows("filelocksmith", optionHeld: option) {
-            let title = selected.count == 1 ? "What’s Using This \(Self.isFolder(selected[0]) ? "Folder" : "File")?" : "What’s Using These Items?"
+            let title = selected.count > 1 ? String(localized: "What’s Using These Items?")
+                : Self.isFolder(selected[0]) ? String(localized: "What’s Using This Folder?")
+                : String(localized: "What’s Using This File?")
             menu.addItem(item(title, symbol: "lock.doc", action: #selector(fileLocksmith(_:))))
         }
         if config.isEnabled("peek") {
-            menu.addItem(item("Peek", symbol: "eye", action: #selector(peek(_:))))
+            menu.addItem(item(String(localized: "Peek"), symbol: "eye", action: #selector(peek(_:))))
         }
         return menu
     }
@@ -100,15 +102,16 @@ final class MacToysFinderSync: FIFinderSync {
             menu.addItem(entry)
         }
         if templates.isEmpty {
-            let empty = NSMenuItem(title: "No Templates", action: nil, keyEquivalent: "")
+            let empty = NSMenuItem(title: String(localized: "No Templates"), action: nil, keyEquivalent: "")
             empty.isEnabled = false
             menu.addItem(empty)
         }
         menu.addItem(.separator())
-        menu.addItem(item("Open Templates Folder", symbol: "folder", action: #selector(openTemplates(_:))))
+        menu.addItem(item(String(localized: "Open Templates Folder"), symbol: "folder", action: #selector(openTemplates(_:))))
         return menu
     }
 
+    /// `title` is localized.
     private func item(_ title: String, symbol: String?, action: Selector) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = self

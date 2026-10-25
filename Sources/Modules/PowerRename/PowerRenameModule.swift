@@ -141,10 +141,9 @@ public final class PowerRenameModule: ToyModule {
             return
         }
         if outcome.failures.isEmpty {
-            HUD.show("Restored \(outcome.done.count) name\(outcome.done.count == 1 ? "" : "s")", symbol: "arrow.uturn.backward")
+            HUD.show("Restored \(outcome.done.count) names", symbol: "arrow.uturn.backward")
         } else {
-            HUD.show("\(outcome.failures.count) item\(outcome.failures.count == 1 ? "" : "s") could not be restored",
-                     symbol: "exclamationmark.triangle")
+            HUD.show("\(outcome.failures.count) items could not be restored", symbol: "exclamationmark.triangle")
         }
     }
 
@@ -245,10 +244,12 @@ private struct PowerRenameSettingsView: View {
                 Picker(selection: $settings.value.regexFlavor) {
                     ForEach(RegexFlavor.allCases, id: \.self) { Text($0.title).tag($0) }
                 } label: {
-                    RowLabel("Regular expression syntax",
+                    RowLabel(title: Text("Regular expression syntax"),
                              subtitle: settings.value.regexFlavor == .standard
-                                 ? "$1, $&, $` and $' in replacements; backslashes are literal."
-                                 : "Adds ${name}, $+{name}, backslash escapes and \\U \\L \\E \\u \\l case conversion.")
+                                 ? Text("$1, $&, $` and $' in replacements; backslashes are literal.",
+                                        comment: "PowerRename: keep the $… tokens as they are")
+                                 : Text("Adds ${name}, $+{name}, backslash escapes and \\U \\L \\E \\u \\l case conversion.",
+                                        comment: "PowerRename: keep the ${…} tokens and the backslash sequences as they are"))
                 }
                 LabeledContent {
                     Button("Clear History") {

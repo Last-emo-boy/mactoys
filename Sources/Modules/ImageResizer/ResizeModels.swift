@@ -12,9 +12,18 @@ public enum ResizeFit: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .fill: "Fill"
-        case .fit: "Fit"
-        case .stretch: "Stretch"
+        case .fill: String(localized: "Fill", comment: "Image Resizer: cover the size and crop the rest")
+        case .fit: String(localized: "Fit", comment: "Image Resizer: keep the whole picture inside the size")
+        case .stretch: String(localized: "Stretch", comment: "Image Resizer: distort the picture to the exact size")
+        }
+    }
+
+    /// The lowercase word in a size summary ("1366 × 768 px · fit").
+    public var shortTitle: String {
+        switch self {
+        case .fill: String(localized: "fill", comment: "Image Resizer size summary (lowercase): cover the size and crop the rest")
+        case .fit: String(localized: "fit", comment: "Image Resizer size summary (lowercase): keep the whole picture inside the size")
+        case .stretch: String(localized: "stretch", comment: "Image Resizer size summary (lowercase): distort to the exact size")
         }
     }
 }
@@ -24,10 +33,10 @@ public enum ResizeUnit: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .pixel: "Pixels"
-        case .percent: "Percent"
-        case .centimeter: "Centimeters"
-        case .inch: "Inches"
+        case .pixel: String(localized: "Pixels")
+        case .percent: String(localized: "Percent")
+        case .centimeter: String(localized: "Centimeters")
+        case .inch: String(localized: "Inches")
         }
     }
 
@@ -62,13 +71,35 @@ public struct ResizePreset: Codable, Equatable, Hashable, Identifiable, Sendable
 
     public var hasAutoSide: Bool { width <= 0 || height <= 0 }
 
-    /// "1366 × 768 px · fit", "50 % · stretch", "800 × auto px · fit".
+    /// "1366 × 768 px · fit", "50 × 50 % · stretch", "800 × auto px · fit".
     public var summary: String {
-        func f(_ v: Double) -> String { v <= 0 ? "auto" : ResizeFileNamer.format(v) }
-        return "\(f(width)) × \(f(height)) \(unit.symbol) · \(fit.rawValue)"
+        func f(_ v: Double) -> String {
+            v <= 0 ? String(localized: "auto", comment: "Image Resizer: a side computed from the other one (empty width or height); keep it short")
+                   : v.formatted(.number.grouping(.never).precision(.fractionLength(0...2)))
+        }
+        return String(localized: "\(f(width)) × \(f(height)) \(unit.symbol) · \(fit.shortTitle)",
+                      comment: "Image Resizer size summary: width × height, unit symbol (px, %, cm, in), then how it fits")
     }
 
-    /// PowerToys' default sizes.
+    /// The name shown to the user. The default names ("Small", "Medium", …) are stored in English and
+    /// translated for display as long as they are unchanged; names the user typed are shown as is.
+    public var displayName: String { Self.localizedDefaultName(name) ?? name }
+
+    static func localizedDefaultName(_ name: String) -> String? {
+        switch name {
+        case "Small": String(localized: "Small", comment: "Image Resizer default size name")
+        case "Medium": String(localized: "Medium", comment: "Image Resizer default size name")
+        case "Large": String(localized: "Large", comment: "Image Resizer default size name")
+        case "Phone": String(localized: "Phone", comment: "Image Resizer default size name")
+        case "Custom": String(localized: "Custom", comment: "Image Resizer: the size typed in the window")
+        default: nil
+        }
+    }
+
+    /// The name of a size added in Settings.
+    public static var newSizeName: String { String(localized: "New size", comment: "Image Resizer: name of a size just added in Settings") }
+
+    /// PowerToys' default sizes. The names are saved in English; `displayName` translates them.
     public static let defaults: [ResizePreset] = [
         ResizePreset(name: "Small", width: 854, height: 480),
         ResizePreset(name: "Medium", width: 1366, height: 768),
@@ -109,7 +140,13 @@ public enum FallbackEncoder: String, Codable, CaseIterable, Sendable {
 public enum PNGInterlace: String, Codable, CaseIterable, Sendable {
     case `default`, on, off
 
-    public var title: String { rawValue.capitalized }
+    public var title: String {
+        switch self {
+        case .default: String(localized: "Default", comment: "Image Resizer encoder option: let the system decide")
+        case .on: String(localized: "On", comment: "Image Resizer: PNG interlacing on")
+        case .off: String(localized: "Off", comment: "Image Resizer: PNG interlacing off")
+        }
+    }
 }
 
 public enum TIFFCompression: String, Codable, CaseIterable, Sendable {
@@ -117,8 +154,8 @@ public enum TIFFCompression: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .default: "Default"
-        case .none: "None"
+        case .default: String(localized: "Default", comment: "Image Resizer encoder option: let the system decide")
+        case .none: String(localized: "None", comment: "Image Resizer: no TIFF compression")
         case .ccitt3: "CCITT3"
         case .ccitt4: "CCITT4"
         case .lzw: "LZW"

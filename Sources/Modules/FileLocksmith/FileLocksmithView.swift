@@ -12,7 +12,7 @@ struct FileLocksmithView: View {
 
     var body: some View {
         if chrome {
-            HostedToolWindowChrome(title: "File Locksmith", symbol: "lock.doc.fill", tint: .yellow) {
+            HostedToolWindowChrome(title: String(localized: "File Locksmith"), symbol: "lock.doc.fill", tint: .yellow) {
                 toolbarButtons
             } content: {
                 main
@@ -47,18 +47,24 @@ struct FileLocksmithView: View {
         VStack(spacing: 10) {
             pathBar
             if let error = model.lastError {
-                InfoBar(.error, title: "Something went wrong", message: error)
+                InfoBar(.error, title: Text("Something went wrong"), message: Text(verbatim: error))
             }
             if model.processes.isEmpty {
                 Group {
                     if model.scanning {
                         ProgressView("Scanning processes…")
                     } else {
-                        ContentUnavailableView("Nothing is using \(model.paths.count == 1 ? "this item" : "these items")",
-                                               systemImage: "lock.open",
-                                               description: Text(model.inaccessible > 0 && !model.elevated
-                                                                 ? "Processes of other users weren’t checked. Restart as administrator to include them."
-                                                                 : "No process has these files open or uses these folders."))
+                        ContentUnavailableView {
+                            Label {
+                                model.paths.count == 1 ? Text("Nothing is using this item") : Text("Nothing is using these items")
+                            } icon: {
+                                Image(systemName: "lock.open")
+                            }
+                        } description: {
+                            model.inaccessible > 0 && !model.elevated
+                                ? Text("Processes of other users weren’t checked. Restart as administrator to include them.")
+                                : Text("No process has these files open or uses these folders.")
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -86,13 +92,13 @@ struct FileLocksmithView: View {
         HStack(spacing: 8) {
             Image(systemName: model.isFolder || model.paths.count > 1 ? "folder" : "doc")
                 .foregroundStyle(Color.accentColor)
-            Text(model.pathTitle)
+            Text(verbatim: model.pathTitle)
                 .font(.system(size: 12, design: .monospaced))
                 .lineLimit(1).truncationMode(.middle)
                 .help(model.paths.map(\.path).joined(separator: "\n"))
             Spacer()
             if model.scanning && !model.processes.isEmpty { ProgressView().controlSize(.small) }
-            Text("\(model.processes.count) process\(model.processes.count == 1 ? "" : "es")")
+            Text("\(model.processes.count) processes")
                 .font(.system(size: 11.5)).foregroundStyle(.secondary)
         }
         .padding(.horizontal, 10)
@@ -120,8 +126,8 @@ private struct ProcessCard: View {
                             .rotationEffect(.degrees(expanded ? 90 : 0))
                         icon
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(process.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
-                            Text(model.subtitle(process))
+                            Text(verbatim: process.name).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                            Text(verbatim: model.subtitle(process))
                                 .font(.system(size: 11.5)).foregroundStyle(.secondary)
                                 .lineLimit(1).truncationMode(.middle)
                         }
@@ -137,7 +143,8 @@ private struct ProcessCard: View {
                 Divider().padding(.leading, 10)
                 VStack(alignment: .leading, spacing: 4) {
                     if let exe = process.executablePath {
-                        detail("Program", FileLocksmithModel.abbreviate(exe))
+                        detail(String(localized: "Program", comment: "File Locksmith: label of the process’s program path; keep it short"),
+                               FileLocksmithModel.abbreviate(exe))
                     }
                     ForEach(Array(process.files.enumerated()), id: \.offset) { _, f in
                         detail(badge(f), model.displayPath(f.path), full: f.path)
@@ -153,7 +160,8 @@ private struct ProcessCard: View {
 
     @ViewBuilder private var actions: some View {
         if !model.canEnd(process) {
-            Text(process.pid == getpid() ? "MacToys" : "System")
+            (process.pid == getpid() ? Text(verbatim: "MacToys")
+                                     : Text("System", comment: "File Locksmith: shown instead of End process for system processes"))
                 .font(.system(size: 11.5)).foregroundStyle(.tertiary)
         } else if model.stuck.contains(process.pid) {
             Button("Force Quit") { model.forceQuit(process) }
@@ -179,20 +187,23 @@ private struct ProcessCard: View {
 
     private func badge(_ f: LockedFile) -> String {
         switch f.kind {
-        case .openFile: f.descriptor.map { "fd \($0)" } ?? "open"
-        case .workingDirectory: "cwd"
-        case .rootDirectory: "root"
-        case .executable: "mapped"
+        case .openFile:
+            f.descriptor.map { String(localized: "fd \(String($0))", comment: "File Locksmith badge: open file descriptor number (Unix term, as lsof shows it); keep it short") }
+                ?? String(localized: "open", comment: "File Locksmith badge: an open file; keep it short")
+        case .workingDirectory: String(localized: "cwd", comment: "File Locksmith badge: the process’s current working directory (Unix term, as lsof shows it); keep it short")
+        case .rootDirectory: String(localized: "root", comment: "File Locksmith badge: the process’s root directory (chroot, as lsof shows it); keep it short")
+        case .executable: String(localized: "mapped", comment: "File Locksmith badge: the program or a library mapped into memory; keep it short")
         }
     }
 
     private func detail(_ label: String, _ value: String, full: String? = nil) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(label)
+            Text(verbatim: label)
                 .font(.system(size: 10.5, weight: .medium, design: .monospaced))
                 .foregroundStyle(.secondary)
-                .frame(width: 58, alignment: .leading)
-            Text(value).font(.system(size: 11.5, design: .monospaced)).textSelection(.enabled)
+                .frame(minWidth: 58, alignment: .leading)
+                .fixedSize()
+            Text(verbatim: value).font(.system(size: 11.5, design: .monospaced)).textSelection(.enabled)
                 .lineLimit(1).truncationMode(.middle)
                 .help(full ?? value)
             Spacer(minLength: 0)

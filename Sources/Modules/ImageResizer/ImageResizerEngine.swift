@@ -10,7 +10,9 @@ public enum ImageResizerEngine {
     public struct FileError: Error, LocalizedError, Sendable {
         public let url: URL
         public let message: String
-        public var errorDescription: String? { "\(url.lastPathComponent): \(message)" }
+        public var errorDescription: String? {
+            String(localized: "\(url.lastPathComponent): \(message)", comment: "Image Resizer failure: file name: reason")
+        }
     }
 
     /// Thrown by the batch call when some images failed; `outputs` lists the files that were written.
@@ -18,8 +20,9 @@ public enum ImageResizerEngine {
         public let outputs: [URL]
         public let failures: [FileError]
         public var errorDescription: String? {
-            "\(failures.count) of \(failures.count + outputs.count) images could not be resized: "
-                + failures.map { $0.errorDescription ?? "" }.joined(separator: "; ")
+            let list = failures.map { $0.errorDescription ?? "" }.joined(separator: "; ")
+            return String(localized: "\(failures.count) of \(failures.count + outputs.count) images could not be resized: \(list)",
+                          comment: "Image Resizer: failed count, of all images, then the list of failures")
         }
     }
 
@@ -49,7 +52,7 @@ public enum ImageResizerEngine {
         guard let src = CGImageSourceCreateWithURL(url as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary),
               CGImageSourceGetCount(src) > 0, let sourceTypeID = CGImageSourceGetType(src) as String?,
               let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [String: Any] else {
-            throw fail("Not an image MacToys can read")
+            throw fail(String(localized: "Not an image MacToys can read"))
         }
         let info = ImageInfo(props)
         let sourceType = UTType(sourceTypeID)
@@ -71,7 +74,7 @@ public enum ImageResizerEngine {
                                                                 components: [url.deletingPathExtension().lastPathComponent],
                                                                 pathExtension: ext)
         } else {
-            let values = ResizeFileNamer.Values(original: url.deletingPathExtension().lastPathComponent, sizeName: preset.name,
+            let values = ResizeFileNamer.Values(original: url.deletingPathExtension().lastPathComponent, sizeName: preset.displayName,
                                                 selectedWidth: preset.width, selectedHeight: preset.height,
                                                 actualWidth: Int(size.width), actualHeight: Int(size.height))
             let comps = ResizeFileNamer.components(format: options.fileNameFormat, values: values)
@@ -83,7 +86,7 @@ public enum ImageResizerEngine {
         do {
             try fm.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
         } catch {
-            throw fail("Could not create the folder: \(error.localizedDescription)")
+            throw fail(String(localized: "Could not create the folder: \(error.localizedDescription)"))
         }
 
         // Encode next to the target, then move it into place.
@@ -91,7 +94,8 @@ public enum ImageResizerEngine {
         defer { try? fm.removeItem(at: temp) }
         let frames = Self.supportsFrames(outType) ? CGImageSourceGetCount(src) : 1
         guard let dest = CGImageDestinationCreateWithURL(temp as CFURL, outType.identifier as CFString, frames, nil) else {
-            throw fail("Can’t write \(outType.localizedDescription ?? outType.identifier) files")
+            throw fail(String(localized: "Can’t write \(outType.localizedDescription ?? outType.identifier) files",
+                              comment: "Image Resizer: the value is a file type, e.g. “JPEG image”"))
         }
         if let container = CGImageSourceCopyProperties(src, nil) as? [String: Any],
            let gif = container[kCGImagePropertyGIFDictionary as String] {
@@ -99,7 +103,7 @@ public enum ImageResizerEngine {
         }
         for i in 0..<frames {
             guard let image = CGImageSourceCreateImageAtIndex(src, i, [kCGImageSourceShouldCacheImmediately: true] as CFDictionary) else {
-                throw fail("Frame \(i + 1) could not be decoded")
+                throw fail(String(localized: "Frame \(i + 1) could not be decoded", comment: "Image Resizer: a frame of an animated or multi-page image"))
             }
             let frameProps = i == 0 ? props : (CGImageSourceCopyPropertiesAtIndex(src, i, nil) as? [String: Any] ?? [:])
             let frameInfo = i == 0 ? info : ImageInfo(frameProps)
@@ -108,12 +112,12 @@ public enum ImageResizerEngine {
                                                             ignoreOrientation: options.ignoreOrientation, dpi: frameInfo.dpi)
             guard let resized = render(image, orientation: frameInfo.orientation, plan: framePlan,
                                        opaque: outType.conforms(to: .jpeg)) else {
-                throw fail("The image could not be drawn")
+                throw fail(String(localized: "The image could not be drawn"))
             }
             CGImageDestinationAddImage(dest, resized, outputProperties(frameProps, type: outType, size: framePlan.outputSize,
                                                                        options: options) as CFDictionary)
         }
-        guard CGImageDestinationFinalize(dest) else { throw fail("The resized image could not be saved") }
+        guard CGImageDestinationFinalize(dest) else { throw fail(String(localized: "The resized image could not be saved")) }
 
         do {
             if options.replaceOriginals && sameType {

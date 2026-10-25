@@ -92,7 +92,7 @@ public final class FileLocksmithModule: ToyModule {
             return
         }
         let model = FileLocksmithModel(paths: urls)
-        let window = HostedToolWindow(title: "File Locksmith", size: CGSize(width: 580, height: 460),
+        let window = HostedToolWindow(title: info.name, size: CGSize(width: 580, height: 460),
                                       minSize: CGSize(width: 460, height: 300), autosaveName: "MacToys.FileLocksmith",
                                       content: FileLocksmithView(model: model).frame(minWidth: 460, minHeight: 300))
         window.onClose = { [weak self, weak window] in
@@ -194,7 +194,7 @@ private struct FileLocksmithSettingsView: View {
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        panel.prompt = "Check"
+        panel.prompt = String(localized: "Check", comment: "Open panel button: check what uses the chosen items")
         if panel.runModal() == .OK { module.open(panel.urls) }
     }
 }

@@ -199,7 +199,7 @@ public struct RenameEngine {
         do {
             return try NSRegularExpression(pattern: pattern, options: options.caseSensitive ? [] : [.caseInsensitive])
         } catch {
-            throw InvalidPattern(message: "The regular expression is not valid.")
+            throw InvalidPattern(message: String(localized: "The regular expression is not valid."))
         }
     }
 
@@ -290,12 +290,12 @@ public struct RenameEngine {
 
     /// Why a name can't be used on macOS, or nil when it can.
     public static func validate(_ name: String) -> String? {
-        if name.trimmingCharacters(in: .whitespaces).isEmpty { return "The name is empty" }
-        if name == "." || name == ".." { return "“\(name)” is reserved" }
-        if name.contains("/") { return "Names can’t contain “/”" }
-        if name.contains(":") { return "Names can’t contain “:”" }
-        if name.contains("\0") { return "Names can’t contain null characters" }
-        if name.utf8.count > 255 { return "The name is longer than 255 bytes" }
+        if name.trimmingCharacters(in: .whitespaces).isEmpty { return String(localized: "The name is empty") }
+        if name == "." || name == ".." { return String(localized: "“\(name)” is reserved", comment: "PowerRename: the new name is . or .., which macOS reserves") }
+        if name.contains("/") { return String(localized: "Names can’t contain “/”") }
+        if name.contains(":") { return String(localized: "Names can’t contain “:”") }
+        if name.contains("\0") { return String(localized: "Names can’t contain null characters") }
+        if name.utf8.count > 255 { return String(localized: "The name is longer than 255 bytes") }
         return nil
     }
 

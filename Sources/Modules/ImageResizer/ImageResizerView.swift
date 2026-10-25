@@ -13,8 +13,8 @@ struct ImageResizerView: View {
             HStack(spacing: 12) {
                 ModuleIcon(symbol: "photo.on.rectangle.angled", tint: .green, size: 34)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(model.title).font(.system(size: 15, weight: .semibold))
-                    Text(model.source).font(.system(size: 11.5)).foregroundStyle(.secondary)
+                    Text(verbatim: model.title).font(.system(size: 15, weight: .semibold))
+                    Text(verbatim: model.source).font(.system(size: 11.5)).foregroundStyle(.secondary)
                 }
             }
             switch model.phase {
@@ -35,12 +35,13 @@ struct ImageResizerView: View {
             VStack(spacing: 0) {
                 ForEach(Array(model.presets.enumerated()), id: \.element.id) { i, preset in
                     if i > 0 { Divider().padding(.leading, 40) }
-                    SizeRow(title: preset.name, detail: preset.summary, selected: model.selectedIndex == i) {
+                    SizeRow(title: preset.displayName, detail: preset.summary, selected: model.selectedIndex == i) {
                         model.selectedIndex = i
                     }
                 }
                 if !model.presets.isEmpty { Divider().padding(.leading, 40) }
-                SizeRow(title: "Custom", detail: model.custom.summary, selected: model.selectedIndex == -1) {
+                SizeRow(title: String(localized: "Custom", comment: "Image Resizer: the size typed in the window"),
+                        detail: model.custom.summary, selected: model.selectedIndex == -1) {
                     model.selectedIndex = -1
                 }
                 if model.selectedIndex == -1 {
@@ -81,7 +82,8 @@ struct ImageResizerView: View {
         VStack(alignment: .leading, spacing: 10) {
             ProgressView(value: Double(done), total: Double(max(1, model.urls.count)))
             HStack {
-                Text("\(done) of \(model.urls.count) · \(current)")
+                Text("\(done) of \(model.urls.count) · \(current)",
+                     comment: "Image Resizer progress: images done, of all images, then the file being resized")
                     .font(.system(size: 12)).foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.middle)
                 Spacer()
@@ -94,8 +96,8 @@ struct ImageResizerView: View {
         VStack(alignment: .leading, spacing: 12) {
             let ok = s.failures.isEmpty && !s.cancelled
             Label {
-                Text(s.cancelled ? "Stopped after \(s.outputs.count) of \(model.urls.count) images"
-                     : "Resized \(s.outputs.count) of \(model.urls.count) image\(model.urls.count == 1 ? "" : "s")")
+                (s.cancelled ? Text("Stopped after \(s.outputs.count) of \(model.urls.count) images")
+                             : Text("Resized \(s.outputs.count) of \(model.urls.count) images"))
                     .font(.system(size: 13, weight: .medium))
             } icon: {
                 Image(systemName: ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
@@ -105,7 +107,7 @@ struct ImageResizerView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(Array(s.failures.enumerated()), id: \.offset) { _, f in
-                            Text(f).font(.system(size: 11.5)).foregroundStyle(.secondary).textSelection(.enabled)
+                            Text(verbatim: f).font(.system(size: 11.5)).foregroundStyle(.secondary).textSelection(.enabled)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -136,9 +138,9 @@ private struct SizeRow: View {
                 Image(systemName: selected ? "largecircle.fill.circle" : "circle")
                     .font(.system(size: 15))
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary)
-                Text(title).font(.system(size: 13))
+                Text(verbatim: title).font(.system(size: 13))
                 Spacer()
-                Text(detail).font(.system(size: 11.5).monospacedDigit()).foregroundStyle(.secondary)
+                Text(verbatim: detail).font(.system(size: 11.5).monospacedDigit()).foregroundStyle(.secondary)
             }
             .padding(.horizontal, 12)
             .frame(height: 34)
@@ -156,15 +158,17 @@ struct PresetEditor: View {
     var body: some View {
         HStack(spacing: 6) {
             if showsName {
-                TextField("Name", text: $preset.name, prompt: Text("Name")).frame(width: 110)
+                TextField("Name", text: $preset.editableName, prompt: Text("Name")).frame(width: 110)
             }
-            TextField("Width", text: dimension(\.width), prompt: Text("auto")).frame(width: 64)
+            TextField("Width", text: dimension(\.width), prompt: Text("auto", comment: "Image Resizer: a side computed from the other one (empty width or height); keep it short"))
+                .frame(width: 64)
                 .multilineTextAlignment(.trailing)
-            Text("×").foregroundStyle(.secondary)
-            TextField("Height", text: dimension(\.height), prompt: Text("auto")).frame(width: 64)
+            Text(verbatim: "×").foregroundStyle(.secondary)
+            TextField("Height", text: dimension(\.height), prompt: Text("auto", comment: "Image Resizer: a side computed from the other one (empty width or height); keep it short"))
+                .frame(width: 64)
                 .multilineTextAlignment(.trailing)
             Picker("Unit", selection: $preset.unit) {
-                ForEach(ResizeUnit.allCases, id: \.self) { Text($0.symbol).tag($0) }
+                ForEach(ResizeUnit.allCases, id: \.self) { Text(verbatim: $0.symbol).tag($0) }
             }
             .labelsHidden().fixedSize()
             Picker("Fit", selection: $preset.fit) {
@@ -180,5 +184,13 @@ struct PresetEditor: View {
     private func dimension(_ key: WritableKeyPath<ResizePreset, Double>) -> Binding<String> {
         Binding(get: { preset[keyPath: key] > 0 ? ResizeFileNamer.format(preset[keyPath: key]) : "" },
                 set: { preset[keyPath: key] = max(0, Double($0.replacingOccurrences(of: ",", with: ".")) ?? 0) })
+    }
+}
+
+extension ResizePreset {
+    /// The name as a text field shows it: a default name translated until the user types another one.
+    var editableName: String {
+        get { displayName }
+        set { if newValue != displayName { name = newValue } }
     }
 }

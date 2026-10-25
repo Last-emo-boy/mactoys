@@ -77,7 +77,8 @@ struct NewPlusPickerView: View {
                     Button(action: onChooseFolder) {
                         HStack(spacing: 4) {
                             Image(systemName: "folder.fill").font(.system(size: 10))
-                            Text("in \(model.destination.lastPathComponent)").lineLimit(1).truncationMode(.middle)
+                            Text("in \(model.destination.lastPathComponent)", comment: "New+ picker: the folder the new item is created in")
+                                .lineLimit(1).truncationMode(.middle)
                             Image(systemName: "chevron.down").font(.system(size: 8, weight: .bold))
                         }
                         .font(.system(size: 11.5))
@@ -107,7 +108,7 @@ struct NewPlusPickerView: View {
         let items = model.filtered
         return Group {
             if items.isEmpty {
-                Text(model.templates.isEmpty ? "The templates folder is empty." : "No template matches “\(model.query)”.")
+                (model.templates.isEmpty ? Text("The templates folder is empty.") : Text("No template matches “\(model.query)”."))
                     .font(.system(size: 12)).foregroundStyle(Self.secondary)
                     .frame(maxWidth: .infinity, minHeight: 80)
             } else {
@@ -135,11 +136,11 @@ struct NewPlusPickerView: View {
         HStack(spacing: 10) {
             Image(nsImage: TemplateIcons.icon(for: t)).resizable().frame(width: 26, height: 26)
             VStack(alignment: .leading, spacing: 1) {
-                Text(model.title(t)).font(.system(size: 13, weight: .medium)).lineLimit(1)
-                Text(TemplateIcons.kind(of: t)).font(.system(size: 11)).foregroundStyle(Self.secondary).lineLimit(1)
+                Text(verbatim: model.title(t)).font(.system(size: 13, weight: .medium)).lineLimit(1)
+                Text(verbatim: TemplateIcons.kind(of: t)).font(.system(size: 11)).foregroundStyle(Self.secondary).lineLimit(1)
             }
             Spacer()
-            if selected { Text("↩").font(.system(size: 12, weight: .semibold)).foregroundStyle(Self.secondary) }
+            if selected { Text(verbatim: "↩").font(.system(size: 12, weight: .semibold)).foregroundStyle(Self.secondary) }
         }
         .padding(.horizontal, 8)
         .frame(height: 40)
@@ -151,7 +152,7 @@ struct NewPlusPickerView: View {
         HStack {
             Button("Open Templates Folder", action: onOpenTemplates).buttonStyle(.link).font(.system(size: 12))
             Spacer()
-            Text("esc to close").font(.system(size: 11)).foregroundStyle(Self.tertiary)
+            Text("esc to close", comment: "New+ picker hint: press the Escape key to close").font(.system(size: 11)).foregroundStyle(Self.tertiary)
         }
     }
 }
@@ -166,10 +167,10 @@ enum TemplateIcons {
     }
 
     static func kind(of t: NewPlusTemplate) -> String {
-        if t.isFolder { return "Folder" }
+        if t.isFolder { return String(localized: "Folder", comment: "New+ picker: kind of a folder template") }
         let type = (try? t.url.resourceValues(forKeys: [.contentTypeKey]))?.contentType
             ?? UTType(filenameExtension: t.url.pathExtension)
-        return type?.localizedDescription ?? "Document"
+        return type?.localizedDescription ?? String(localized: "Document", comment: "New+ picker: kind of a file of unknown type")
     }
 }
 
