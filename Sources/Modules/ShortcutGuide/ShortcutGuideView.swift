@@ -45,7 +45,8 @@ final class GuideModel {
         switch tab {
         case .app:
             let pins = appGroups.flatMap { g in g.items.filter { pinned.contains($0.id) } }
-            groups = (pins.isEmpty ? [] : [ShortcutGroup("Pinned", pins)]) + appGroups
+            let pinnedGroup = ShortcutGroup(String(localized: "Pinned", comment: "Shortcut Guide: group of shortcuts pinned to the top"), pins)
+            groups = (pins.isEmpty ? [] : [pinnedGroup]) + appGroups
         case .macOS: groups = systemGroups
         case .macToys: groups = macToysGroups
         }
@@ -107,8 +108,8 @@ struct ShortcutGuideView: View {
             }
             .frame(width: 40, height: 40)
             VStack(alignment: .leading, spacing: 3) {
-                Text(model.appName).font(.system(size: 22, weight: .bold)).foregroundStyle(ink)
-                Text(subtitle).font(.system(size: 12.5)).foregroundStyle(secondaryInk)
+                Text(verbatim: model.appName).font(.system(size: 22, weight: .bold)).foregroundStyle(ink)
+                Text(verbatim: subtitle).font(.system(size: 12.5)).foregroundStyle(secondaryInk)
             }
             Spacer(minLength: 20)
             HStack(spacing: 8) {
@@ -124,9 +125,9 @@ struct ShortcutGuideView: View {
             .background(RoundedRectangle(cornerRadius: 8).fill(ink.opacity(0.07)))
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(ink.opacity(0.1)))
             Picker("", selection: $model.tab) {
-                Text(model.appName).tag(GuideModel.Tab.app)
-                Text("macOS").tag(GuideModel.Tab.macOS)
-                Text("MacToys").tag(GuideModel.Tab.macToys)
+                Text(verbatim: model.appName).tag(GuideModel.Tab.app)
+                Text(verbatim: "macOS").tag(GuideModel.Tab.macOS)
+                Text(verbatim: "MacToys").tag(GuideModel.Tab.macToys)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -135,14 +136,16 @@ struct ShortcutGuideView: View {
     }
 
     private var subtitle: String {
-        let close = model.openedByHold ? "release ⌘ to close" : "esc to close"
-        switch model.tab {
-        case .app:
-            if model.loading { return "Reading the menu bar… · \(close)" }
-            return "\(model.appShortcutCount) shortcut\(model.appShortcutCount == 1 ? "" : "s") read from the menu bar · \(close)"
-        case .macOS: return "macOS keyboard shortcuts · \(close)"
-        case .macToys: return "Shortcuts of the MacToys utilities you have on · \(close)"
+        let what = switch model.tab {
+        case .app where model.loading: String(localized: "Reading the menu bar…")
+        case .app: String(localized: "\(model.appShortcutCount) shortcuts read from the menu bar")
+        case .macOS: String(localized: "macOS keyboard shortcuts")
+        case .macToys: String(localized: "Shortcuts of the MacToys utilities you have on")
         }
+        let close = model.openedByHold
+            ? String(localized: "release ⌘ to close", comment: "Shortcut Guide hint after the tab description")
+            : String(localized: "esc to close", comment: "Shortcut Guide hint after the tab description")
+        return "\(what) · \(close)"
     }
 
     @ViewBuilder private var content: some View {
@@ -152,7 +155,9 @@ struct ShortcutGuideView: View {
         } else if model.tab == .app, model.loading {
             VStack { Spacer(); ProgressView(); Spacer() }.frame(maxWidth: .infinity)
         } else if groups.isEmpty {
-            placeholder(model.query.isEmpty ? "No keyboard shortcuts." : "No shortcuts match “\(model.query)”.", symbol: "keyboard")
+            placeholder(model.query.isEmpty ? String(localized: "No keyboard shortcuts.")
+                                            : String(localized: "No shortcuts match “\(model.query)”.", comment: "%@ is the search text"),
+                        symbol: "keyboard")
         } else {
             let columns = ColumnLayout.distribute(groups, columns: 3)
             ScrollView {
@@ -178,7 +183,7 @@ struct ShortcutGuideView: View {
         VStack(spacing: 10) {
             Spacer()
             Image(systemName: symbol).font(.system(size: 26)).foregroundStyle(secondaryInk)
-            Text(text).font(.system(size: 13)).foregroundStyle(secondaryInk).multilineTextAlignment(.center)
+            Text(verbatim: text).font(.system(size: 13)).foregroundStyle(secondaryInk).multilineTextAlignment(.center)
             Spacer()
         }
         .frame(maxWidth: .infinity)
@@ -186,7 +191,7 @@ struct ShortcutGuideView: View {
 
     private func groupView(_ group: ShortcutGroup) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(group.title)
+            Text(verbatim: group.title)
                 .font(.system(size: 12.5, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
                 .padding(.bottom, 4)
@@ -210,7 +215,7 @@ private struct GuideRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(item.title)
+            Text(verbatim: item.title)
                 .font(.system(size: 13))
                 .foregroundStyle(ink.opacity(item.enabled ? 0.92 : 0.45))
                 .lineLimit(1)
@@ -222,7 +227,7 @@ private struct GuideRow: View {
                         .foregroundStyle(pinned ? Color.accentColor : ink.opacity(0.5))
                 }
                 .buttonStyle(.plain)
-                .help(pinned ? "Unpin" : "Pin to the top")
+                .help(pinned ? Text("Unpin") : Text("Pin to the top"))
             }
             Spacer(minLength: 10)
             Keycaps(item.keys, dark: dark).opacity(item.enabled ? 1 : 0.5)

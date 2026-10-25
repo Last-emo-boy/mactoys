@@ -29,7 +29,7 @@ enum MediaTranscoder {
         case .mp4:
             let asset = AVURLAsset(url: source)
             guard try await !asset.loadTracks(withMediaType: .video).isEmpty else {
-                throw AdvancedPasteTransforms.TransformError.unsupportedInput("Transcode to .mp4 needs a video file.")
+                throw AdvancedPasteTransforms.TransformError.unsupportedInput(String(localized: "Transcode to .mp4 needs a video file."))
             }
             try await export(source, preset: AVAssetExportPresetHighestQuality, type: .mp4, to: output, progress: progress)
         case .mp3:
@@ -42,10 +42,12 @@ enum MediaTranscoder {
                                progress: (@Sendable (Double) -> Void)?) async throws {
         let asset = AVURLAsset(url: source)
         guard try await asset.load(.isExportable) else {
-            throw AdvancedPasteTransforms.TransformError.failed("This media file can't be exported (it may be protected).")
+            throw AdvancedPasteTransforms.TransformError.failed(String(localized: "This media file can't be exported (it may be protected)."))
         }
         guard let session = AVAssetExportSession(asset: asset, presetName: preset) else {
-            throw AdvancedPasteTransforms.TransformError.failed("AVFoundation can't convert this file to .\(output.pathExtension).")
+            throw AdvancedPasteTransforms.TransformError.failed(
+                String(localized: "AVFoundation can't convert this file to .\(output.pathExtension).",
+                       comment: "%@ is a file extension such as m4a or mp4"))
         }
         try? FileManager.default.removeItem(at: output)
         let watcher = Task {
@@ -66,7 +68,7 @@ enum MediaTranscoder {
         }
         guard let lame = tool("lame") else {
             throw AdvancedPasteTransforms.TransformError.encoderMissing(
-                "macOS has no MP3 encoder. Install ffmpeg or LAME (brew install lame) to transcode to .mp3, or use .m4a.")
+                String(localized: "macOS has no MP3 encoder. Install ffmpeg or LAME (brew install lame) to transcode to .mp3, or use .m4a."))
         }
         let aac = scratch.appendingPathComponent("intermediate.m4a")
         let wav = scratch.appendingPathComponent("intermediate.wav")
@@ -108,8 +110,10 @@ enum MediaTranscoder {
         guard process.terminationStatus == 0 else {
             let message = String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
+            let tool = URL(fileURLWithPath: executable).lastPathComponent
             throw AdvancedPasteTransforms.TransformError.failed(
-                "\(URL(fileURLWithPath: executable).lastPathComponent) failed: \(message.suffix(300))")
+                String(localized: "\(tool) failed: \(String(message.suffix(300)))",
+                       comment: "%1$@ is a command-line tool (ffmpeg, lame, afconvert), %2$@ the error it printed"))
         }
     }
 }

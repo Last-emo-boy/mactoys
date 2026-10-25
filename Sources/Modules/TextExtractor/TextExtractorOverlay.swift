@@ -116,19 +116,21 @@ struct TextExtractorOverlay<Background: View>: View {
 
     private var hintBar: some View {
         HStack(spacing: 8) {
-            Text(model.isDragging ? "Release to copy" : "Drag over text · click a word")
+            (model.isDragging ? Text("Release to copy") : Text("Drag over text · click a word"))
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white)
                 .padding(.leading, 4)
             Menu {
-                Button("Automatic") { setLanguage(nil) }
+                Button { setLanguage(nil) } label: {
+                    Text("Automatic", comment: "Recognition language: detect it automatically")
+                }
                 Divider()
                 ForEach(languages, id: \.code) { lang in
-                    Button(lang.name) { setLanguage(lang.code) }
+                    Button { setLanguage(lang.code) } label: { Text(verbatim: lang.name) }
                 }
             } label: {
                 HStack(spacing: 4) {
-                    Text(TextRecognizer.shortName(for: model.language))
+                    Text(verbatim: TextRecognizer.shortName(for: model.language))
                     Image(systemName: "chevron.down").font(.system(size: 8, weight: .bold))
                 }
                 .font(.system(size: 11.5))
@@ -144,7 +146,7 @@ struct TextExtractorOverlay<Background: View>: View {
             HStack(spacing: 2) {
                 ForEach(TextExtractorSettings.Mode.allCases, id: \.self) { mode in
                     Button { setMode(mode) } label: {
-                        Text(mode.title)
+                        Text(verbatim: mode.title)
                             .font(.system(size: 11.5, weight: model.mode == mode ? .semibold : .regular))
                             .foregroundStyle(.white.opacity(model.mode == mode ? 1 : 0.7))
                             .padding(.horizontal, 8)

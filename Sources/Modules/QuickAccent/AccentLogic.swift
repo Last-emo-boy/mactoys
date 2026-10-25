@@ -35,8 +35,8 @@ public enum AccentKey: String, CaseIterable, Codable, Sendable {
         case .slash: "/"
         case .plus: "="
         case .backslash: "\\"
-        case .multiply: "Num *"
-        case .divide: "Num /"
+        case .multiply: String(localized: "Num *", comment: "Keycap label: the numeric keypad's * key")
+        case .divide: String(localized: "Num /", comment: "Keycap label: the numeric keypad's / key")
         default: isLetter ? rawValue.uppercased() : String(rawValue.dropFirst(5))
         }
     }
@@ -47,9 +47,31 @@ public struct AccentSet: Identifiable, Sendable {
     public enum Group: String, Sendable { case language, special }
 
     public let id: String
+    /// Display name in the UI language.
     public let name: String
     public let group: Group
     public let characters: [AccentKey: [String]]
+
+    /// A language's set, named by the system in the UI language; `language` is a BCP 47 code such as `be-Latn`.
+    init(id: String, language: String, characters: [AccentKey: [String]]) {
+        let locale = Locale.current
+        let name = locale.localizedString(forIdentifier: language)
+            ?? Locale(identifier: "en").localizedString(forIdentifier: language) ?? language
+        self.init(id: id, displayName: name.prefix(1).uppercased(with: locale) + name.dropFirst(), group: .language,
+                  characters: characters)
+    }
+
+    /// A set whose name isn't a language the system can name (Pinyin, Currency, IPA…).
+    init(id: String, name: LocalizedStringResource, group: Group, characters: [AccentKey: [String]]) {
+        self.init(id: id, displayName: String(localized: name), group: group, characters: characters)
+    }
+
+    private init(id: String, displayName: String, group: Group, characters: [AccentKey: [String]]) {
+        self.id = id
+        self.name = displayName
+        self.group = group
+        self.characters = characters
+    }
 
     public static func named(_ id: String) -> AccentSet? { all.first { $0.id == id } }
 }
@@ -135,10 +157,10 @@ public struct AccentEngine: Sendable {
 
         public var title: String {
             switch self {
-            case .both: "Left, Right or Space"
-            case .space: "Space"
-            case .arrows: "Left/Right Arrow"
-            case .hold: "Press and hold the letter"
+            case .both: String(localized: "Left, Right or Space", comment: "Quick Accent activation: the arrow keys or the space bar")
+            case .space: String(localized: "Space", comment: "Quick Accent activation: the space bar")
+            case .arrows: String(localized: "Left/Right Arrow", comment: "Quick Accent activation: the left or right arrow key")
+            case .hold: String(localized: "Press and hold the letter", comment: "Quick Accent activation: no extra key")
             }
         }
     }

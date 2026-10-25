@@ -37,7 +37,7 @@ struct AccentToolbarView: View {
                 }
                 ForEach(Array(range), id: \.self) { i in
                     let selected = i == model.selection
-                    Text(AccentLogic.display(model.characters[i]))
+                    Text(verbatim: AccentLogic.display(model.characters[i]))
                         .font(.system(size: 21))
                         .foregroundStyle(.white)
                         .frame(width: AccentToolbarModel.cellWidth, height: 40)
@@ -61,8 +61,8 @@ struct AccentToolbarView: View {
             let c = model.characters[i]
             let unicode = AccentLogic.unicodeInfo(c)
             VStack(alignment: .leading, spacing: 2) {
-                Text(AccentLogic.display(c)).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
-                Text("\(unicode.code) · \(unicode.name)")
+                Text(verbatim: AccentLogic.display(c)).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                Text(verbatim: "\(unicode.code) · \(unicode.name)")
                     .font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
                     .lineLimit(2)
             }

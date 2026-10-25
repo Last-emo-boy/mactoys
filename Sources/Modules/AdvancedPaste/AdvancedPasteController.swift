@@ -215,7 +215,7 @@ final class AdvancedPasteController {
         guard let session else { return }
         let prompt = session.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty else { return }
-        perform(.ai(prompt: prompt, provider: settings.value.provider), title: "Paste with AI")
+        perform(.ai(prompt: prompt, provider: settings.value.provider), title: String(localized: "Paste with AI"))
     }
 
     private func perform(_ action: AdvancedPasteTransforms.Action, title: String) {
@@ -290,14 +290,16 @@ final class AdvancedPasteController {
                 HUD.show(action.requirement, symbol: "exclamationmark.triangle")
                 return
             }
-            if action.isLongRunning { HUD.show(title + "…", symbol: "hourglass", duration: 60) }
+            if action.isLongRunning { HUD.show(PasteSession.inProgress(title), symbol: "hourglass", duration: 60) }
             do {
                 let output = try await AdvancedPasteTransforms.apply(action, to: input)
                 if paste {
                     await self?.paste(output, original: original, into: app)
                 } else {
                     ClipboardHistory.shared.restore(output.clipItem)
-                    HUD.show("Clipboard converted · \(title)", symbol: "doc.on.clipboard")
+                    HUD.show(String(localized: "Clipboard converted · \(title)",
+                                    comment: "Notice after converting the clipboard in place; %@ is the action"),
+                             symbol: "doc.on.clipboard")
                 }
             } catch is CancellationError {
                 return

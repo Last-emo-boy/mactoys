@@ -11,8 +11,8 @@ public struct AIProvider: Codable, Hashable, Sendable {
             switch self {
             case .openAI: "OpenAI"
             case .azureOpenAI: "Azure OpenAI"
-            case .ollama: "Ollama (local)"
-            case .compatible: "OpenAI-compatible endpoint"
+            case .ollama: String(localized: "Ollama (local)", comment: "AI provider running on this Mac")
+            case .compatible: String(localized: "OpenAI-compatible endpoint", comment: "AI provider: any server with the OpenAI API")
             }
         }
 
@@ -67,15 +67,22 @@ public enum AIError: LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .notConfigured(let what): "Paste with AI isn't set up: \(what)."
-        case .missingKey: "Add an API key for the AI provider in Advanced Paste settings."
+        case .notConfigured(let what):
+            String(localized: "Paste with AI isn't set up: \(what).", comment: "%@ says what is missing, e.g. “no model name”")
+        case .missingKey: String(localized: "Add an API key for the AI provider in Advanced Paste settings.")
         case .server(let status, let message):
             switch status {
-            case 401, 403: "The AI provider rejected the API key (\(status)). \(message)"
-            case 429: "The AI provider's quota or rate limit was exceeded. \(message)"
-            default: "The AI provider returned an error (\(status)). \(message)"
+            case 401, 403:
+                String(localized: "The AI provider rejected the API key (\(status)). \(message)",
+                       comment: "%1$lld is the HTTP status code, %2$@ the provider's own error message")
+            case 429:
+                String(localized: "The AI provider's quota or rate limit was exceeded. \(message)",
+                       comment: "%@ is the provider's own error message")
+            default:
+                String(localized: "The AI provider returned an error (\(status)). \(message)",
+                       comment: "%1$lld is the HTTP status code, %2$@ the provider's own error message")
             }
-        case .emptyResponse: "The AI provider returned no text."
+        case .emptyResponse: String(localized: "The AI provider returned no text.")
         }
     }
 }
@@ -86,23 +93,30 @@ public enum AIClient {
     public static func request(provider: AIProvider, apiKey: String?, instructions: String, content: String) throws -> URLRequest {
         var base = provider.endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
         while base.hasSuffix("/") { base.removeLast() }
-        guard !base.isEmpty, base != "https:", base != "http:" else { throw AIError.notConfigured("no endpoint URL") }
+        guard !base.isEmpty, base != "https:", base != "http:" else {
+            throw AIError.notConfigured(String(localized: "no endpoint URL", comment: "Completes “Paste with AI isn't set up: …”"))
+        }
         if provider.requiresKey && (apiKey ?? "").isEmpty { throw AIError.missingKey }
 
         let urlString: String
         switch provider.kind {
         case .azureOpenAI:
-            guard !provider.model.isEmpty else { throw AIError.notConfigured("no deployment name") }
+            guard !provider.model.isEmpty else {
+                throw AIError.notConfigured(String(localized: "no deployment name",
+                                                   comment: "Completes “Paste with AI isn't set up: …” (Azure OpenAI deployment)"))
+            }
             let deployment = provider.model.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? provider.model
             let version = provider.apiVersion.isEmpty ? "2024-10-21" : provider.apiVersion
             urlString = base.hasSuffix("/chat/completions") ? base
                 : "\(base)/openai/deployments/\(deployment)/chat/completions?api-version=\(version)"
         default:
-            guard !provider.model.isEmpty else { throw AIError.notConfigured("no model name") }
+            guard !provider.model.isEmpty else {
+                throw AIError.notConfigured(String(localized: "no model name", comment: "Completes “Paste with AI isn't set up: …”"))
+            }
             urlString = base.hasSuffix("/chat/completions") ? base : base + "/chat/completions"
         }
         guard let url = URL(string: urlString), url.scheme == "https" || url.scheme == "http" else {
-            throw AIError.notConfigured("the endpoint URL is invalid")
+            throw AIError.notConfigured(String(localized: "the endpoint URL is invalid", comment: "Completes “Paste with AI isn't set up: …”"))
         }
 
         var request = URLRequest(url: url, timeoutInterval: 90)

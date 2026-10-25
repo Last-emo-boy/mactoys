@@ -35,7 +35,8 @@ final class ShortcutGuideController {
         closesOnRelease = byHold && s.closeOnRelease
 
         let bundleID = app?.bundleIdentifier ?? ""
-        let model = GuideModel(appName: app?.localizedName ?? "App", appIcon: app?.icon, bundleID: bundleID,
+        let appName = app?.localizedName ?? String(localized: "App", comment: "Shortcut Guide: name shown when the frontmost app has none")
+        let model = GuideModel(appName: appName, appIcon: app?.icon, bundleID: bundleID,
                                systemGroups: SystemShortcuts.groups, macToysGroups: Self.macToysGroups(),
                                openedByHold: closesOnRelease, pinned: Set(s.pinned[bundleID] ?? []))
         model.onClose = { [weak self] in self?.close() }
@@ -89,7 +90,8 @@ final class ShortcutGuideController {
         }
         guard AXIsProcessTrusted() else {
             model.loading = false
-            model.appMessage = "Allow Accessibility access in System Settings so Shortcut Guide can read \(model.appName)’s menus."
+            model.appMessage = String(localized: "Allow Accessibility access in System Settings so Shortcut Guide can read \(model.appName)’s menus.",
+                                      comment: "%@ is the name of the frontmost app")
             return
         }
         let pid = app.processIdentifier
@@ -112,7 +114,7 @@ final class ShortcutGuideController {
         let registry = ModuleRegistry.shared
         return registry.modules
             .filter { registry.isEnabled($0.info.id) }
-            .sorted { $0.info.name < $1.info.name }
+            .sorted { $0.info.name.localizedStandardCompare($1.info.name) == .orderedAscending }
             .compactMap { module in
                 let items = module.shortcutBindings.filter { !$0.keys.isEmpty }.map { ShortcutItem($0.title, $0.keys) }
                 return items.isEmpty ? nil : ShortcutGroup(module.info.name, items)

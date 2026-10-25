@@ -146,7 +146,11 @@ final class TextExtractorController {
 
     private static func deliver(_ text: String?, notify: Bool, word: Bool) {
         guard let text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            if notify { HUD.show(word ? "No word under the pointer" : "No text found", symbol: "text.viewfinder") }
+            if notify, word {
+                HUD.show("No word under the pointer", symbol: "text.viewfinder")
+            } else if notify {
+                HUD.show("No text found", symbol: "text.viewfinder")
+            }
             return
         }
         let pb = NSPasteboard.general
@@ -154,10 +158,16 @@ final class TextExtractorController {
         pb.setString(text, forType: .string)
         guard notify else { return }
         if word {
-            HUD.show("Copied “\(text)”", symbol: "doc.on.doc")
+            HUD.show(String(localized: "Copied “\(text)”", comment: "Text Extractor copied one word; %@ is the word"),
+                     symbol: "doc.on.doc")
         } else {
             let lines = text.split(whereSeparator: \.isNewline).count
-            HUD.show(lines > 1 ? "Copied \(lines) lines" : "Copied text", symbol: "doc.on.doc")
+            if lines > 1 {
+                HUD.show(String(localized: "Copied \(lines) lines", comment: "Text Extractor copied several lines of text"),
+                         symbol: "doc.on.doc")
+            } else {
+                HUD.show("Copied text", symbol: "doc.on.doc")
+            }
         }
     }
 }

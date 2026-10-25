@@ -88,12 +88,17 @@ public final class AdvancedPasteModule: ToyModule {
         for action in AdvancedPasteTransforms.Action.builtIns {
             let prefs = s.prefs(action)
             if prefs.enabled, let shortcut = prefs.shortcut {
-                list.append(ShortcutBinding(action == .plainText ? "Paste as plain text" : "Paste as \(action.title)", shortcut))
+                let title = action == .plainText
+                    ? String(localized: "Paste as plain text")
+                    : String(localized: "Paste as \(action.title)", comment: "Shortcut list: %@ is a paste format, e.g. Markdown")
+                list.append(ShortcutBinding(title, shortcut))
             }
         }
         if s.aiEnabled {
             for custom in s.customActions where custom.shortcut != nil {
-                list.append(ShortcutBinding("AI · \(custom.name)", custom.shortcut))
+                list.append(ShortcutBinding(String(localized: "AI · \(custom.name)",
+                                                   comment: "Shortcut list: %@ is the name of a custom AI action"),
+                                            custom.shortcut))
             }
         }
         return list
@@ -116,7 +121,8 @@ public final class AdvancedPasteModule: ToyModule {
                 return true
             }
             if let prompt = command.parameters["prompt"], settings.value.aiEnabled {
-                controller.runDirect(.ai(prompt: prompt, provider: settings.value.provider), title: "Paste with AI", paste: paste)
+                controller.runDirect(.ai(prompt: prompt, provider: settings.value.provider), title: String(localized: "Paste with AI"),
+                                     paste: paste)
                 return true
             }
             guard let action = AdvancedPasteTransforms.Action(name: command.parameters["as"] ?? "plain-text") else { return false }
@@ -159,7 +165,7 @@ public final class AdvancedPasteModule: ToyModule {
             PreviewScene("transcoding", size: CGSize(width: 520, height: 640)) {
                 let session = PasteSession(input: .init(files: [URL(fileURLWithPath: "/tmp/Keynote rehearsal.mov")]),
                                            settings: settingsCopy, history: [])
-                session.state = .running(title: "Transcode to .mp4 (H.264/AAC)", progress: 0.42)
+                session.state = .running(title: AdvancedPasteTransforms.Action.transcodeMP4.title, progress: 0.42)
                 return AnyView(AdvancedPasteView(session: session))
             },
         ]

@@ -38,19 +38,20 @@ public enum AdvancedPasteTransforms {
             }
         }
 
+        /// Display name (localized; Markdown and JSON are format names).
         public var title: String {
             switch self {
-            case .plainText: "Plain text"
+            case .plainText: String(localized: "Plain text", comment: "Advanced Paste action: paste without formatting")
             case .markdown: "Markdown"
             case .json: "JSON"
-            case .txtFile: ".txt file"
-            case .htmlFile: ".html file"
-            case .pngFile: ".png file"
-            case .imageToText: "Text from image (OCR)"
-            case .transcodeMP3: "Transcode to .mp3"
-            case .transcodeM4A: "Transcode to .m4a (AAC)"
-            case .transcodeMP4: "Transcode to .mp4 (H.264/AAC)"
-            case .ai: "Paste with AI"
+            case .txtFile: String(localized: ".txt file", comment: "Advanced Paste action: paste the text as a .txt file")
+            case .htmlFile: String(localized: ".html file", comment: "Advanced Paste action: paste rich text as an .html file")
+            case .pngFile: String(localized: ".png file", comment: "Advanced Paste action: paste the image as a .png file")
+            case .imageToText: String(localized: "Text from image (OCR)")
+            case .transcodeMP3: String(localized: "Transcode to .mp3")
+            case .transcodeM4A: String(localized: "Transcode to .m4a (AAC)")
+            case .transcodeMP4: String(localized: "Transcode to .mp4 (H.264/AAC)")
+            case .ai: String(localized: "Paste with AI")
             }
         }
 
@@ -115,12 +116,18 @@ public enum AdvancedPasteTransforms {
         /// What the action needs, for error messages.
         var requirement: String {
             switch self {
-            case .plainText, .markdown, .json, .txtFile: "\(title) needs text on the clipboard."
-            case .htmlFile: ".html file needs rich text or HTML on the clipboard."
-            case .pngFile, .imageToText: "\(title) needs an image on the clipboard."
-            case .transcodeMP3, .transcodeM4A: "\(title) needs one audio or video file on the clipboard."
-            case .transcodeMP4: "\(title) needs one video file on the clipboard."
-            case .ai: "Paste with AI needs text or an image on the clipboard."
+            case .plainText, .markdown, .json, .txtFile:
+                String(localized: "\(title) needs text on the clipboard.", comment: "%@ is an Advanced Paste action, e.g. Markdown")
+            case .htmlFile: String(localized: ".html file needs rich text or HTML on the clipboard.")
+            case .pngFile, .imageToText:
+                String(localized: "\(title) needs an image on the clipboard.", comment: "%@ is an Advanced Paste action, e.g. .png file")
+            case .transcodeMP3, .transcodeM4A:
+                String(localized: "\(title) needs one audio or video file on the clipboard.",
+                       comment: "%@ is an Advanced Paste action, e.g. Transcode to .mp3")
+            case .transcodeMP4:
+                String(localized: "\(title) needs one video file on the clipboard.",
+                       comment: "%@ is an Advanced Paste action, e.g. Transcode to .mp4")
+            case .ai: String(localized: "Paste with AI needs text or an image on the clipboard.")
             }
         }
     }
@@ -219,7 +226,7 @@ public enum AdvancedPasteTransforms {
         public var errorDescription: String? {
             switch self {
             case .unsupportedInput(let m), .encoderMissing(let m), .failed(let m): m
-            case .noTextFound: "No text was found in the image."
+            case .noTextFound: String(localized: "No text was found in the image.")
             }
         }
     }
@@ -294,13 +301,13 @@ public enum AdvancedPasteTransforms {
     private static func imageData(_ input: Input) throws -> Data {
         if let image = input.image { return image }
         if let file = input.imageFile { return try Data(contentsOf: file) }
-        throw TransformError.unsupportedInput("An image is needed.")
+        throw TransformError.unsupportedInput(String(localized: "An image is needed."))
     }
 
     private static func cgImage(_ data: Data) throws -> CGImage {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),
               let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
-            throw TransformError.failed("The image could not be read.")
+            throw TransformError.failed(String(localized: "The image could not be read."))
         }
         return image
     }
@@ -310,10 +317,12 @@ public enum AdvancedPasteTransforms {
         let image = try cgImage(data)
         let out = NSMutableData()
         guard let dest = CGImageDestinationCreateWithData(out, UTType.png.identifier as CFString, 1, nil) else {
-            throw TransformError.failed("PNG encoding is unavailable.")
+            throw TransformError.failed(String(localized: "PNG encoding is unavailable."))
         }
         CGImageDestinationAddImage(dest, image, nil)
-        guard CGImageDestinationFinalize(dest) else { throw TransformError.failed("The image could not be converted to PNG.") }
+        guard CGImageDestinationFinalize(dest) else {
+            throw TransformError.failed(String(localized: "The image could not be converted to PNG."))
+        }
         return out as Data
     }
 

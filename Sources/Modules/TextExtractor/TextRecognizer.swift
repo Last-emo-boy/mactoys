@@ -44,7 +44,11 @@ enum TextRecognizer {
         CGRect(x: r.minX * size.width, y: (1 - r.maxY) * size.height, width: r.width * size.width, height: r.height * size.height)
     }
 
-    /// Languages Vision can read at the accurate level, as (code, display name).
+    private static var automatic: String {
+        String(localized: "Automatic", comment: "Recognition language: detect it automatically")
+    }
+
+    /// Languages Vision can read at the accurate level, as (code, display name in the UI language).
     static let languages: [(code: String, name: String)] = {
         let codes = (try? VNRecognizeTextRequest().supportedRecognitionLanguages()) ?? ["en-US"]
         return codes.map { code in
@@ -54,13 +58,13 @@ enum TextRecognizer {
     }()
 
     static func name(for code: String?) -> String {
-        guard let code else { return "Automatic" }
+        guard let code else { return automatic }
         return languages.first { $0.code == code }?.name ?? Locale.current.localizedString(forIdentifier: code) ?? code
     }
 
     /// Short label for the overlay, e.g. "English" for en-US.
     static func shortName(for code: String?) -> String {
-        guard let code else { return "Automatic" }
+        guard let code else { return automatic }
         let lang = Locale(identifier: code).language
         if code.hasPrefix("zh") || code.hasPrefix("yue") { return name(for: code) }
         return lang.languageCode.flatMap { Locale.current.localizedString(forLanguageCode: $0.identifier) } ?? name(for: code)

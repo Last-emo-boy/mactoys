@@ -10,16 +10,16 @@ public struct QuickAccentSettings: Codable, Equatable, Sendable {
 
         public var title: String {
             switch self {
-            case .caret: "Near the text cursor"
-            case .topCenter: "Top center"
-            case .bottomCenter: "Bottom center"
-            case .left: "Left"
-            case .right: "Right"
-            case .topLeft: "Top left corner"
-            case .topRight: "Top right corner"
-            case .bottomLeft: "Bottom left corner"
-            case .bottomRight: "Bottom right corner"
-            case .center: "Center"
+            case .caret: String(localized: "Near the text cursor")
+            case .topCenter: String(localized: "Top center", comment: "Toolbar position on the screen")
+            case .bottomCenter: String(localized: "Bottom center", comment: "Toolbar position on the screen")
+            case .left: String(localized: "Left", comment: "Toolbar position: middle of the screen's left edge")
+            case .right: String(localized: "Right", comment: "Toolbar position: middle of the screen's right edge")
+            case .topLeft: String(localized: "Top left corner", comment: "Toolbar position on the screen")
+            case .topRight: String(localized: "Top right corner", comment: "Toolbar position on the screen")
+            case .bottomLeft: String(localized: "Bottom left corner", comment: "Toolbar position on the screen")
+            case .bottomRight: String(localized: "Bottom right corner", comment: "Toolbar position on the screen")
+            case .center: String(localized: "Center", comment: "Toolbar position: center of the screen")
             }
         }
     }
@@ -340,11 +340,16 @@ public final class QuickAccentModule: ToyModule {
     }
 
     public var shortcutBindings: [ShortcutBinding] {
-        switch settings.value.activation {
-        case .both: [ShortcutBinding("Accented characters", keys: ["Hold letter", "Space / ← →"])]
-        case .space: [ShortcutBinding("Accented characters", keys: ["Hold letter", "Space"])]
-        case .arrows: [ShortcutBinding("Accented characters", keys: ["Hold letter", "← →"])]
-        case .hold: [ShortcutBinding("Accented characters", keys: ["Hold letter"])]
+        let hold = String(localized: "Hold letter", comment: "Shortcut list key label: keep a letter key pressed")
+        return switch settings.value.activation {
+        case .both:
+            [ShortcutBinding("Accented characters",
+                             keys: [hold, String(localized: "Space / ← →", comment: "Shortcut list key label: the space bar or an arrow key")])]
+        case .space:
+            [ShortcutBinding("Accented characters",
+                             keys: [hold, String(localized: "Space", comment: "Quick Accent activation: the space bar")])]
+        case .arrows: [ShortcutBinding("Accented characters", keys: [hold, "← →"])]
+        case .hold: [ShortcutBinding("Accented characters", keys: [hold])]
         }
     }
 
