@@ -46,6 +46,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             exit(0)
         }
 
+        if let i = args.firstIndex(of: "--export-assets"), i + 1 < args.count {
+            ModuleRegistry.shared.register(AllModules.make())
+            let dir = URL(fileURLWithPath: args[i + 1])
+            Task { @MainActor in
+                await AssetExporter.run(to: dir)
+                exit(0)
+            }
+            return
+        }
+
         NSApp.setActivationPolicy(.accessory)
         installURLHandler()
         DispatchQueue.main.async { self.installURLHandler() }

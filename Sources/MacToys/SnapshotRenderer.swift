@@ -33,7 +33,8 @@ enum SnapshotRenderer {
         }
     }
 
-    static func render(_ view: AnyView, size: CGSize, to url: URL) {
+    /// `transparent` keeps the background clear (icons); `scale` overrides the backing scale.
+    static func render(_ view: AnyView, size: CGSize, to url: URL, transparent: Bool = false, scale renderScale: CGFloat? = nil) {
         let window = NSWindow(contentRect: CGRect(origin: CGPoint(x: -20000, y: -20000), size: size),
                               styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
         window.toolbar = NSToolbar(identifier: "snap")
@@ -49,7 +50,7 @@ enum SnapshotRenderer {
         host.layoutSubtreeIfNeeded()
         // Render the layer tree: grouped Forms draw their rows into layers, which
         // cacheDisplay (a drawRect pass) skips.
-        let scale = window.backingScaleFactor
+        let scale = renderScale ?? window.backingScaleFactor
         let bounds = host.bounds
         if let layer = host.layer,
            let ctx = CGContext(data: nil, width: Int(bounds.width * scale), height: Int(bounds.height * scale),
@@ -60,9 +61,11 @@ enum SnapshotRenderer {
                 ctx.translateBy(x: 0, y: bounds.height)
                 ctx.scaleBy(x: 1, y: -1)
             }
-            ctx.setFillColor((window.appearance ?? NSAppearance.currentDrawing()).bestMatch(from: [.darkAqua]) != nil
-                             ? CGColor(gray: 0.12, alpha: 1) : CGColor(gray: 0.96, alpha: 1))
-            ctx.fill(CGRect(origin: .zero, size: bounds.size))
+            if !transparent {
+                ctx.setFillColor((window.appearance ?? NSAppearance.currentDrawing()).bestMatch(from: [.darkAqua]) != nil
+                                 ? CGColor(gray: 0.12, alpha: 1) : CGColor(gray: 0.96, alpha: 1))
+                ctx.fill(CGRect(origin: .zero, size: bounds.size))
+            }
             layer.render(in: ctx)
             if let image = ctx.makeImage() {
                 try? NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])?.write(to: url)
