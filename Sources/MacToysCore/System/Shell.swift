@@ -83,7 +83,7 @@ public enum AppleScript {
 
 /// Runs a shell command as root after the standard administrator password prompt.
 public enum Privileged {
-    public static func run(_ command: String, prompt: String = "MacToys needs administrator access.") throws -> String {
+    public static func run(_ command: String, prompt: String = String(localized: "MacToys needs administrator access.")) throws -> String {
         let source = "do shell script \(AppleScript.literal(command)) with prompt \(AppleScript.literal(prompt)) with administrator privileges"
         return try AppleScript.run(source).stringValue ?? ""
     }
@@ -140,7 +140,15 @@ public enum LoginItem {
 
 /// User notifications.
 public enum Notifier {
-    public static func post(_ title: String, _ body: String = "") {
+    /// Localized title and body (string literals are extracted into the catalog).
+    public static func post(_ title: String.LocalizationValue, _ body: String.LocalizationValue = "") {
+        post(String(localized: title) as String, String(localized: body) as String)
+    }
+
+    /// Already-localized or runtime text.
+    @_disfavoredOverload
+    public static func post<S: StringProtocol>(_ title: S, _ body: S = "") {
+        let title = String(title), body = String(body)
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
             guard granted else { return }

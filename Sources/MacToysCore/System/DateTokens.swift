@@ -13,15 +13,17 @@ public enum DateTokens {
     ]
 
     /// Short descriptions for pickers and tooltips, in display order.
-    public static let help: [(token: String, meaning: String)] = [
-        ("$YYYY", "Year, four digits"), ("$YY", "Year, last two digits"), ("$Y", "Year, last digit"),
-        ("$MMMM", "Month name"), ("$MMM", "Abbreviated month name"), ("$MM", "Month, two digits"),
-        ("$M", "Month"), ("$DDDD", "Weekday name"), ("$DDD", "Abbreviated weekday name"),
-        ("$DD", "Day, two digits"), ("$D", "Day"), ("$hh", "Hours, two digits (24-hour)"), ("$h", "Hours"),
-        ("$mm", "Minutes, two digits"), ("$m", "Minutes"), ("$ss", "Seconds, two digits"), ("$s", "Seconds"),
-        ("$fff", "Milliseconds, three digits"), ("$ff", "Milliseconds, first two digits"),
-        ("$f", "Milliseconds, first digit"),
-    ]
+    public static var help: [(token: String, meaning: String)] {
+        [
+        ("$YYYY", String(localized: "Year, four digits", comment: "Meaning of the date token $YYYY in file names")), ("$YY", String(localized: "Year, last two digits", comment: "Meaning of the date token $YY in file names")), ("$Y", String(localized: "Year, last digit", comment: "Meaning of the date token $Y in file names")),
+        ("$MMMM", String(localized: "Month name", comment: "Meaning of the date token $MMMM in file names")), ("$MMM", String(localized: "Abbreviated month name", comment: "Meaning of the date token $MMM in file names")), ("$MM", String(localized: "Month, two digits", comment: "Meaning of the date token $MM in file names")),
+        ("$M", String(localized: "Month", comment: "Meaning of the date token $M in file names")), ("$DDDD", String(localized: "Weekday name", comment: "Meaning of the date token $DDDD in file names")), ("$DDD", String(localized: "Abbreviated weekday name", comment: "Meaning of the date token $DDD in file names")),
+        ("$DD", String(localized: "Day, two digits", comment: "Meaning of the date token $DD in file names")), ("$D", String(localized: "Day", comment: "Meaning of the date token $D in file names")), ("$hh", String(localized: "Hours, two digits (24-hour)", comment: "Meaning of the date token $hh in file names")), ("$h", String(localized: "Hours", comment: "Meaning of the date token $h in file names")),
+        ("$mm", String(localized: "Minutes, two digits", comment: "Meaning of the date token $mm in file names")), ("$m", String(localized: "Minutes", comment: "Meaning of the date token $m in file names")), ("$ss", String(localized: "Seconds, two digits", comment: "Meaning of the date token $ss in file names")), ("$s", String(localized: "Seconds", comment: "Meaning of the date token $s in file names")),
+        ("$fff", String(localized: "Milliseconds, three digits", comment: "Meaning of the date token $fff in file names")), ("$ff", String(localized: "Milliseconds, first two digits", comment: "Meaning of the date token $ff in file names")),
+        ("$f", String(localized: "Milliseconds, first digit", comment: "Meaning of the date token $f in file names")),
+        ]
+    }
 
     /// The longest token name that `text` starts with (the text right after a `$`), if any.
     public static func match<S: StringProtocol>(_ text: S) -> String? {

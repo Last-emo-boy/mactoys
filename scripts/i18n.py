@@ -177,7 +177,7 @@ def pseudo(text):
 def with_pseudo(catalog):
     data = load(catalog)
     for key, entry in data["strings"].items():
-        if entry.get("shouldTranslate", True):
+        if entry.get("shouldTranslate", True) and key.strip():
             entry.setdefault("localizations", {})[PSEUDO] = {
                 "stringUnit": {"state": "translated", "value": pseudo(source_text(key, entry))}}
     return data

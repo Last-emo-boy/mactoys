@@ -217,24 +217,24 @@ public struct SliderRow: View {
 
     public init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil, value: Binding<Double>,
                 in range: ClosedRange<Double>, step: Double? = nil,
-                format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
+                format: @escaping (Double) -> String = { Int($0.rounded()).formatted() }) {
         self.init(label: RowLabel(title, subtitle: subtitle), value: value, in: range, step: step, format: format)
     }
 
     @_disfavoredOverload
     public init<S: StringProtocol>(_ title: S, subtitle: String? = nil, value: Binding<Double>, in range: ClosedRange<Double>,
-                step: Double? = nil, format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
+                step: Double? = nil, format: @escaping (Double) -> String = { Int($0.rounded()).formatted() }) {
         self.init(label: RowLabel(title, subtitle: subtitle), value: value, in: range, step: step, format: format)
     }
 
     public init(_ title: LocalizedStringKey, verbatimSubtitle: String?, value: Binding<Double>,
                 in range: ClosedRange<Double>, step: Double? = nil,
-                format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
+                format: @escaping (Double) -> String = { Int($0.rounded()).formatted() }) {
         self.init(label: RowLabel(title, verbatimSubtitle: verbatimSubtitle), value: value, in: range, step: step, format: format)
     }
 
     public init(label: RowLabel, value: Binding<Double>, in range: ClosedRange<Double>, step: Double? = nil,
-                format: @escaping (Double) -> String = { String(Int($0.rounded())) }) {
+                format: @escaping (Double) -> String = { Int($0.rounded()).formatted() }) {
         self.label = label
         self._value = value
         self.range = range
