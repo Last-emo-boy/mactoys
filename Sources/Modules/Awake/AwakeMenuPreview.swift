@@ -13,7 +13,7 @@ struct AwakeMenuPreview: View {
             HStack(spacing: 14) {
                 Image(nsImage: AwakeIcon.image(for: mode)).renderingMode(.template)
                 Image(systemName: "wifi")
-                Text("Sat 24 Oct 22:41")
+                Text(verbatim: "Sat 24 Oct 22:41")
             }
             .font(.system(size: 13, weight: .medium))
             .foregroundStyle(.white)
@@ -41,7 +41,7 @@ struct AwakeMenuPreview: View {
                         Text(title)
                         Spacer(minLength: 16)
                         if let badge { Text(badge).foregroundStyle(hot ? .white.opacity(0.85) : .secondary) }
-                        if action == .settings { Text("⌘ ,").foregroundStyle(hot ? .white.opacity(0.85) : .secondary) }
+                        if action == .settings { Text(verbatim: "⌘ ,").foregroundStyle(hot ? .white.opacity(0.85) : .secondary) }
                     }
                     .font(.system(size: 13))
                     .foregroundStyle(hot ? .white : .primary)

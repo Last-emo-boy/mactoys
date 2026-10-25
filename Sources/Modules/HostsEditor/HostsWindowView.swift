@@ -15,7 +15,7 @@ struct HostsWindowView: View {
     var body: some View {
         VStack(spacing: 0) {
             if chrome {
-                PreviewTitleBar(title: "Hosts File Editor", symbol: "server.rack", tint: .green) { toolbarButtons(preview: true) }
+                PreviewTitleBar(title: String(localized: "Hosts File Editor"), symbol: "server.rack", tint: .green) { toolbarButtons(preview: true) }
             }
             banner
             table
@@ -47,7 +47,7 @@ struct HostsWindowView: View {
         } message: {
             Text("Entries here override DNS for every app. A wrong entry can make websites or services unreachable. MacToys keeps a backup before each save.")
         }
-        .confirmationDialog("Delete \(confirmDelete?.count ?? 0) entr\((confirmDelete?.count ?? 0) == 1 ? "y" : "ies")?",
+        .confirmationDialog(Text("Delete \(confirmDelete?.count ?? 0) entries?", comment: "Confirmation: number of hosts entries to delete"),
                             isPresented: Binding(get: { confirmDelete != nil }, set: { if !$0 { confirmDelete = nil } })) {
             Button("Delete", role: .destructive) { if let ids = confirmDelete { model.delete(ids) }; confirmDelete = nil }
         }
@@ -79,7 +79,9 @@ struct HostsWindowView: View {
     @ViewBuilder private var banner: some View {
         VStack(spacing: 0) {
             if let m = model.message {
-                InfoBar(m.kind, title: m.title, message: m.text, actionTitle: "Dismiss") { model.message = nil }
+                InfoBar(m.kind, title: Text(verbatim: m.title), message: Text(verbatim: m.text), actionTitle: Text("Dismiss")) {
+                    model.message = nil
+                }
                     .padding(10)
             } else if model.changedOnDisk {
                 InfoBar(.warning, title: "The hosts file changed on disk", message: "Reload to see it; your unsaved edits will be lost.",
@@ -90,9 +92,9 @@ struct HostsWindowView: View {
                     Image(systemName: "info.circle").foregroundStyle(Color.accentColor)
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Saving asks for your administrator password").font(.system(size: 12.5, weight: .semibold))
-                        Text(model.settings.value.backupsEnabled
-                             ? "A backup is written to ~/Library/Application Support/MacToys/Hosts before every change."
-                             : "Backups are off in Settings.")
+                        (model.settings.value.backupsEnabled
+                            ? Text("A backup is written to ~/Library/Application Support/MacToys/Hosts before every change.")
+                            : Text("Backups are off in Settings."))
                             .font(.system(size: 11.5)).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -112,7 +114,7 @@ struct HostsWindowView: View {
     private var table: some View {
         let dupes = model.duplicates
         return Table(model.visibleEntries, selection: $model.selection) {
-            TableColumn("On") { e in
+            TableColumn(Text("On", comment: "Column: the hosts entry is active")) { e in
                 Toggle("Active", isOn: Binding(get: { e.active }, set: { model.setActive(e.id, $0) }))
                     .toggleStyle(.switch).labelsHidden().controlSize(.small)
             }
@@ -128,7 +130,9 @@ struct HostsWindowView: View {
             TableColumn("Hosts") { e in
                 Text(e.hosts.joined(separator: "  ")).font(.system(size: 12, design: .monospaced))
                     .foregroundStyle(dupes[e.id] != nil ? Tint.orange.color : (e.active ? Color.primary : .secondary))
-                    .help(dupes[e.id].map { "Also mapped elsewhere: \($0.sorted().joined(separator: ", "))" } ?? e.hostsText)
+                    .help(dupes[e.id].map {
+                        String(localized: "Also mapped elsewhere: \($0.sorted().joined(separator: ", "))", comment: "The placeholder lists host names")
+                    } ?? e.hostsText)
                     .lineLimit(1)
             }
             .width(min: 180, ideal: 260)
@@ -143,7 +147,9 @@ struct HostsWindowView: View {
             if ids.count == 1, let id = ids.first, let e = model.entry(id) {
                 Button("Edit…") { editing = EntryDraft(entry: e, isNew: false) }
                 Button("Duplicate") { model.duplicate(id) }
-                Button(e.active ? "Disable" : "Enable") { model.setActive(id, !e.active) }
+                Button { model.setActive(id, !e.active) } label: {
+                    e.active ? Text("Disable", comment: "Comment out the hosts entry") : Text("Enable", comment: "Uncomment the hosts entry")
+                }
                 Button("Ping") { model.ping(e.address) }
                 Button("Copy Line") {
                     NSPasteboard.general.clearContents()
@@ -161,9 +167,11 @@ struct HostsWindowView: View {
         .onDeleteCommand { if !model.selection.isEmpty { confirmDelete = model.selection } }
         .overlay {
             if model.loaded && model.visibleEntries.isEmpty {
-                ContentUnavailableView(model.document.entries.isEmpty ? "No entries" : "No matching entries",
-                                       systemImage: "server.rack",
-                                       description: Text(model.document.entries.isEmpty ? "Add one with New entry." : "Clear the search or filters."))
+                if model.document.entries.isEmpty {
+                    ContentUnavailableView("No entries", systemImage: "server.rack", description: Text("Add one with New entry."))
+                } else {
+                    ContentUnavailableView("No matching entries", systemImage: "server.rack", description: Text("Clear the search or filters."))
+                }
             }
         }
     }
@@ -181,7 +189,11 @@ struct HostsWindowView: View {
     @ViewBuilder private func pingLabel(_ state: PingState?) -> some View {
         switch state {
         case .reply(let ms)?:
-            Label { Text(ms < 1 ? String(format: "%.2f ms", ms) : "\(Int(ms.rounded())) ms") } icon: {
+            Label {
+                Text(Measurement(value: ms, unit: UnitDuration.milliseconds)
+                    .formatted(.measurement(width: .abbreviated, usage: .asProvided,
+                                            numberFormatStyle: .number.precision(.fractionLength(ms < 1 ? 2 : 0)))))
+            } icon: {
                 Circle().fill(.green).frame(width: 7, height: 7)
             }
             .font(.system(size: 11.5))
@@ -191,7 +203,7 @@ struct HostsWindowView: View {
         case .pending?:
             ProgressView().controlSize(.mini)
         case .skipped?, nil:
-            Text("—").foregroundStyle(.tertiary)
+            Text(verbatim: "—").foregroundStyle(.tertiary)
         }
     }
 
@@ -199,8 +211,11 @@ struct HostsWindowView: View {
         let entries = model.document.entries
         let disabled = entries.filter { !$0.active }.count
         let dupes = model.duplicates.count
+        var parts = [String(localized: "\(entries.count) entries", comment: "Number of hosts entries"),
+                     String(localized: "\(disabled) disabled", comment: "Number of disabled hosts entries")]
+        if dupes > 0 { parts.append(String(localized: "\(dupes) with duplicate hosts", comment: "Number of hosts entries with duplicate host names")) }
         return HStack(spacing: 12) {
-            Text("\(entries.count) entr\(entries.count == 1 ? "y" : "ies") · \(disabled) disabled\(dupes > 0 ? " · \(dupes) with duplicate hosts" : "")")
+            Text(verbatim: parts.joined(separator: " · "))
                 .font(.system(size: 11.5)).foregroundStyle(.secondary)
             Spacer()
             Button("Ping All") { model.pingAll() }.controlSize(.small)
@@ -300,11 +315,11 @@ private struct EntryEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(draft.isNew ? "New Entry" : "Edit Entry").font(.title3.bold())
+            (draft.isNew ? Text("New Entry") : Text("Edit Entry")).font(.title3.bold())
             Form {
                 TextField("Address", text: $address, prompt: Text("127.0.0.1 or ::1"))
                     .font(.system(.body, design: .monospaced))
-                TextField("Hosts", text: $hostsText, prompt: Text("example.local www.example.local"))
+                TextField("Hosts", text: $hostsText, prompt: Text(verbatim: "example.local www.example.local"))
                     .font(.system(.body, design: .monospaced))
                 TextField("Comment", text: $comment, prompt: Text("Optional"))
                 Toggle("Active", isOn: $active)
@@ -326,7 +341,7 @@ private struct EntryEditor: View {
             HStack {
                 Spacer()
                 Button("Cancel") { done(nil) }.keyboardShortcut(.cancelAction)
-                Button(draft.isNew ? "Add" : "Save") { done(result) }
+                Button { done(result) } label: { draft.isNew ? Text("Add") : Text("Save") }
                     .keyboardShortcut(.defaultAction)
                     .disabled(issues.contains(where: \.isError) || address.isEmpty)
             }

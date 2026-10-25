@@ -13,10 +13,10 @@ enum AwakeMode: String, Codable, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .off: "Off (follow system)"
-        case .indefinite: "Keep awake indefinitely"
-        case .timed: "Keep awake for a time interval"
-        case .until: "Keep awake until a date and time"
+        case .off: String(localized: "Off (follow system)", comment: "Awake mode")
+        case .indefinite: String(localized: "Keep awake indefinitely", comment: "Awake mode")
+        case .timed: String(localized: "Keep awake for a time interval", comment: "Awake mode")
+        case .until: String(localized: "Keep awake until a date and time", comment: "Awake mode")
         }
     }
 }
@@ -59,9 +59,12 @@ struct AwakeSettings: Codable, Equatable {
 /// Pure keep-awake timing rules, shared by the module, its menu and the CLI.
 enum AwakeSchedule {
     static let builtInPresets = [
-        AwakePreset(name: "30 minutes", seconds: 30 * 60),
-        AwakePreset(name: "1 hour", seconds: 3600),
-        AwakePreset(name: "2 hours", seconds: 2 * 3600),
+        AwakePreset(name: String(localized: "30 minutes", comment: "Awake preset, shown as 'Keep awake for 30 minutes'"),
+                    seconds: 30 * 60),
+        AwakePreset(name: String(localized: "1 hour", comment: "Awake preset, shown as 'Keep awake for 1 hour'"),
+                    seconds: 3600),
+        AwakePreset(name: String(localized: "2 hours", comment: "Awake preset, shown as 'Keep awake for 2 hours'"),
+                    seconds: 2 * 3600),
     ]
 
     /// Tonight at 23:30 (or tomorrow when that has passed): a sensible first "until" target.
@@ -149,7 +152,7 @@ enum AwakeSchedule {
 
     // MARK: - Text
 
-    /// "30 min", "1 h", "1 h 30 min", "2 d 3 h".
+    /// "30 min", "1 h", "1 h 30 min", "2 d 3 h" — English, for the command line (`displayDuration` for the UI).
     static func formatDuration(_ seconds: TimeInterval) -> String {
         let total = Int(seconds.rounded(.up))
         if total < 60 { return "\(max(total, 0)) s" }
@@ -160,23 +163,44 @@ enum AwakeSchedule {
         return "\(m) min"
     }
 
-    /// "23:30", or "Sat 23:30" when not today, or a full date beyond a week.
+    /// `formatDuration` in the user's locale, for the UI: "30 min", "1 hr, 30 min", "1 day, 3 hr".
+    static func displayDuration(_ seconds: TimeInterval, locale: Locale = .current) -> String {
+        let total = Int(seconds.rounded(.up))
+        let value: Int
+        let units: Set<Duration.UnitsFormatStyle.Unit>
+        if total < 60 {
+            value = max(total, 0)
+            units = [.seconds]
+        } else {
+            let minutes = (total + 59) / 60
+            if minutes >= 1440 {
+                value = minutes / 60 * 3600
+                units = [.days, .hours]
+            } else {
+                value = minutes * 60
+                units = [.hours, .minutes]
+            }
+        }
+        return Duration.seconds(value).formatted(.units(allowed: units, width: .abbreviated).locale(locale))
+    }
+
+    /// "23:30", or "Sat 23:30" when not today, or a full date beyond a week (in the locale's hour cycle).
     static func formatUntil(_ date: Date, now: Date, calendar: Calendar = .current, locale: Locale = .current) -> String {
         let f = DateFormatter()
         f.locale = locale
         f.calendar = calendar
         f.timeZone = calendar.timeZone
         if calendar.isDate(date, inSameDayAs: now) {
-            f.setLocalizedDateFormatFromTemplate("HHmm")
+            f.setLocalizedDateFormatFromTemplate("jmm")
         } else if date.timeIntervalSince(now) < 6 * 86400 {
-            f.setLocalizedDateFormatFromTemplate("EEEHHmm")
+            f.setLocalizedDateFormatFromTemplate("EEEjmm")
         } else {
-            f.setLocalizedDateFormatFromTemplate("dMMMHHmm")
+            f.setLocalizedDateFormatFromTemplate("dMMMjmm")
         }
         return f.string(from: date)
     }
 
-    /// The second line of the menu bar switch: "Indefinitely · screen stays on".
+    /// "Indefinitely · screen stays on" — English, for the command line (`statusText` for the UI).
     static func describe(_ s: AwakeSettings, now: Date, locked: Bool = false) -> String {
         let screen: String
         if !s.keepScreenOn { screen = "screen may sleep" }
@@ -188,6 +212,36 @@ enum AwakeSchedule {
         case .indefinite: return "Indefinitely · \(screen)"
         case .timed: return "\(formatDuration(remaining(s, now: now) ?? 0)) left · \(screen)"
         case .until: return "Until \(formatUntil(s.untilDate, now: now)) · \(screen)"
+        }
+    }
+
+    /// The second line of the menu bar switch, localized: "Indefinitely · screen stays on".
+    static func statusText(_ s: AwakeSettings, now: Date, locked: Bool = false) -> String {
+        let screen: String
+        if !s.keepScreenOn {
+            screen = String(localized: "screen may sleep", comment: "Awake status, after the mode: 'Indefinitely · screen may sleep'")
+        } else if locked && s.allowDisplaySleepWhenLocked {
+            screen = String(localized: "screen may sleep while locked",
+                            comment: "Awake status, after the mode: 'Indefinitely · screen may sleep while locked'")
+        } else {
+            screen = String(localized: "screen stays on", comment: "Awake status, after the mode: 'Indefinitely · screen stays on'")
+        }
+        if let pid = s.boundProcess, s.mode != .off {
+            return String(localized: "While process \(Int(pid)) runs · \(screen)",
+                          comment: "Awake status: first a process id, then the screen state, e.g. 'screen stays on'")
+        }
+        switch s.mode {
+        case .off:
+            return String(localized: "Off · following system", comment: "Awake status: not keeping the Mac awake")
+        case .indefinite:
+            return String(localized: "Indefinitely · \(screen)",
+                          comment: "Awake status; the placeholder is the screen state, e.g. 'screen stays on'")
+        case .timed:
+            return String(localized: "\(displayDuration(remaining(s, now: now) ?? 0)) left · \(screen)",
+                          comment: "Awake status: first the time left, e.g. '1 hr, 12 min', then the screen state")
+        case .until:
+            return String(localized: "Until \(formatUntil(s.untilDate, now: now)) · \(screen)",
+                          comment: "Awake status: first the end time, e.g. '23:30', then the screen state")
         }
     }
 
@@ -264,33 +318,36 @@ enum AwakeMenuAction: Equatable {
 }
 
 enum AwakeMenu {
-    static func entries(_ s: AwakeSettings, now: Date) -> [AwakeMenuEntry] {
-        var out: [AwakeMenuEntry] = [.header("Awake")]
-        out.append(.item(title: "Off (follow system)", checked: s.mode == .off, badge: nil, action: .off))
-        out.append(.item(title: "Keep awake indefinitely", checked: s.mode == .indefinite, badge: nil, action: .indefinite))
+    static func entries(_ s: AwakeSettings, now: Date, locale: Locale = .current) -> [AwakeMenuEntry] {
+        var out: [AwakeMenuEntry] = [.header(String(localized: "Awake"))]
+        out.append(.item(title: AwakeMode.off.title, checked: s.mode == .off, badge: nil, action: .off))
+        out.append(.item(title: AwakeMode.indefinite.title, checked: s.mode == .indefinite, badge: nil, action: .indefinite))
         var presets = AwakeSchedule.builtInPresets + s.customPresets
         let custom = AwakeSchedule.intervalSeconds(hours: s.intervalHours, minutes: s.intervalMinutes)
         if custom >= 60 && !presets.contains(where: { $0.seconds == custom }) {
-            presets.append(AwakePreset(name: AwakeSchedule.formatDuration(TimeInterval(custom)), seconds: custom))
+            presets.append(AwakePreset(name: AwakeSchedule.displayDuration(TimeInterval(custom), locale: locale), seconds: custom))
         }
         if s.mode == .timed && !presets.contains(where: { $0.seconds == s.timedSeconds }) {
-            presets.append(AwakePreset(name: AwakeSchedule.formatDuration(TimeInterval(s.timedSeconds)), seconds: s.timedSeconds))
+            presets.append(AwakePreset(name: AwakeSchedule.displayDuration(TimeInterval(s.timedSeconds), locale: locale),
+                                       seconds: s.timedSeconds))
         }
         for p in presets {
             let checked = s.mode == .timed && s.timedSeconds == p.seconds
-            let badge = checked ? AwakeSchedule.remaining(s, now: now).map { AwakeSchedule.formatDuration($0) } : nil
-            out.append(.item(title: "Keep awake for \(p.name)", checked: checked, badge: badge, action: .timed(p.seconds)))
+            let badge = checked ? AwakeSchedule.remaining(s, now: now).map { AwakeSchedule.displayDuration($0, locale: locale) } : nil
+            out.append(.item(title: String(localized: "Keep awake for \(p.name)", comment: "Awake menu item; the placeholder is a duration, e.g. '1 hour'"),
+                             checked: checked, badge: badge, action: .timed(p.seconds)))
         }
         let untilTarget = s.untilDate > now || s.mode == .until
             ? s.untilDate : AwakeSchedule.nextOccurrence(ofTimeOf: s.untilDate, after: now)
-        out.append(.item(title: "Keep awake until…", checked: s.mode == .until,
-                         badge: AwakeSchedule.formatUntil(untilTarget, now: now), action: .until))
+        out.append(.item(title: String(localized: "Keep awake until…", comment: "Awake menu item; the end time is shown next to it"),
+                         checked: s.mode == .until,
+                         badge: AwakeSchedule.formatUntil(untilTarget, now: now, locale: locale), action: .until))
         out.append(.separator)
-        out.append(.item(title: "Keep screen on", checked: s.keepScreenOn, badge: nil, action: .toggleScreen))
-        out.append(.item(title: "Allow display sleep when locked", checked: s.allowDisplaySleepWhenLocked,
+        out.append(.item(title: String(localized: "Keep screen on"), checked: s.keepScreenOn, badge: nil, action: .toggleScreen))
+        out.append(.item(title: String(localized: "Allow display sleep when locked"), checked: s.allowDisplaySleepWhenLocked,
                          badge: nil, action: .toggleLockedSleep))
         out.append(.separator)
-        out.append(.item(title: "Awake settings…", checked: false, badge: nil, action: .settings))
+        out.append(.item(title: String(localized: "Awake settings…"), checked: false, badge: nil, action: .settings))
         return out
     }
 }

@@ -16,9 +16,10 @@ enum SystemAppearance {
         var errorDescription: String? {
             switch self {
             case .notPermitted:
-                "MacToys isn't allowed to control System Events. Turn it on in System Settings › Privacy & Security › Automation › MacToys."
+                String(localized: "MacToys isn't allowed to control System Events. Turn it on in System Settings › Privacy & Security › Automation › MacToys.")
             case .scriptFailed(let message):
-                "Couldn't change the appearance: \(message)"
+                String(localized: "Couldn't change the appearance: \(message)",
+                       comment: "Light Switch error; the placeholder is the AppleScript error message")
             }
         }
     }

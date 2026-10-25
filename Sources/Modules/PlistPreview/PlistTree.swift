@@ -5,7 +5,19 @@ enum PlistType: String, CaseIterable, Identifiable {
     case dictionary, array, string, number, boolean, date, data
 
     var id: String { rawValue }
-    var title: String { rawValue.prefix(1).uppercased() + rawValue.dropFirst() }
+
+    /// The name shown in the editor (localized; the file format has its own tags).
+    var title: String {
+        switch self {
+        case .dictionary: String(localized: "Dictionary", comment: "Property list value type")
+        case .array: String(localized: "Array", comment: "Property list value type")
+        case .string: String(localized: "String", comment: "Property list value type: text")
+        case .number: String(localized: "Number", comment: "Property list value type")
+        case .boolean: String(localized: "Boolean", comment: "Property list value type: YES or NO")
+        case .date: String(localized: "Date", comment: "Property list value type")
+        case .data: String(localized: "Data", comment: "Property list value type: raw bytes")
+        }
+    }
     var isContainer: Bool { self == .dictionary || self == .array }
 }
 
@@ -57,7 +69,7 @@ struct PlistNode: Identifiable, Equatable {
 
     /// "18 items", or the value as text.
     var summary: String {
-        if let c = children { return "\(c.count) item\(c.count == 1 ? "" : "s")" }
+        if let c = children { return String(localized: "\(c.count) items", comment: "Number of items in a property list dictionary or array") }
         return valueText
     }
 
@@ -351,9 +363,14 @@ struct PlistRow: Identifiable, Equatable {
     var id: UUID { node.id }
 
     var displayKey: String {
-        if depth == 0 { return "Root" }
-        if let i = arrayIndex { return "Item \(i)" }
+        if depth == 0 { return String(localized: "Root", comment: "The top-level node of a property list") }
+        if let i = arrayIndex { return PlistRow.itemLabel(i) }
         return node.key
+    }
+
+    /// "Item 3": how array elements are labeled (and found by search).
+    static func itemLabel(_ index: Int) -> String {
+        String(localized: "Item \(index)", comment: "Label of an array element in a property list; the placeholder is its index")
     }
 }
 
@@ -383,7 +400,7 @@ enum PlistOutline {
         guard !q.isEmpty else { return [] }
         var out = Set<UUID>()
         func visit(_ n: PlistNode, index: Int?) {
-            let key = index.map { "Item \($0)" } ?? n.key
+            let key = index.map(PlistRow.itemLabel) ?? n.key
             if key.localizedCaseInsensitiveContains(q) || (!n.isContainer && n.valueText.localizedCaseInsensitiveContains(q)) {
                 out.insert(n.id)
             }

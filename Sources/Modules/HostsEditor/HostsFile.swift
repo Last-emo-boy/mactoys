@@ -243,12 +243,17 @@ enum HostsValidator {
 
         var message: String {
             switch self {
-            case .invalidAddress: "Not a valid IPv4 or IPv6 address"
-            case .invalidHost(let h): "“\(h)” isn't a valid host name"
-            case .duplicate(let h): "\(h) is also mapped by another active entry"
-            case .localhostElsewhere: "localhost should point to a loopback address (127.0.0.1 or ::1)"
-            case .localhostDisabled: "Turning off the localhost entry can break apps that talk to this Mac"
-            case .noHosts: "Add at least one host name"
+            case .invalidAddress: String(localized: "Not a valid IPv4 or IPv6 address", comment: "Hosts entry problem")
+            case .invalidHost(let h): String(localized: "“\(h)” isn't a valid host name", comment: "Hosts entry problem; the placeholder is a host name")
+            case .duplicate(let h):
+                String(localized: "\(h) is also mapped by another active entry", comment: "Hosts entry problem; the placeholder is a host name")
+            case .localhostElsewhere:
+                String(localized: "localhost should point to a loopback address (127.0.0.1 or ::1)",
+                       comment: "Hosts entry problem; localhost is a host name, keep it as is")
+            case .localhostDisabled:
+                String(localized: "Turning off the localhost entry can break apps that talk to this Mac",
+                       comment: "Hosts entry problem; localhost is a host name, keep it as is")
+            case .noHosts: String(localized: "Add at least one host name", comment: "Hosts entry problem")
             }
         }
 
@@ -303,9 +308,9 @@ enum HostsBackups {
 
         var title: String {
             switch self {
-            case .never: "Never"
-            case .count: "Based on count"
-            case .ageAndCount: "Based on age and count"
+            case .never: String(localized: "Never", comment: "Automatically delete hosts backups: never")
+            case .count: String(localized: "Based on count", comment: "Automatically delete hosts backups")
+            case .ageAndCount: String(localized: "Based on age and count", comment: "Automatically delete hosts backups")
             }
         }
     }

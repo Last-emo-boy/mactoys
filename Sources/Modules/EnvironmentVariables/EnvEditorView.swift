@@ -19,7 +19,7 @@ struct EnvEditorView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if chrome { PreviewTitleBar(title: "Environment Variables", symbol: "curlybraces", tint: .graphite) { actions } }
+            if chrome { PreviewTitleBar(title: String(localized: "Environment Variables"), symbol: "curlybraces", tint: .graphite) { actions } }
             HStack(spacing: 0) {
                 sidebar.frame(width: 200)
                 Divider()
@@ -43,7 +43,7 @@ struct EnvEditorView: View {
         .buttonStyle(.borderedProminent)
         .disabled(editor.applying)
         .keyboardShortcut("s", modifiers: .command)
-        .help(module.hasUnappliedChanges ? "Write your changes to ~/.zshenv and launchd" : "Everything is applied")
+        .help(module.hasUnappliedChanges ? Text("Write your changes to ~/.zshenv and launchd") : Text("Everything is applied"))
     }
 
     // MARK: Sidebar
@@ -56,12 +56,14 @@ struct EnvEditorView: View {
                         HStack(spacing: 8) {
                             Circle().fill(s.value.appliedProfile == p.id ? Color.green : Color.secondary.opacity(0.35))
                                 .frame(width: 7, height: 7)
-                            Text(p.name).lineLimit(1)
+                            Text(verbatim: p.name).lineLimit(1)
                         }
                         .tag(EnvEditorState.Selection.profile(p.id))
                         .contextMenu {
-                            Button(s.value.appliedProfile == p.id ? "Un-apply" : "Apply") {
+                            Button {
                                 module.setApplied(s.value.appliedProfile == p.id ? nil : p.id)
+                            } label: {
+                                s.value.appliedProfile == p.id ? Text("Un-apply", comment: "Stop applying this profile") : Text("Apply")
                             }
                             Button("Duplicate") { module.duplicateProfile(p.id) }
                             Divider()
@@ -92,8 +94,9 @@ struct EnvEditorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 if let m = editor.message {
-                    InfoBar(m.kind, title: m.kind == .error ? "Couldn't apply" : (m.kind == .warning ? "Applied with warnings" : "Done"),
-                            message: m.text, actionTitle: "Dismiss") { editor.message = nil }
+                    InfoBar(m.kind, title: m.kind == .error ? Text("Couldn't apply")
+                                : (m.kind == .warning ? Text("Applied with warnings") : Text("Done")),
+                            message: Text(verbatim: m.text), actionTitle: Text("Dismiss")) { editor.message = nil }
                 } else if module.hasUnappliedChanges && editor.selection != .effective {
                     InfoBar(.info, title: "Unapplied changes", message: "Apply writes them to ~/.zshenv and launchd.",
                             actionTitle: "Apply") { module.apply() }
@@ -102,8 +105,9 @@ struct EnvEditorView: View {
                 case .profile(let id):
                     if let profile = s.value.profiles.first(where: { $0.id == id }) { profileDetail(profile) }
                 case .user:
-                    ScopeEditor(title: "User", subtitle: "~/.zshenv · launchctl", vars: $s.value.userVariables,
-                                emptyText: "Variables here apply to every zsh and, with launchd on, to apps you open.")
+                    ScopeEditor(title: Text("User", comment: "Scope of the User variables"), subtitle: Text(verbatim: "~/.zshenv · launchctl"),
+                                vars: $s.value.userVariables,
+                                emptyText: Text("Variables here apply to every zsh and, with launchd on, to apps you open."))
                 case .effective:
                     EffectiveView(module: module)
                 }
@@ -128,7 +132,9 @@ struct EnvEditorView: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 20, weight: .bold))
             Spacer()
-            Toggle(applied ? "Applied" : "Not applied", isOn: Binding(get: { applied }, set: { module.setApplied($0 ? id : nil) }))
+            Toggle(isOn: Binding(get: { applied }, set: { module.setApplied($0 ? id : nil) })) {
+                applied ? Text("Applied", comment: "This profile is applied") : Text("Not applied", comment: "This profile isn't applied")
+            }
                 .toggleStyle(.switch)
             Menu {
                 Button("Duplicate") { module.duplicateProfile(id) }
@@ -136,13 +142,14 @@ struct EnvEditorView: View {
             } label: { Image(systemName: "ellipsis.circle") }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
         }
-        ScopeEditor(title: profile.name,
-                    subtitle: applied ? "applied to zsh\(s.value.applyToLaunchd ? " + launchd" : "")" : "not applied — only one profile can be applied",
+        ScopeEditor(title: Text(verbatim: profile.name),
+                    subtitle: !applied ? Text("not applied — only one profile can be applied")
+                        : s.value.applyToLaunchd ? Text("applied to zsh + launchd") : Text("applied to zsh"),
                     vars: binding.variables,
-                    emptyText: "Add the variables this profile sets. They take precedence over User variables of the same name.",
+                    emptyText: Text("Add the variables this profile sets. They take precedence over User variables of the same name."),
                     userVariables: s.value.userVariables)
-        ScopeEditor(title: "User", subtitle: "~/.zshenv · launchctl", vars: $s.value.userVariables,
-                    emptyText: "No User variables.", compact: true)
+        ScopeEditor(title: Text("User", comment: "Scope of the User variables"), subtitle: Text(verbatim: "~/.zshenv · launchctl"),
+                    vars: $s.value.userVariables, emptyText: Text("No User variables."), compact: true)
     }
 
     /// Sample data for `MacToys --snapshot`.
@@ -168,24 +175,24 @@ struct EnvEditorView: View {
 
 /// One scope's variables: a card of name/value rows, then a list card per PATH-like variable.
 private struct ScopeEditor: View {
-    let title: String
-    let subtitle: String
+    let title: Text
+    let subtitle: Text
     @Binding var vars: [EnvVariable]
-    let emptyText: String
+    let emptyText: Text
     var userVariables: [EnvVariable] = []
     var compact = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(title).font(.system(size: 13, weight: .semibold))
-                Text(subtitle).font(.system(size: 11.5)).foregroundStyle(.secondary)
+                title.font(.system(size: 13, weight: .semibold))
+                subtitle.font(.system(size: 11.5)).foregroundStyle(.secondary)
                 Spacer()
                 addMenu
             }
             let plain = vars.filter { !$0.isPathLike }
             if vars.isEmpty {
-                Text(emptyText).font(.system(size: 12)).foregroundStyle(.secondary)
+                emptyText.font(.system(size: 12)).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                     .background(card)
@@ -298,7 +305,7 @@ private struct PathEditor: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 13, weight: .semibold))
                     .fixedSize()
-                Text("\(list.count) entr\(list.count == 1 ? "y" : "ies")").font(.system(size: 11.5)).foregroundStyle(.secondary)
+                Text("\(list.count) entries", comment: "Number of entries in a PATH-like list").font(.system(size: 11.5)).foregroundStyle(.secondary)
                 if let problem = EnvNames.problem(variable.name) {
                     Text(problem).font(.system(size: 11)).foregroundStyle(.red)
                 }
@@ -312,7 +319,7 @@ private struct PathEditor: View {
                 ForEach(Array(list.enumerated()), id: \.offset) { i, entry in
                     if i > 0 { Divider() }
                     HStack(spacing: 12) {
-                        Text("\(i + 1)").font(.system(size: 12.5, weight: .semibold, design: .monospaced))
+                        Text(i + 1, format: .number).font(.system(size: 12.5, weight: .semibold, design: .monospaced))
                             .frame(width: 28, alignment: .leading)
                         TextField("entry", text: Binding(get: { entry }, set: { update(i, $0) }))
                             .textFieldStyle(.plain)
@@ -423,7 +430,7 @@ private struct EffectiveView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Effective environment").font(.system(size: 13, weight: .semibold))
-                Text("zsh -lc env · launchctl").font(.system(size: 11.5)).foregroundStyle(.secondary)
+                Text(verbatim: "zsh -lc env · launchctl").font(.system(size: 11.5)).foregroundStyle(.secondary)
                 Spacer()
                 if editor.loadingEffective { ProgressView().controlSize(.small) }
                 Button("Refresh") { module.loadEffective() }.controlSize(.small)
@@ -433,7 +440,7 @@ private struct EffectiveView: View {
                     Text("PATH (evaluated)").font(.system(size: 12, weight: .semibold))
                     ForEach(Array(PathList.split(path).enumerated()), id: \.offset) { i, e in
                         HStack(spacing: 10) {
-                            Text("\(i + 1)").frame(width: 24, alignment: .leading).foregroundStyle(.secondary)
+                            Text(i + 1, format: .number).frame(width: 24, alignment: .leading).foregroundStyle(.secondary)
                             Text(e).textSelection(.enabled)
                         }
                         .font(.system(size: 12, design: .monospaced))
@@ -445,10 +452,10 @@ private struct EffectiveView: View {
             }
             Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 6) {
                 GridRow {
-                    Text("Name").bold()
-                    Text("zsh").bold()
+                    Text("Name", comment: "Column: environment variable name").bold()
+                    Text(verbatim: "zsh").bold()
                     Text("Apps (launchd)").bold()
-                    Text("")
+                    Text(verbatim: "")
                 }
                 .font(.system(size: 11.5)).foregroundStyle(.secondary)
                 ForEach(editor.zshEnvironment.filter { $0.0 != "PATH" }, id: \.0) { name, value in
@@ -458,11 +465,13 @@ private struct EffectiveView: View {
                         Text(editor.launchdEnvironment[name] ?? "—").font(.system(size: 12, design: .monospaced))
                             .foregroundStyle(.secondary).lineLimit(2)
                         if let source = managed[name] {
-                            Text(source == .profile ? "profile" : "user").font(.system(size: 10.5, weight: .medium))
+                            (source == .profile ? Text("profile", comment: "Variable source: the applied profile")
+                                : Text("user", comment: "Variable source: User variables"))
+                                .font(.system(size: 10.5, weight: .medium))
                                 .padding(.horizontal, 6).padding(.vertical, 1)
                                 .background(Capsule().fill(Color.accentColor.opacity(0.15)))
                         } else {
-                            Text("")
+                            Text(verbatim: "")
                         }
                     }
                 }

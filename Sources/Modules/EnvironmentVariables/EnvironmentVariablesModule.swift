@@ -85,7 +85,7 @@ public final class EnvironmentVariablesModule: ToyModule {
             w.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
             w.toolbar = NSToolbar(identifier: "envvars")
             w.toolbarStyle = .unified
-            w.title = "Environment Variables"
+            w.title = String(localized: "Environment Variables")
             w.setContentSize(NSSize(width: 860, height: 600))
             w.minSize = NSSize(width: 640, height: 420)
             w.isReleasedWhenClosed = false
@@ -130,10 +130,15 @@ public final class EnvironmentVariablesModule: ToyModule {
                 $0.backedUpFiles = applied.backedUpFiles
                 $0.lastApplied = applied.lastApplied
             }
-            let profile = applied.applied?.name
-            let text = warnings.isEmpty
-                ? "Applied\(profile.map { " with \($0)" } ?? ""). New shells and newly opened apps see the changes."
-                : warnings.joined(separator: "\n")
+            let text: String
+            if !warnings.isEmpty {
+                text = warnings.joined(separator: "\n")
+            } else if let profile = applied.applied?.name {
+                text = String(localized: "Applied with \(profile). New shells and newly opened apps see the changes.",
+                              comment: "The placeholder is a profile name")
+            } else {
+                text = String(localized: "Applied. New shells and newly opened apps see the changes.")
+            }
             editor.message = .init(kind: warnings.isEmpty ? .success : .warning, text: text)
             log.info("applied \(applied.lastApplied?.count ?? 0) variables")
             loadEffective()
@@ -158,7 +163,8 @@ public final class EnvironmentVariablesModule: ToyModule {
                 $0.lastApplied = nil
             }
             editor.message = .init(kind: warnings.isEmpty ? .success : .warning,
-                                   text: warnings.isEmpty ? "Removed MacToys from your shell startup files and launchd." : warnings.joined(separator: "\n"))
+                                   text: warnings.isEmpty ? String(localized: "Removed MacToys from your shell startup files and launchd.")
+                                       : warnings.joined(separator: "\n"))
         } catch {
             editor.message = .init(kind: .error, text: error.localizedDescription)
         }
@@ -186,8 +192,8 @@ public final class EnvironmentVariablesModule: ToyModule {
 
     func addProfile() {
         var n = settings.value.profiles.count + 1
-        while settings.value.profiles.contains(where: { $0.name == "Profile \(n)" }) { n += 1 }
-        let p = EnvProfile(name: "Profile \(n)")
+        while settings.value.profiles.contains(where: { $0.name == String(localized: "Profile \(n)") }) { n += 1 }
+        let p = EnvProfile(name: String(localized: "Profile \(n)", comment: "Default name of a new profile; the placeholder is a number"))
         settings.value.profiles.append(p)
         editor.selection = .profile(p.id)
     }
@@ -204,7 +210,8 @@ public final class EnvironmentVariablesModule: ToyModule {
 
     func duplicateProfile(_ id: UUID) {
         guard let p = settings.value.profiles.first(where: { $0.id == id }) else { return }
-        let copy = EnvProfile(name: p.name + " copy", variables: p.variables.map { EnvVariable(name: $0.name, value: $0.value) })
+        let copy = EnvProfile(name: String(localized: "\(p.name) copy", comment: "Name of a duplicated profile; the placeholder is the original name"),
+                              variables: p.variables.map { EnvVariable(name: $0.name, value: $0.value) })
         settings.value.profiles.append(copy)
         editor.selection = .profile(copy.id)
     }

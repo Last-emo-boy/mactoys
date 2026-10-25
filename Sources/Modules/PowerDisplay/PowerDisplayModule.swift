@@ -388,7 +388,7 @@ public final class PowerDisplayModule: ToyModule {
         hoveredSlider = nil
     }
 
-    /// Runs a confirmation alert while keeping the flyout from hiding underneath it.
+    /// Runs a confirmation alert while keeping the flyout from hiding underneath it. Texts must be localized.
     func confirm(_ title: String, _ message: String, button: String) -> Bool {
         flyout?.hidesOnResign = false
         defer { flyout?.hidesOnResign = true; if flyout?.isVisible == true { flyout?.makeKey() } }
@@ -397,7 +397,7 @@ public final class PowerDisplayModule: ToyModule {
         alert.messageText = title
         alert.informativeText = message
         alert.addButton(withTitle: button)
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "Cancel"))
         NSApp.activate()
         return alert.runModal() == .alertFirstButtonReturn
     }
@@ -413,10 +413,10 @@ public final class PowerDisplayModule: ToyModule {
             guard statusItem == nil else { return }
             let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
             item.autosaveName = "com.w33d.mactoys.powerdisplay"
-            let image = NSImage(systemSymbolName: "sun.max", accessibilityDescription: "Power Display")
+            let image = NSImage(systemSymbolName: "sun.max", accessibilityDescription: String(localized: "Power Display"))
             image?.isTemplate = true
             item.button?.image = image
-            item.button?.toolTip = "Power Display"
+            item.button?.toolTip = String(localized: "Power Display")
             item.button?.target = StatusTarget.shared
             item.button?.action = #selector(StatusTarget.clicked(_:))
             StatusTarget.shared.module = self
@@ -467,7 +467,8 @@ public final class PowerDisplayModule: ToyModule {
         } else {
             for m in targets { step(.brightness, on: m, by: steps) }
         }
-        HUD.show("Brightness \(Int(first.percent[.brightness] ?? 0))%", symbol: "sun.max.fill", duration: 0.9)
+        let percent = ((first.percent[.brightness] ?? 0) / 100).formatted(.percent.precision(.fractionLength(0)))
+        HUD.show("Brightness \(percent)", symbol: "sun.max.fill", duration: 0.9)
     }
 
     // MARK: - ToyModule

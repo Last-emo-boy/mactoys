@@ -40,18 +40,22 @@ struct EnvSettingsView: View {
             }
 
             Section("Files") {
-                fileRow("~/.zshenv", detail: applier.isInstalled ? "Contains the MacToys block" : "Not modified", url: applier.zshenv)
-                fileRow("env.zsh", detail: "The exports MacToys generates", url: applier.envFile)
-                fileRow("Login agent", detail: FileManager.default.fileExists(atPath: applier.launchAgent.path) ? "Installed" : "Not installed",
+                fileRow(Text(verbatim: "~/.zshenv"),
+                        detail: applier.isInstalled ? Text("Contains the MacToys block") : Text("Not modified"), url: applier.zshenv)
+                fileRow(Text(verbatim: "env.zsh"), detail: Text("The exports MacToys generates"), url: applier.envFile)
+                fileRow(Text("Login agent"),
+                        detail: FileManager.default.fileExists(atPath: applier.launchAgent.path)
+                            ? Text("Installed", comment: "The login agent file exists") : Text("Not installed", comment: "The login agent file doesn't exist"),
                         url: applier.launchAgent)
-                fileRow("Backups", detail: "Copies of startup files from before MacToys first changed them", url: applier.backupDirectory)
+                fileRow(Text("Backups"), detail: Text("Copies of startup files from before MacToys first changed them"),
+                        url: applier.backupDirectory)
                 HStack {
                     Button("Remove MacToys from Startup Files…") { confirmUninstall = true }
                     Spacer()
                 }
                 if let m = editor.message {
-                    InfoBar(m.kind, title: m.kind == .error ? "Something went wrong" : "Done", message: m.text,
-                            actionTitle: "Dismiss") { editor.message = nil }
+                    InfoBar(m.kind, title: m.kind == .error ? Text("Something went wrong") : Text("Done"), message: Text(verbatim: m.text),
+                            actionTitle: Text("Dismiss")) { editor.message = nil }
                 }
             }
 
@@ -69,16 +73,19 @@ struct EnvSettingsView: View {
 
     private func status(installed: Bool) -> String {
         let count = module.effective.count
-        guard installed, s.value.lastApplied != nil else { return "Nothing applied yet" }
-        let profile = s.value.applied.map { "profile \($0.name)" } ?? "no profile"
-        return "\(count) variable\(count == 1 ? "" : "s") applied · \(profile)\(module.hasUnappliedChanges ? " · unapplied changes" : "")"
+        guard installed, s.value.lastApplied != nil else { return String(localized: "Nothing applied yet") }
+        var parts = [String(localized: "\(count) variables applied", comment: "Environment Variables status")]
+        parts.append(s.value.applied.map { String(localized: "profile \($0.name)", comment: "Environment Variables status: the applied profile") }
+                     ?? String(localized: "no profile", comment: "Environment Variables status: no profile is applied"))
+        if module.hasUnappliedChanges { parts.append(String(localized: "unapplied changes", comment: "Environment Variables status")) }
+        return parts.joined(separator: " · ")
     }
 
     private func reapply() {
         if s.value.lastApplied != nil { module.apply() }
     }
 
-    private func fileRow(_ title: String, detail: String, url: URL) -> some View {
+    private func fileRow(_ title: Text, detail: Text, url: URL) -> some View {
         LabeledContent {
             Button("Show in Finder") {
                 if FileManager.default.fileExists(atPath: url.path) {
@@ -89,7 +96,7 @@ struct EnvSettingsView: View {
             }
             .controlSize(.small)
         } label: {
-            RowLabel(title, subtitle: detail)
+            RowLabel(title: title, subtitle: detail)
         }
     }
 }

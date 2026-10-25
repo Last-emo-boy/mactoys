@@ -31,8 +31,8 @@ struct PlistDocumentView: View {
                 PreviewTitleBar(title: doc.displayName, symbol: "list.bullet.indent", tint: .brown) { primaryActions(preview: true) }
             }
             if let m = doc.message {
-                InfoBar(m.kind, title: m.kind == .error ? "Problem" : (m.kind == .warning ? "Note" : "Done"), message: m.text,
-                        actionTitle: "Dismiss") { doc.message = nil }
+                InfoBar(m.kind, title: m.kind == .error ? Text("Problem") : (m.kind == .warning ? Text("Note") : Text("Done")),
+                        message: Text(verbatim: m.text), actionTitle: Text("Dismiss")) { doc.message = nil }
                     .padding(10)
                 Divider()
             }
@@ -87,8 +87,10 @@ struct PlistDocumentView: View {
             Button("Expand All") { doc.expandAll() }
             Button("Collapse All") { doc.collapseAll() }
             Divider()
-            Button("Compare with \(doc.fileURL == nil ? "Defaults" : "File on Disk")…") {
+            Button {
                 do { try doc.compareWithSource(); showDiff = true } catch { doc.message = .init(kind: .error, text: error.localizedDescription) }
+            } label: {
+                doc.fileURL == nil ? Text("Compare with Defaults…") : Text("Compare with File on Disk…")
             }
             .disabled(doc.fileURL == nil && doc.domain == nil)
             Button("Reload from Disk") {
@@ -116,7 +118,7 @@ struct PlistDocumentView: View {
         HStack(spacing: 12) {
             Picker("Format", selection: Binding(get: { doc.format }, set: { f in
                 if f == .json && !doc.root.isJSONCompatible {
-                    doc.message = .init(kind: .error, text: "This document has dates or data, which JSON can't hold.")
+                    doc.message = .init(kind: .error, text: String(localized: "This document has dates or data, which JSON can't hold."))
                 } else {
                     doc.format = f
                 }
@@ -133,13 +135,21 @@ struct PlistDocumentView: View {
                     .textSelection(.enabled).lineLimit(1).truncationMode(.middle)
             }
             Spacer()
-            if doc.isDirty { Text("Edited").font(.system(size: 11.5)).foregroundStyle(.secondary) }
-            Text(doc.fileURL?.deletingLastPathComponent().path.replacingOccurrences(of: NSHomeDirectory(), with: "~")
-                 ?? (doc.domain.map { "defaults domain \($0)" } ?? "Not saved"))
+            if doc.isDirty { Text("Edited", comment: "The document has unsaved changes").font(.system(size: 11.5)).foregroundStyle(.secondary) }
+            location
                 .font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.head)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
+    }
+
+    /// Where the document lives: its folder, its defaults domain, or nowhere yet.
+    private var location: Text {
+        if let url = doc.fileURL {
+            return Text(verbatim: url.deletingLastPathComponent().path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))
+        }
+        if let domain = doc.domain { return Text("defaults domain \(domain)", comment: "The placeholder is a defaults domain such as com.apple.dock") }
+        return Text("Not saved", comment: "The document has no file yet")
     }
 
     private func writeToDefaults() {
@@ -216,7 +226,7 @@ struct PlistOutlineView: View {
                         .foregroundStyle(.secondary)
                         .disabled(searching)
                     } else {
-                        Text("·").foregroundStyle(.tertiary).frame(width: 14)
+                        Text(verbatim: "·").foregroundStyle(.tertiary).frame(width: 14)
                     }
                     if row.depth > 0 && row.arrayIndex == nil && !doc.readOnly {
                         EditableText(value: row.node.key, font: .system(size: 12, design: .monospaced)) { doc.rename(row.id, to: $0) }
@@ -243,7 +253,7 @@ struct PlistOutlineView: View {
                     .fixedSize()
                 }
             }
-            .width(min: 80, ideal: 100, max: 130)
+            .width(min: 80, ideal: 100, max: 160)
             TableColumn("Value") { row in ValueCell(doc: doc, node: row.node) }
                 .width(min: 140, ideal: 260)
         }
@@ -291,14 +301,15 @@ private struct ValueCell: View {
         case .dictionary, .array:
             Text(node.summary).font(.system(size: 12, design: .monospaced))
         case .boolean(let b):
+            // YES / NO are the property list spelling of booleans (as in Xcode and PlistBuddy), not prose.
             if doc.readOnly {
-                Text(b ? "YES" : "NO").font(.system(size: 12, weight: .medium, design: .monospaced)).foregroundStyle(.purple)
+                Text(verbatim: b ? "YES" : "NO").font(.system(size: 12, weight: .medium, design: .monospaced)).foregroundStyle(.purple)
             } else {
                 Menu {
-                    Button("YES") { doc.setValue(node.id, .boolean(true)) }
-                    Button("NO") { doc.setValue(node.id, .boolean(false)) }
+                    Button { doc.setValue(node.id, .boolean(true)) } label: { Text(verbatim: "YES") }
+                    Button { doc.setValue(node.id, .boolean(false)) } label: { Text(verbatim: "NO") }
                 } label: {
-                    Text(b ? "YES" : "NO").font(.system(size: 12, weight: .medium, design: .monospaced)).foregroundStyle(.purple)
+                    Text(verbatim: b ? "YES" : "NO").font(.system(size: 12, weight: .medium, design: .monospaced)).foregroundStyle(.purple)
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
             }
@@ -357,10 +368,13 @@ private struct DiffSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Compared with \(doc.fileURL == nil ? "defaults domain \(doc.domain ?? "")" : "the file on disk")").font(.title3.bold())
+            (doc.fileURL == nil
+                ? Text("Compared with defaults domain \(doc.domain ?? "")", comment: "The placeholder is a defaults domain such as com.apple.dock")
+                : Text("Compared with the file on disk"))
+                .font(.title3.bold())
             if let diffs = doc.differences, !diffs.isEmpty {
                 Table(diffs) {
-                    TableColumn("") { d in
+                    TableColumn(Text(verbatim: "")) { d in
                         Image(systemName: d.kind == .added ? "plus.circle.fill" : (d.kind == .removed ? "minus.circle.fill" : "pencil.circle.fill"))
                             .foregroundStyle(d.kind == .added ? .green : (d.kind == .removed ? .red : .orange))
                     }
@@ -374,7 +388,7 @@ private struct DiffSheet: View {
                                        description: Text("The document matches what's saved."))
             }
             HStack {
-                Text("\(doc.differences?.count ?? 0) difference\(doc.differences?.count == 1 ? "" : "s")").foregroundStyle(.secondary)
+                Text("\(doc.differences?.count ?? 0) differences", comment: "Number of differences between two property lists").foregroundStyle(.secondary)
                 Spacer()
                 Button("Done", action: done).keyboardShortcut(.defaultAction)
             }

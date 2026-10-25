@@ -79,7 +79,8 @@ import Testing
         #expect(PlistNode(value: .real(48)).valueText == "48.0")
         #expect(PlistNode(value: .real(0.25)).valueText == "0.25")
         #expect(PlistNode(value: .data(Data([0xDE, 0xAD, 0xBE, 0xEF, 0x01]))).valueText == "<deadbeef 01>")
-        #expect(PlistNode(value: .array([PlistNode(value: .string("a"))])).summary == "1 item")
+        // "1 item" is the catalog's English plural form; without tables the key's own form shows.
+        #expect(PlistNode(value: .array([PlistNode(value: .string("a")), PlistNode(value: .string("b"))])).summary == "2 items")
     }
 
     @Test func changesTypesKeepingWhatFits() {

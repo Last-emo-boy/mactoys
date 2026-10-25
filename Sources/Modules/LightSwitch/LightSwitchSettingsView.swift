@@ -24,9 +24,9 @@ struct LightSwitchSettingsView: View {
                 Section {
                     let denied = state.automationDenied || SystemAppearance.automationStatus == .denied
                     InfoBar(denied ? .error : .info,
-                            title: denied ? "MacToys can't change the appearance" : "Automation access for System Events",
-                            message: "Light Switch changes the appearance through System Events. macOS asks once; if you declined, allow MacToys under Privacy & Security › Automation.",
-                            actionTitle: denied ? "Open Settings" : "Allow…") {
+                            title: denied ? Text("MacToys can't change the appearance") : Text("Automation access for System Events"),
+                            message: Text("Light Switch changes the appearance through System Events. macOS asks once; if you declined, allow MacToys under Privacy & Security › Automation."),
+                            actionTitle: denied ? Text("Open Settings") : Text("Allow…")) {
                         if denied { PermissionCenter.shared.openSettings(.automation) } else { module.requestAutomation() }
                     }
                 }
@@ -98,7 +98,7 @@ struct LightSwitchSettingsView: View {
         .onChange(of: s.value.longitude) { _, v in longitudeText = v.map { String($0) } ?? "" }
     }
 
-    private var modeSubtitle: String {
+    private var modeSubtitle: LocalizedStringKey {
         switch s.value.scheduleMode {
         case .off: "Only the shortcut switches the appearance."
         case .fixedHours: "Light and dark at the same times every day."
@@ -116,11 +116,15 @@ struct LightSwitchSettingsView: View {
                         .foregroundStyle(state.current == .dark ? Tint.indigo.color : Tint.orange.color)
                         .frame(width: 34)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("\(state.current.title) mode is on").font(.system(size: 14, weight: .semibold))
+                        (state.current == .dark ? Text("Dark mode is on") : Text("Light mode is on"))
+                            .font(.system(size: 14, weight: .semibold))
                         Text(nextText(now: context.date)).font(.system(size: 12)).foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Button("Switch to \(state.current.opposite.title)") { module.toggle() }
+                    Button { module.toggle() } label: {
+                        state.current == .dark ? Text("Switch to Light", comment: "Button: switch to light mode")
+                            : Text("Switch to Dark", comment: "Button: switch to dark mode")
+                    }
                     Keycaps(s.value.toggleShortcut)
                 }
             }
@@ -129,12 +133,15 @@ struct LightSwitchSettingsView: View {
 
     private func nextText(now: Date) -> String {
         var text = LightSwitchSchedule.describeNext(plan: module.currentPlan(now: now), mode: s.value.scheduleMode, now: now)
-        if let until = s.value.manualOverrideUntil, until > now { text += " · manual override until then" }
+        if let until = s.value.manualOverrideUntil, until > now {
+            text = String(localized: "\(text) · manual override until then",
+                          comment: "Light Switch status; the placeholder is the next change, e.g. 'Dark at 20:00'")
+        }
         if let error = state.lastError { text = error }
         return text
     }
 
-    private func timeRow(_ title: String, time: Binding<TimeOfDay>) -> some View {
+    private func timeRow(_ title: LocalizedStringKey, time: Binding<TimeOfDay>) -> some View {
         DatePicker(selection: Binding(get: { time.wrappedValue.on(Date(), calendar: .current) },
                                       set: { time.wrappedValue = TimeOfDay(of: $0, calendar: .current) }),
                    displayedComponents: .hourAndMinute) {
@@ -142,10 +149,12 @@ struct LightSwitchSettingsView: View {
         }
     }
 
-    private func offsetRow(_ title: String, value: Binding<Int>) -> some View {
+    private func offsetRow(_ title: LocalizedStringKey, value: Binding<Int>) -> some View {
         LabeledContent {
             HStack(spacing: 4) {
-                Text(value.wrappedValue == 0 ? "None" : "\(value.wrappedValue > 0 ? "+" : "")\(value.wrappedValue) min")
+                (value.wrappedValue == 0 ? Text("None", comment: "Sunrise or sunset offset of zero minutes")
+                    : Text(Measurement(value: Double(value.wrappedValue), unit: UnitDuration.minutes)
+                        .formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.sign(strategy: .always())))))
                     .monospacedDigit().frame(minWidth: 64, alignment: .trailing)
                 Stepper(title, value: value, in: -180...180, step: 5).labelsHidden()
             }
@@ -161,16 +170,16 @@ struct LightSwitchSettingsView: View {
                     .onSubmit(commitCoordinates)
                 TextField("Longitude", text: $longitudeText).frame(width: 90)
                     .onSubmit(commitCoordinates)
-                Button(state.locating ? "Locating…" : "Use My Location") { module.locate() }
+                Button { module.locate() } label: { state.locating ? Text("Locating…") : Text("Use My Location") }
                     .disabled(state.locating)
             }
         } label: {
-            RowLabel("Location", subtitle: s.value.hasLocation
-                     ? "Coordinates in degrees; south and west are negative."
-                     : "Needed for sunrise and sunset. Enter coordinates or use Location Services.")
+            RowLabel(title: Text("Location"), subtitle: s.value.hasLocation
+                     ? Text("Coordinates in degrees; south and west are negative.")
+                     : Text("Needed for sunrise and sunset. Enter coordinates or use Location Services."))
         }
         if let error = state.locationError {
-            InfoBar(.warning, title: "Location unavailable", message: error)
+            InfoBar(.warning, title: Text("Location unavailable"), message: Text(verbatim: error))
         }
         if latitudeInvalid || longitudeInvalid {
             InfoBar(.warning, title: "Invalid coordinates", message: "Latitude is −90…90 and longitude −180…180.")
@@ -201,7 +210,7 @@ struct LightSwitchSettingsView: View {
                 if t.isPolarDay { Text("Sun up all day") }
                 else if t.isPolarNight { Text("Sun down all day") }
                 else if let rise = t.sunrise, let set = t.sunset {
-                    Text("☀︎ \(rise.formatted(date: .omitted, time: .shortened))   ☾ \(set.formatted(date: .omitted, time: .shortened))")
+                    Text(verbatim: "☀︎ \(rise.formatted(date: .omitted, time: .shortened))   ☾ \(set.formatted(date: .omitted, time: .shortened))")
                         .monospacedDigit()
                 }
             } label: {
@@ -215,10 +224,12 @@ struct LightSwitchSettingsView: View {
         LabeledContent {
             switch schedule {
             case .custom(let from, let to)?:
-                Text(String(format: "%02d:%02d – %02d:%02d", from.hour, from.minute, to.hour, to.minute)).monospacedDigit()
+                let start = from.on(Date(), calendar: .current).formatted(date: .omitted, time: .shortened)
+                let end = to.on(Date(), calendar: .current).formatted(date: .omitted, time: .shortened)
+                Text(verbatim: "\(start) – \(end)").monospacedDigit()
             case .sunsetToSunrise?: Text("Sunset to sunrise")
-            case .off?: Text("Off").foregroundStyle(.secondary)
-            case nil: Text("Unavailable").foregroundStyle(.secondary)
+            case .off?: Text("Off", comment: "Night Shift schedule: off").foregroundStyle(.secondary)
+            case nil: Text("Unavailable", comment: "Night Shift schedule can't be read").foregroundStyle(.secondary)
             }
         } label: {
             RowLabel("Night Shift schedule", subtitle: "Change it in System Settings › Displays › Night Shift.")
@@ -231,14 +242,15 @@ struct LightSwitchSettingsView: View {
         }
     }
 
-    private func wallpaperRow(_ title: String, path: Binding<String?>) -> some View {
+    private func wallpaperRow(_ title: LocalizedStringKey, path: Binding<String?>) -> some View {
         LabeledContent {
             HStack(spacing: 8) {
                 if let p = path.wrappedValue, let image = NSImage(contentsOfFile: (p as NSString).expandingTildeInPath) {
                     Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
                         .frame(width: 54, height: 34).clipShape(RoundedRectangle(cornerRadius: 5))
                 }
-                Text(path.wrappedValue.map { ($0 as NSString).lastPathComponent } ?? "None")
+                (path.wrappedValue.map { Text(verbatim: ($0 as NSString).lastPathComponent) }
+                    ?? Text("None", comment: "No desktop picture chosen"))
                     .foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle).frame(maxWidth: 180, alignment: .trailing)
                 Button("Choose…") {
                     let panel = NSOpenPanel()
@@ -256,10 +268,10 @@ struct LightSwitchSettingsView: View {
         }
     }
 
-    private func profilePicker(_ title: String, profiles: [Services.DisplayProfile], selection: Binding<Int?>) -> some View {
+    private func profilePicker(_ title: LocalizedStringKey, profiles: [Services.DisplayProfile], selection: Binding<Int?>) -> some View {
         Picker(selection: selection) {
             Text("Don't change").tag(Int?.none)
-            ForEach(profiles) { p in Text(p.name).tag(Int?.some(p.id)) }
+            ForEach(profiles) { p in Text(verbatim: p.name).tag(Int?.some(p.id)) }
         } label: {
             RowLabel(title)
         }

@@ -75,9 +75,14 @@ enum EnvNames {
 
     /// Why a name can't be used, or nil when it's fine.
     static func problem(_ name: String) -> String? {
-        if name.isEmpty { return "Name is empty" }
-        if !isValid(name) { return "Use letters, digits and underscores, not starting with a digit" }
-        if reserved.contains(name) { return "\(name) is managed by the system" }
+        if name.isEmpty { return String(localized: "Name is empty", comment: "Environment variable name problem") }
+        if !isValid(name) {
+            return String(localized: "Use letters, digits and underscores, not starting with a digit",
+                          comment: "Environment variable name problem")
+        }
+        if reserved.contains(name) {
+            return String(localized: "\(name) is managed by the system", comment: "Environment variable name problem; the placeholder is the name")
+        }
         return nil
     }
 }
@@ -106,7 +111,12 @@ enum EnvComposer {
 
     /// Problems that block applying.
     static func problems(_ vars: [EffectiveVariable]) -> [String] {
-        vars.compactMap { v in EnvNames.problem(v.name).map { "\(v.name.isEmpty ? "(unnamed)" : v.name): \($0)" } }
+        vars.compactMap { v in
+            EnvNames.problem(v.name).map { problem in
+                let name = v.name.isEmpty ? String(localized: "(unnamed)", comment: "An environment variable without a name") : v.name
+                return String(localized: "\(name): \(problem)", comment: "Apply error: a variable name, then what's wrong with it")
+            }
+        }
     }
 }
 

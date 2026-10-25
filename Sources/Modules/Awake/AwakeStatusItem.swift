@@ -17,7 +17,7 @@ final class AwakeStatusItem: NSObject, NSMenuDelegate {
         guard item == nil else { return }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         item.autosaveName = "com.w33d.mactoys.awake"
-        let menu = NSMenu(title: "Awake")
+        let menu = NSMenu(title: String(localized: "Awake"))
         menu.delegate = self
         menu.autoenablesItems = false
         item.menu = menu
@@ -39,8 +39,10 @@ final class AwakeStatusItem: NSObject, NSMenuDelegate {
             item.button?.image = AwakeIcon.image(for: mode)
             shownMode = mode
         }
-        item.button?.toolTip = "Awake — \(module.statusText)"
-        item.button?.setAccessibilityLabel("Awake, \(module.statusText)")
+        item.button?.toolTip = String(localized: "Awake — \(module.statusText)",
+                                      comment: "Menu bar tooltip; the placeholder is the status, e.g. 'Indefinitely · screen stays on'")
+        item.button?.setAccessibilityLabel(String(localized: "Awake, \(module.statusText)",
+                                                  comment: "Menu bar item accessibility label; the placeholder is the status"))
     }
 
     // MARK: - NSMenuDelegate
@@ -62,7 +64,7 @@ final class AwakeStatusItem: NSObject, NSMenuDelegate {
                 mi.state = checked ? .on : .off
                 if let badge { mi.badge = NSMenuItemBadge(string: badge) }
                 if action == .until {
-                    mi.toolTip = "Keeps this Mac awake until the date and time set in Awake settings."
+                    mi.toolTip = String(localized: "Keeps this Mac awake until the date and time set in Awake settings.")
                 }
                 menu.addItem(mi)
             }
@@ -81,7 +83,7 @@ enum AwakeIcon {
     static func image(for mode: AwakeMode) -> NSImage {
         let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
         let cupName = mode == .off ? "cup.and.saucer" : "cup.and.saucer.fill"
-        guard let cup = NSImage(systemSymbolName: cupName, accessibilityDescription: "Awake")?
+        guard let cup = NSImage(systemSymbolName: cupName, accessibilityDescription: String(localized: "Awake"))?
             .withSymbolConfiguration(config) else { return NSImage() }
         let badgeName: String? = switch mode {
         case .timed: "clock.fill"
@@ -105,7 +107,7 @@ enum AwakeIcon {
             return true
         }
         image.isTemplate = true
-        image.accessibilityDescription = "Awake"
+        image.accessibilityDescription = String(localized: "Awake")
         return image
     }
 }

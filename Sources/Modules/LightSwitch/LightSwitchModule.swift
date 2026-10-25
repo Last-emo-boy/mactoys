@@ -194,7 +194,7 @@ public final class LightSwitchModule: ToyModule {
                 self.state.automationDenied = false
                 self.applyExtras(appearance)
                 if announce && self.settings.value.showHUD {
-                    HUD.show("\(appearance.title) mode", symbol: appearance == .dark ? "moon.fill" : "sun.max.fill")
+                    HUD.show(appearance.modeTitle, symbol: appearance == .dark ? "moon.fill" : "sun.max.fill")
                 }
             case .failure(let failure):
                 self.log.error("\(failure.localizedDescription, privacy: .public)")

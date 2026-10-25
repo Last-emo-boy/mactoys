@@ -144,7 +144,7 @@ public final class AwakeModule: ToyModule {
 
     var isAwake: Bool { settings.value.mode != .off }
     var isScreenLocked: Bool { screenLocked }
-    var statusText: String { AwakeSchedule.describe(settings.value, now: Date(), locked: screenLocked) }
+    var statusText: String { AwakeSchedule.statusText(settings.value, now: Date(), locked: screenLocked) }
 
     func turnOff() { settings.update { $0.mode = .off; $0.timedExpiresAt = nil; $0.boundProcess = nil } }
 

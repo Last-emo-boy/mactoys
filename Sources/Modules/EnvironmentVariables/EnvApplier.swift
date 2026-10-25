@@ -133,7 +133,8 @@ struct EnvApplier {
                 settings.launchdOriginals[name] = .some(launchctl.get(name))
             }
             if launchctl.get(name) != value && !launchctl.set(name, value) {
-                warnings.append("launchctl setenv \(name) failed")
+                warnings.append(String(localized: "launchctl setenv \(name) failed",
+                                       comment: "Apply warning; launchctl setenv is a command, the placeholder a variable name"))
             }
         }
         // Names MacToys set before but that are gone now: put back what was there.
@@ -152,7 +153,8 @@ struct EnvApplier {
                 try data.write(to: launchAgent, options: .atomic)
             }
         } catch {
-            warnings.append("Couldn't write the login agent: \(error.localizedDescription)")
+            warnings.append(String(localized: "Couldn't write the login agent: \(error.localizedDescription)",
+                                   comment: "Apply warning; the placeholder is the system's error message"))
         }
         return warnings
     }
@@ -161,7 +163,7 @@ struct EnvApplier {
         var warnings: [String] = []
         for (name, original) in settings.launchdOriginals {
             let ok = original.map { launchctl.set(name, $0) } ?? launchctl.unset(name)
-            if !ok { warnings.append("Couldn't restore \(name) in launchd") }
+            if !ok { warnings.append(String(localized: "Couldn't restore \(name) in launchd", comment: "Warning; the placeholder is a variable name")) }
         }
         settings.launchdOriginals = [:]
         if FileManager.default.fileExists(atPath: launchAgent.path) {
