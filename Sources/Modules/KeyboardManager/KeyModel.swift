@@ -67,8 +67,8 @@ public enum KeyCatalog {
         let deviceMask: UInt64
     }
 
-    static let left = String(localized: "Left", comment: "Keycap before a modifier symbol: the left-hand key of the pair (Left ⌘)")
-    static let right = String(localized: "Right", comment: "Keycap before a modifier symbol: the right-hand key of the pair (Right ⌘)")
+    static let left = String(localized: "key.side.left", defaultValue: "Left", comment: "Keycap before a modifier symbol: the left-hand key of the pair (Left ⌘)")
+    static let right = String(localized: "key.side.right", defaultValue: "Right", comment: "Keycap before a modifier symbol: the right-hand key of the pair (Right ⌘)")
 
     static let modifierInfo: [Int: ModifierInfo] = [
         kVK_Control: ModifierInfo(modifier: .control, symbol: "⌃", side: left, deviceMask: 0x0000_0001),

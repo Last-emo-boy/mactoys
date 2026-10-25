@@ -5,10 +5,70 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys steuert den Finder (Auswahl für Peek, PowerRename und New+, Papierkorb entleeren), System Events (Dunkelmodus für Lichtschalter, Stummschalten) und das Anmeldefenster (Neustart, Ausschalten und Abmelden aus der Befehlspalette)."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "MacToys controls Finder (selection for Peek, PowerRename and New+, Empty Trash), System Events (Dark Mode for Light Switch, mute) and the login window (restart, shut down and log out from Command Palette)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys controla el Finder (selección para Peek, PowerRename y New+, vaciar la Papelera), System Events (modo oscuro para Cambio de aspecto, silencio) y la ventana de inicio de sesión (reiniciar, apagar y cerrar sesión desde la Paleta de comandos)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys contrôle le Finder (sélection pour Peek, PowerRename et New+, vider la corbeille), System Events (mode sombre pour Bascule d’apparence, silence) et la fenêtre de connexion (redémarrer, éteindre et fermer la session depuis la Palette de commandes)."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys controlla il Finder (selezione per Peek, PowerRename e New+, svuotare il Cestino), System Events (modalità scura per Cambio aspetto, silenzioso) e la finestra di login (riavvia, spegni e logout dal Riquadro comandi)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToysは、Finder（Peek、PowerRename、New+での選択項目の取得、ゴミ箱を空にする）、System Events（ライトスイッチのダークモード、消音）、ログインウインドウ（コマンドパレットからの再起動、システム終了、ログアウト）を操作します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys는 Finder(Peek, PowerRename, New+의 선택 항목 읽기, 휴지통 비우기), System Events(화면 모드 전환의 다크 모드, 음소거) 및 로그인 윈도우(명령 팔레트에서 재시동, 시스템 종료, 로그아웃)를 제어합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O MacToys controla o Finder (seleção para Peek, PowerRename e New+, esvaziar o Lixo), o System Events (Modo Escuro para o Alternador de Aparência, silenciar) e a janela de início de sessão (reiniciar, desligar e encerrar sessão pela Paleta de Comandos)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys управляет Finder (выбранные объекты для Peek, PowerRename и New+, очистка Корзины), System Events (темный режим для Переключателя темы, выключение звука) и окном входа (перезагрузка, выключение и выход из системы из Палитры команд)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys 会控制访达（为 Peek、PowerRename 和 New+ 读取所选项目，以及清倒废纸篓）、System Events（为明暗切换更改深色模式、静音）和登录窗口（在命令面板中重新启动、关机和退出登录）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys 會控制 Finder（為 Peek、PowerRename 和 New+ 讀取所選項目，以及清空垃圾桶）、System Events（為外觀切換更改深色模式、靜音）和登入視窗（在指令面板中重新開機、關機和登出）。"
           }
         }
       }
@@ -17,10 +77,70 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maus ohne Grenzen sucht Ihre anderen Macs im lokalen Netzwerk und verbindet sich mit ihnen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Mouse Without Borders finds and connects to your other Macs on the local network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse Without Borders busca tus otros Mac en la red local y se conecta a ellos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse Without Borders recherche vos autres Mac sur le réseau local et s’y connecte."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse senza confini trova i tuoi altri Mac sulla rete locale e si connette a essi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse Without Bordersは、ローカルネットワーク上のほかのMacを見つけて接続します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경계 없는 마우스는 로컬 네트워크에서 다른 Mac을 찾아 연결합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Mouse Without Borders encontra e se conecta aos seus outros Macs na rede local."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мышь без границ находит другие ваши Mac в локальной сети и подключается к ним."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无界鼠标会在本地网络上查找并连接你的其他 Mac。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無邊界滑鼠會在區域網路上尋找並連接你的其他 Mac。"
           }
         }
       }
@@ -29,10 +149,70 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lichtschalter verwendet Ihren Standort, um Sonnenaufgang und Sonnenuntergang zu berechnen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Light Switch uses your location to compute sunrise and sunset."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambio de aspecto usa tu ubicación para calcular el amanecer y el atardecer."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bascule d’apparence utilise votre position pour calculer le lever et le coucher du soleil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambio aspetto usa la tua posizione per calcolare l’alba e il tramonto."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライトスイッチは、日の出と日の入りの時刻を計算するために位置情報を使用します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면 모드 전환은 일출 및 일몰 시간을 계산하기 위해 사용자의 위치를 사용합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Alternador de Aparência usa a sua localização para calcular o nascer e o pôr do sol."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переключатель темы использует вашу геопозицию, чтобы рассчитать время восхода и заката."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "明暗切换使用你的位置来计算日出和日落时间。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外觀切換會使用你的位置來計算日出和日落時間。"
           }
         }
       }
@@ -41,10 +221,70 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lichtschalter verwendet Ihren Standort, um Sonnenaufgang und Sonnenuntergang zu berechnen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Light Switch uses your location to compute sunrise and sunset."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambio de aspecto usa tu ubicación para calcular el amanecer y el atardecer."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bascule d’apparence utilise votre position pour calculer le lever et le coucher du soleil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambio aspetto usa la tua posizione per calcolare l’alba e il tramonto."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライトスイッチは、日の出と日の入りの時刻を計算するために位置情報を使用します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면 모드 전환은 일출 및 일몰 시간을 계산하기 위해 사용자의 위치를 사용합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Alternador de Aparência usa a sua localização para calcular o nascer e o pôr do sol."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переключатель темы использует вашу геопозицию, чтобы рассчитать время восхода и заката."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "明暗切换使用你的位置来计算日出和日落时间。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外觀切換會使用你的位置來計算日出和日落時間。"
           }
         }
       }
@@ -53,10 +293,70 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt nimmt bei Bildschirmaufnahmen Ton auf und schreibt das Diktat für Ausschnitte mit."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "ZoomIt records audio with screen recordings and transcribes snip dictation."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt graba audio con las grabaciones de pantalla y transcribe el dictado de los recortes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt enregistre l’audio avec les enregistrements d’écran et transcrit la dictée des captures."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt registra l’audio insieme alle registrazioni dello schermo e trascrive la dettatura dei ritagli."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomItは、画面収録と一緒に音声を録音し、切り取りの音声入力を文字に起こします。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt은 화면 기록과 함께 오디오를 녹음하고 캡처 받아쓰기를 텍스트로 변환합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O ZoomIt grava áudio nas gravações de tela e transcreve o ditado dos recortes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt записывает звук вместе с записью экрана и расшифровывает диктовку для снимков."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt 会在录屏时录制音频，并转写截图听写内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt 會在螢幕錄製時錄製音訊，並轉寫截取聽寫內容。"
           }
         }
       }
@@ -65,10 +365,70 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt schreibt das Diktat für Ausschnitte auf diesem Mac mit."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "ZoomIt transcribes snip dictation on this Mac."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt transcribe el dictado de los recortes en este Mac."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt transcrit la dictée des captures sur ce Mac."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt trascrive la dettatura dei ritagli su questo Mac."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomItは、切り取りの音声入力をこのMac上で文字に起こします。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt은 이 Mac에서 캡처 받아쓰기를 텍스트로 변환합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O ZoomIt transcreve o ditado dos recortes neste Mac."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt расшифровывает диктовку для снимков на этом Mac."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt 会在这台 Mac 上转写截图听写内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZoomIt 會在這台 Mac 上轉寫截取聽寫內容。"
           }
         }
       }

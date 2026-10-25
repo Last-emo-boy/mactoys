@@ -55,7 +55,7 @@ public struct HighlighterSettings: Codable, Equatable, Sendable {
         case spotlight, circle, ripple
         public var title: String {
             switch self {
-            case .spotlight: String(localized: "Spotlight", comment: "Mouse Highlighter mode: dims the screen around the pointer")
+            case .spotlight: String(localized: "mouseutils.highlighter.spotlight", defaultValue: "Spotlight", comment: "Mouse Highlighter mode: dims the screen around the pointer (a stage spotlight, not macOS Spotlight search)")
             case .circle: String(localized: "Circle highlight", comment: "Mouse Highlighter mode")
             case .ripple: String(localized: "Ripple", comment: "Mouse Highlighter mode: rings spread out from each click")
             }

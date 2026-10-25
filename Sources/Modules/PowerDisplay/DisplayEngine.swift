@@ -28,7 +28,7 @@ enum DisplayFeature: String, Codable, CaseIterable, Sendable {
         case .volume: String(localized: "Volume")
         case .inputSource: String(localized: "Input", comment: "Monitor input source")
         case .colorTemperature: String(localized: "Color temperature")
-        case .powerState: String(localized: "Power", comment: "Monitor power state")
+        case .powerState: String(localized: "powerdisplay.power", defaultValue: "Power", comment: "Monitor control: power state (on, standby, off)")
         }
     }
 

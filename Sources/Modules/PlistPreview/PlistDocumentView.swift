@@ -212,7 +212,7 @@ struct PlistOutlineView: View {
         let rows = doc.rows
         let searching = doc.matches != nil
         Table(rows, selection: $doc.selection) {
-            TableColumn("Key") { row in
+            TableColumn(Text(LocalizedStringResource("plist.column.key", defaultValue: "Key", comment: "Column header: the key (name) of a property-list dictionary entry, not a keyboard key"))) { row in
                 HStack(spacing: 4) {
                     Color.clear.frame(width: CGFloat(row.depth) * 16, height: 1)
                     if row.node.isContainer {

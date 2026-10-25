@@ -14,7 +14,7 @@ public struct ZoneLayout: Codable, Hashable, Identifiable, Sendable {
         public var title: String {
             switch self {
             case .blank: String(localized: "No layout", comment: "FancyZones layout template without zones")
-            case .focus: String(localized: "Focus", comment: "FancyZones layout template: cascaded, overlapping zones")
+            case .focus: String(localized: "fancyzones.template.focus", defaultValue: "Focus", comment: "FancyZones layout template: cascaded, overlapping zones (not the macOS Focus feature)")
             case .columns: String(localized: "Columns", comment: "FancyZones layout template: zones side by side")
             case .rows: String(localized: "Rows", comment: "FancyZones layout template: zones stacked vertically")
             case .grid, .customGrid:

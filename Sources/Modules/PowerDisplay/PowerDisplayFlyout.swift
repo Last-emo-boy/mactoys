@@ -315,7 +315,7 @@ private struct MonitorCard: View {
     private var powerLabel: some View {
         HStack(spacing: 10) {
             Image(systemName: "power").font(.system(size: 12)).foregroundStyle(.secondary).frame(width: 16)
-            Text("Power").font(.system(size: 12.5)).foregroundStyle(.secondary)
+            Text(LocalizedStringResource("powerdisplay.power", defaultValue: "Power", comment: "Monitor control: power state (on, standby, off)")).font(.system(size: 12.5)).foregroundStyle(.secondary)
         }
     }
 
