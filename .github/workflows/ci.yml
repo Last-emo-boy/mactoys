@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    # Needs a runner with Xcode 27 (Swift 6.4, macOS 27 SDK).
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_27*.app | sort -V | tail -1)"
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test
+      - name: Check localizations
+        run: python3 scripts/i18n-lint.py

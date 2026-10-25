@@ -114,20 +114,20 @@ import Testing
         n/Applications/Xcode.app/Contents/MacOS/Xcode
         f12r
         tREG
-        n/Users/w33d/Projects/build/DerivedData/Build.db
+        n/Users/dev/Projects/build/DerivedData/Build.db
         f13u
         tREG
-        n/Users/w33d/Projects/build/DerivedData/Build.db-wal
+        n/Users/dev/Projects/build/DerivedData/Build.db-wal
         f14u
         tREG
-        n/Users/w33d/Projects/builder/other.db
+        n/Users/dev/Projects/builder/other.db
         p9921
         czsh
         u0
         Lroot
         fcwd
         tDIR
-        n/Users/w33d/Projects/build
+        n/Users/dev/Projects/build
         f3u
         tIPv4
         n127.0.0.1:5000
@@ -143,19 +143,19 @@ import Testing
         u0
         f5r
         tREG
-        n/Users/w33d/Projects/build/gone.txt (deleted)
+        n/Users/dev/Projects/build/gone.txt (deleted)
         """.replacingOccurrences(of: "\n", with: "\r")
-        let found = LsofParser.parse(sample, paths: [URL(fileURLWithPath: "/Users/w33d/Projects/build")])
+        let found = LsofParser.parse(sample, paths: [URL(fileURLWithPath: "/Users/dev/Projects/build")])
         #expect(found.map(\.pid) == [4182, 77, 9921])
         let xcode = found[0]
         #expect(xcode.name == "Xcode" && xcode.user == "w33d" && xcode.uid == 501)
         #expect(xcode.executablePath == "/Applications/Xcode.app/Contents/MacOS/Xcode")
         #expect(xcode.files.map(\.descriptor) == [12, 13])
         #expect(xcode.files.allSatisfy { $0.kind == .openFile })
-        #expect(found[2].files == [LockedFile(path: "/Users/w33d/Projects/build", kind: .workingDirectory)])
+        #expect(found[2].files == [LockedFile(path: "/Users/dev/Projects/build", kind: .workingDirectory)])
         #expect(found[2].user == "root")
         #expect(found[1].user == "0")
-        #expect(found[1].files.first?.path == "/Users/w33d/Projects/build/gone.txt")
+        #expect(found[1].files.first?.path == "/Users/dev/Projects/build/gone.txt")
     }
 
     @Test func parsesRealLsofOutput() throws {
