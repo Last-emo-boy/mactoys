@@ -138,29 +138,29 @@ private enum LayoutCache {
 /// Virtual key codes and their display names.
 public enum KeyCodes {
     public static let special: [UInt16: String] = [
-        UInt16(kVK_Return): "↩", UInt16(kVK_Tab): "⇥", UInt16(kVK_Space): "Space",
+        UInt16(kVK_Return): "↩", UInt16(kVK_Tab): "⇥", UInt16(kVK_Space): String(localized: "Space", comment: "Key name: space bar"),
         UInt16(kVK_Delete): "⌫", UInt16(kVK_Escape): "esc", UInt16(kVK_ForwardDelete): "⌦",
         UInt16(kVK_LeftArrow): "←", UInt16(kVK_RightArrow): "→", UInt16(kVK_UpArrow): "↑",
         UInt16(kVK_DownArrow): "↓", UInt16(kVK_Home): "↖", UInt16(kVK_End): "↘",
         UInt16(kVK_PageUp): "⇞", UInt16(kVK_PageDown): "⇟", UInt16(kVK_CapsLock): "⇪",
-        UInt16(kVK_Help): "Help", UInt16(kVK_ANSI_KeypadEnter): "⌤", UInt16(kVK_ANSI_KeypadClear): "⌧",
+        UInt16(kVK_Help): String(localized: "Help", comment: "Key name: Help key"), UInt16(kVK_ANSI_KeypadEnter): "⌤", UInt16(kVK_ANSI_KeypadClear): "⌧",
         UInt16(kVK_F1): "F1", UInt16(kVK_F2): "F2", UInt16(kVK_F3): "F3", UInt16(kVK_F4): "F4",
         UInt16(kVK_F5): "F5", UInt16(kVK_F6): "F6", UInt16(kVK_F7): "F7", UInt16(kVK_F8): "F8",
         UInt16(kVK_F9): "F9", UInt16(kVK_F10): "F10", UInt16(kVK_F11): "F11", UInt16(kVK_F12): "F12",
         UInt16(kVK_F13): "F13", UInt16(kVK_F14): "F14", UInt16(kVK_F15): "F15", UInt16(kVK_F16): "F16",
         UInt16(kVK_F17): "F17", UInt16(kVK_F18): "F18", UInt16(kVK_F19): "F19", UInt16(kVK_F20): "F20",
-        UInt16(kVK_Command): "Left ⌘", UInt16(kVK_RightCommand): "Right ⌘",
-        UInt16(kVK_Option): "Left ⌥", UInt16(kVK_RightOption): "Right ⌥",
-        UInt16(kVK_Control): "Left ⌃", UInt16(kVK_RightControl): "Right ⌃",
-        UInt16(kVK_Shift): "Left ⇧", UInt16(kVK_RightShift): "Right ⇧", UInt16(kVK_Function): "fn",
-        UInt16(kVK_VolumeUp): "Volume Up", UInt16(kVK_VolumeDown): "Volume Down", UInt16(kVK_Mute): "Mute",
-        UInt16(kVK_ANSI_Keypad0): "Num 0", UInt16(kVK_ANSI_Keypad1): "Num 1", UInt16(kVK_ANSI_Keypad2): "Num 2",
-        UInt16(kVK_ANSI_Keypad3): "Num 3", UInt16(kVK_ANSI_Keypad4): "Num 4", UInt16(kVK_ANSI_Keypad5): "Num 5",
-        UInt16(kVK_ANSI_Keypad6): "Num 6", UInt16(kVK_ANSI_Keypad7): "Num 7", UInt16(kVK_ANSI_Keypad8): "Num 8",
-        UInt16(kVK_ANSI_Keypad9): "Num 9", UInt16(kVK_ANSI_KeypadDecimal): "Num .",
-        UInt16(kVK_ANSI_KeypadMultiply): "Num *", UInt16(kVK_ANSI_KeypadPlus): "Num +",
-        UInt16(kVK_ANSI_KeypadDivide): "Num /", UInt16(kVK_ANSI_KeypadMinus): "Num -",
-        UInt16(kVK_ANSI_KeypadEquals): "Num =",
+        UInt16(kVK_Command): String(localized: "Left ⌘", comment: "Key name"), UInt16(kVK_RightCommand): String(localized: "Right ⌘", comment: "Key name"),
+        UInt16(kVK_Option): String(localized: "Left ⌥", comment: "Key name"), UInt16(kVK_RightOption): String(localized: "Right ⌥", comment: "Key name"),
+        UInt16(kVK_Control): String(localized: "Left ⌃", comment: "Key name"), UInt16(kVK_RightControl): String(localized: "Right ⌃", comment: "Key name"),
+        UInt16(kVK_Shift): String(localized: "Left ⇧", comment: "Key name"), UInt16(kVK_RightShift): String(localized: "Right ⇧", comment: "Key name"), UInt16(kVK_Function): "fn",
+        UInt16(kVK_VolumeUp): String(localized: "Volume Up", comment: "Key name"), UInt16(kVK_VolumeDown): String(localized: "Volume Down", comment: "Key name"), UInt16(kVK_Mute): String(localized: "Mute", comment: "Key name: mute key"),
+        UInt16(kVK_ANSI_Keypad0): String(localized: "Num 0", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_Keypad1): String(localized: "Num 1", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_Keypad2): String(localized: "Num 2", comment: "Key name: numeric keypad key"),
+        UInt16(kVK_ANSI_Keypad3): String(localized: "Num 3", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_Keypad4): String(localized: "Num 4", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_Keypad5): String(localized: "Num 5", comment: "Key name: numeric keypad key"),
+        UInt16(kVK_ANSI_Keypad6): String(localized: "Num 6", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_Keypad7): String(localized: "Num 7", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_Keypad8): String(localized: "Num 8", comment: "Key name: numeric keypad key"),
+        UInt16(kVK_ANSI_Keypad9): String(localized: "Num 9", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_KeypadDecimal): String(localized: "Num .", comment: "Key name: numeric keypad key"),
+        UInt16(kVK_ANSI_KeypadMultiply): String(localized: "Num *", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_KeypadPlus): String(localized: "Num +", comment: "Key name: numeric keypad key"),
+        UInt16(kVK_ANSI_KeypadDivide): String(localized: "Num /", comment: "Key name: numeric keypad key"), UInt16(kVK_ANSI_KeypadMinus): String(localized: "Num -", comment: "Key name: numeric keypad key"),
+        UInt16(kVK_ANSI_KeypadEquals): String(localized: "Num =", comment: "Key name: numeric keypad key"),
     ]
 
     /// Fallback names for character keys on a US ANSI layout.
@@ -193,7 +193,7 @@ public enum KeyCodes {
            c.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }) {
             return c.uppercased()
         }
-        return ansi[code] ?? "Key \(code)"
+        return ansi[code] ?? String(localized: "Key \(code)", comment: "Name of a key with no label; the number is its key code")
     }
 
     /// The character a key produces on the current ASCII-capable layout (so shortcuts read `` ` `` and `.`

@@ -67,14 +67,17 @@ struct SettingsRootView: View {
             List(selection: $nav.selection) {
                 if search.isEmpty {
                     Section {
-                        SidebarRow(title: "Home", symbol: "house.fill", tint: .graphite).tag(SidebarItem.home)
-                        SidebarRow(title: "General", symbol: "gearshape.fill", tint: .graphite).tag(SidebarItem.general)
+                        SidebarRow(title: String(localized: "Home"), symbol: "house.fill", tint: .graphite)
+                            .tag(SidebarItem.home)
+                        SidebarRow(title: String(localized: "General", comment: "Settings page for app-wide options"),
+                                   symbol: "gearshape.fill", tint: .graphite)
+                            .tag(SidebarItem.general)
                     }
                 }
                 ForEach(ModuleCategory.allCases) { category in
                     let mods = registry.modules(in: category).filter(matches)
                     if !mods.isEmpty {
-                        Section(category.title) {
+                        Section(header: Text(verbatim: category.title)) {
                             ForEach(mods, id: \.info.id) { m in
                                 SidebarRow(title: m.info.name, symbol: m.info.symbol, tint: m.info.tint,
                                            dimmed: !registry.isEnabled(m.info.id))
@@ -122,7 +125,7 @@ struct SidebarRow: View {
 
     var body: some View {
         Label {
-            Text(title).foregroundStyle(dimmed ? .secondary : .primary)
+            Text(verbatim: title).foregroundStyle(dimmed ? .secondary : .primary)
         } icon: {
             ModuleIcon(symbol: symbol, tint: tint, size: 20).saturation(dimmed ? 0.2 : 1)
         }

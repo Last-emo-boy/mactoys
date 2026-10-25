@@ -40,7 +40,7 @@ final class WelcomeWindow: NSObject, NSWindowDelegate {
 struct WelcomeView: View {
     let onDone: () -> Void
 
-    private let highlights: [(String, Tint, String, String)] = [
+    private let highlights: [(String, Tint, LocalizedStringKey, LocalizedStringKey)] = [
         ("command", .blue, "Command Palette", "⌥ Space finds apps, files, windows and commands."),
         ("rectangle.3.group.fill", .blue, "FancyZones", "Hold ⇧ while dragging a window to snap it into zones."),
         ("eyedropper", .pink, "Color Picker", "⌃ ⌥ C picks any pixel on screen."),
@@ -57,7 +57,7 @@ struct WelcomeView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 12) {
-                    ForEach(highlights, id: \.2) { h in
+                    ForEach(Array(highlights.enumerated()), id: \.offset) { _, h in
                         HStack(spacing: 12) {
                             ModuleIcon(symbol: h.0, tint: h.1, size: 30)
                             VStack(alignment: .leading, spacing: 1) {

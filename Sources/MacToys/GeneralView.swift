@@ -57,8 +57,9 @@ struct GeneralView: View {
                         Button("Install") { CLIInstaller.install(); cliInstalled = CLIInstaller.isInstalled }
                     }
                 } label: {
-                    RowLabel("mactoys", subtitle: cliInstalled ? "Linked at \(CLIInstaller.linkPath)"
-                             : "Adds `mactoys` to \(CLIInstaller.linkPath) for scripting utilities from Terminal.")
+                    RowLabel(title: Text(verbatim: "mactoys"),
+                             subtitle: cliInstalled ? Text("Linked at \(CLIInstaller.linkPath)")
+                                 : Text("Adds `mactoys` to \(CLIInstaller.linkPath) for scripting utilities from Terminal."))
                 }
             }
 
@@ -68,7 +69,8 @@ struct GeneralView: View {
                     Label("No shortcut conflicts", systemImage: "checkmark.circle").foregroundStyle(.secondary)
                 } else {
                     ForEach(conflicts, id: \.self) { c in
-                        Label(c, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                        Label { Text(verbatim: c) } icon: { Image(systemName: "exclamationmark.triangle.fill") }
+                            .foregroundStyle(.orange)
                     }
                 }
             }
@@ -80,12 +82,12 @@ struct GeneralView: View {
                         Button("Restore…") { BackupActions.restore() }
                     }
                 } label: {
-                    RowLabel("Settings backup", subtitle: Paths.settings.path)
+                    RowLabel("Settings backup", subtitle: Paths.settings.path as String?)
                 }
                 LabeledContent {
                     Button("Reveal") { NSWorkspace.shared.activateFileViewerSelecting([Paths.appSupport]) }
                 } label: {
-                    RowLabel("Data folder", subtitle: Paths.appSupport.path)
+                    RowLabel("Data folder", subtitle: Paths.appSupport.path as String?)
                 }
             }
 
@@ -107,10 +109,16 @@ enum ShortcutAudit {
         let bindings = HotkeyCenter.shared.bindings
         var seen: [Shortcut: String] = [:]
         for (id, s) in bindings.sorted(by: { $0.key < $1.key }) {
-            if let other = seen[s] { out.append("\(s) is bound to both \(other) and \(id)") } else { seen[s] = id }
+            if let other = seen[s] {
+                out.append(String(localized: "\(s.description) is bound to both \(other) and \(id)"))
+            } else {
+                seen[s] = id
+            }
         }
         for id in HotkeyCenter.shared.failed.sorted() {
-            if let s = bindings[id] { out.append("\(s) for \(id) is already used by another app") }
+            if let s = bindings[id] {
+                out.append(String(localized: "\(s.description) for \(id) is already used by another app"))
+            }
         }
         return out
     }
@@ -128,12 +136,15 @@ enum CLIInstaller {
 
     static func install() {
         let cmd = "mkdir -p /usr/local/bin && ln -sf \(Shell.quote(bundled)) \(Shell.quote(linkPath))"
-        do { _ = try Privileged.run(cmd, prompt: "MacToys wants to install the mactoys command-line tool.") }
+        do { _ = try Privileged.run(cmd, prompt: String(localized: "MacToys wants to install the mactoys command-line tool.")) }
         catch { NSAlert(error: error).runModal() }
     }
 
     static func uninstall() {
-        do { _ = try Privileged.run("rm -f \(Shell.quote(linkPath))", prompt: "MacToys wants to remove the mactoys command-line tool.") }
+        do {
+            _ = try Privileged.run("rm -f \(Shell.quote(linkPath))",
+                                   prompt: String(localized: "MacToys wants to remove the mactoys command-line tool."))
+        }
         catch { NSAlert(error: error).runModal() }
     }
 }

@@ -57,7 +57,7 @@ struct QuickAccessView: View {
         } label: {
             VStack(spacing: 8) {
                 ModuleIcon(symbol: a.symbol, tint: a.tint, size: 30)
-                Text(a.title).font(.system(size: 11.5, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                Text(verbatim: a.title).font(.system(size: 11.5, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 6)
@@ -92,8 +92,10 @@ private struct SwitchRow: View {
         HStack(spacing: 10) {
             Image(systemName: action.symbol).frame(width: 18).foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 1) {
-                Text(action.title).fontWeight(.medium)
-                if let d = action.detail?() ?? action.shortcut?.description { Text(d).font(.system(size: 11)).foregroundStyle(.secondary) }
+                Text(verbatim: action.title).fontWeight(.medium)
+                if let d = action.detail?() ?? action.shortcut?.description {
+                    Text(verbatim: d).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
             }
             Spacer()
             Toggle("", isOn: Binding(get: { on }, set: { _ in action.perform(); tick += 1 }))

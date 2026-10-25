@@ -8,7 +8,16 @@ struct HomeView: View {
     @State private var permissions = PermissionCenter.shared
     @State private var filter = Filter.all
 
-    enum Filter: String, CaseIterable { case all = "All", on = "On", off = "Off" }
+    enum Filter: String, CaseIterable {
+        case all, on, off
+        var title: LocalizedStringKey {
+            switch self {
+            case .all: "All"
+            case .on: "On"
+            case .off: "Off"
+            }
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -40,9 +49,14 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Home").font(.system(size: 24, weight: .bold)).kerning(-0.4)
                 let n = missingPermissions.count
-                Text("\(registry.enabledCount) of \(registry.modules.count) utilities are on"
-                     + (n > 0 ? " · \(n) permission\(n == 1 ? "" : "s") need\(n == 1 ? "s" : "") attention" : ""))
-                    .foregroundStyle(.secondary)
+                Group {
+                    if n > 0 {
+                        Text("\(registry.enabledCount) of \(registry.modules.count) utilities are on · \(n) permissions need attention")
+                    } else {
+                        Text("\(registry.enabledCount) of \(registry.modules.count) utilities are on")
+                    }
+                }
+                .foregroundStyle(.secondary)
             }
             Spacer()
             Button("Back up settings") { BackupActions.backup() }
@@ -66,7 +80,7 @@ struct HomeView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 ModuleIcon(symbol: a.symbol, tint: a.tint, size: 30)
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text(a.title).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
+                                    Text(verbatim: a.title).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
                                     if let s = a.shortcut { Keycaps(s) } else {
                                         Text("Opens editor").font(.system(size: 11)).foregroundStyle(.tertiary)
                                     }
@@ -91,7 +105,7 @@ struct HomeView: View {
                 Text("Utilities").font(.system(size: 15, weight: .semibold))
                 Spacer()
                 Picker("", selection: $filter) {
-                    ForEach(Filter.allCases, id: \.self) { Text($0.rawValue) }
+                    ForEach(Filter.allCases, id: \.self) { Text($0.title) }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -103,7 +117,7 @@ struct HomeView: View {
             ForEach(ModuleCategory.allCases) { category in
                 let mods = registry.modules(in: category).filter(include)
                 if !mods.isEmpty {
-                    Text(category.title).font(.system(size: 11, weight: .semibold)).foregroundStyle(.tertiary)
+                    Text(verbatim: category.title).font(.system(size: 11, weight: .semibold)).foregroundStyle(.tertiary)
                         .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 4)
                     ForEach(mods, id: \.info.id) { m in UtilityRow(module: m) }
                 }
@@ -142,7 +156,7 @@ struct HomeView: View {
             HStack(spacing: 12) {
                 AppMark(size: 40)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("MacToys \(AppInfo.version)").font(.system(size: 14, weight: .semibold))
+                    Text(verbatim: "MacToys \(AppInfo.version)").font(.system(size: 14, weight: .semibold))
                     Text("Feature parity with PowerToys 0.102").font(.system(size: 11.5)).foregroundStyle(.secondary)
                 }
             }
@@ -168,8 +182,8 @@ struct UtilityRow: View {
         HStack(spacing: 12) {
             ModuleIcon(info, size: 26)
             VStack(alignment: .leading, spacing: 1) {
-                Text(info.name).fontWeight(.medium)
-                Text(info.summary).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
+                Text(verbatim: info.name).fontWeight(.medium)
+                Text(verbatim: info.summary).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 10)
             if let first = module.shortcutBindings.first(where: { !$0.keys.isEmpty }) { Keycaps(first.keys) }
@@ -196,8 +210,8 @@ struct PermissionRow: View {
                 .foregroundStyle(ok ? .green : permission.isOptional ? .secondary : .orange)
                 .font(.system(size: 15))
             VStack(alignment: .leading, spacing: 1) {
-                Text(permission.title).fontWeight(.medium)
-                Text(permission.reason).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(2)
+                Text(verbatim: permission.title).fontWeight(.medium)
+                Text(verbatim: permission.reason).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(2)
             }
             Spacer(minLength: 6)
             if !ok {
@@ -232,8 +246,8 @@ enum BackupActions {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.prompt = "Back Up Here"
-        panel.message = "Choose a folder for the MacToys settings backup."
+        panel.prompt = String(localized: "Back Up Here")
+        panel.message = String(localized: "Choose a folder for the MacToys settings backup.")
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             let dest = try SettingsStore.shared.backup(to: url)
@@ -247,14 +261,14 @@ enum BackupActions {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.prompt = "Restore"
-        panel.message = "Choose a MacToys settings backup folder."
+        panel.prompt = String(localized: "Restore", comment: "Button: restore settings from the chosen backup folder")
+        panel.message = String(localized: "Choose a MacToys settings backup folder.")
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try SettingsStore.shared.restore(from: url)
             let alert = NSAlert()
-            alert.messageText = "Settings restored"
-            alert.informativeText = "MacToys will relaunch to apply them."
+            alert.messageText = String(localized: "Settings restored")
+            alert.informativeText = String(localized: "MacToys will relaunch to apply them.")
             alert.runModal()
             Relaunch.now()
         } catch {
