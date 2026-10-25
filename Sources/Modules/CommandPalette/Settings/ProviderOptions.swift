@@ -16,7 +16,7 @@ enum SearchEngine: String, Codable, CaseIterable, Sendable, Identifiable {
         case .ecosia: "Ecosia"
         case .startpage: "Startpage"
         case .perplexity: "Perplexity"
-        case .custom: "Custom"
+        case .custom: String(localized: "Custom", comment: "Search engine: a URL the user enters")
         }
     }
 
@@ -43,7 +43,7 @@ enum TerminalApp: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .terminal: "Terminal"
+        case .terminal: String(localized: "Terminal", comment: "The macOS Terminal app; use the name it has in this language")
         case .iterm: "iTerm2"
         case .ghostty: "Ghostty"
         }
@@ -65,9 +65,9 @@ enum ShellMode: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .terminal: "Run in terminal"
-        case .silent: "Run silently"
-        case .output: "Run and show output"
+        case .terminal: String(localized: "Run in terminal")
+        case .silent: String(localized: "Run silently")
+        case .output: String(localized: "Run and show output")
         }
     }
 }
@@ -76,7 +76,7 @@ enum ShellMode: String, Codable, CaseIterable, Sendable, Identifiable {
 enum FileScope: String, Codable, CaseIterable, Sendable, Identifiable {
     case home, computer
     var id: String { rawValue }
-    var title: String { self == .home ? "Home folder" : "Whole computer" }
+    var title: String { self == .home ? String(localized: "Home folder") : String(localized: "Whole computer") }
 }
 
 /// Provider options shared by Command Palette and Run (stored in `cmdpal-providers.json`).

@@ -6,16 +6,19 @@ import MacToysCore
 final class MacToysProvider: SearchProvider {
     let id = "mactoys"
     let name = "MacToys"
-    let summary = "Open any utility's settings, run quick actions, turn utilities on or off"
+    let summary = String(localized: "Open any utility's settings, run quick actions, turn utilities on or off")
     let icon = ItemIcon.symbol("puzzlepiece.extension.fill", .indigo)
     let defaultKeyword = "@"
-    let examples = ["@ color picker", "@ fancyzones", "@  (every utility)"]
+    var examples: [String] {
+        ["@ color picker", "@ fancyzones",
+         String(localized: "\("@")  (every utility)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     /// Quick actions of these modules are not offered (the launchers' own "open" actions).
     static let ownModules: Set<String> = ["cmdpal", "run"]
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "MacToys Utilities", subtitle: "Settings and quick actions of every utility",
+        [pageCommand(title: Phrase("MacToys Utilities"), subtitle: String(localized: "Settings and quick actions of every utility"),
                      keywords: ["mactoys", "powertoys", "utilities"])]
     }
 
@@ -26,7 +29,7 @@ final class MacToysProvider: SearchProvider {
         for m in registry.modules where !Self.ownModules.contains(m.info.id) && registry.isEnabled(m.info.id) {
             for action in m.quickActions { out.append(quickActionItem(action, module: m)) }
         }
-        out += registry.modules.sorted { $0.info.name < $1.info.name }.map(settingsItem)
+        out += registry.modules.sorted { $0.info.name.localizedStandardCompare($1.info.name) == .orderedAscending }.map(settingsItem)
         return out
     }
 
@@ -72,8 +75,9 @@ final class MacToysProvider: SearchProvider {
         var item = settingsItem(m)
         item.id = "mactoys:open:\(moduleID)"
         item.subtitle = "MacToys · \(m.info.summary)"
-        item.accessory = "Utility"
-        item.primary = PaletteAction(id: "open", title: "Open \(m.info.name)", symbol: m.info.symbol) {
+        item.accessory = String(localized: "Utility", comment: "Result row label: a MacToys utility")
+        item.primary = PaletteAction(id: "open", title: String(localized: "Open \(m.info.name)", comment: "Action: open something; %@ is an app, utility, website or address"),
+                                     symbol: m.info.symbol) {
             .dismissThen {
                 let registry = ModuleRegistry.shared
                 if !registry.isEnabled(moduleID) || !registry.dispatch(AppCommand(module: moduleID, action: "open")) {
@@ -81,7 +85,7 @@ final class MacToysProvider: SearchProvider {
                 }
             }
         }
-        item.actions.insert(PaletteAction(id: "settings", title: "\(m.info.name) Settings", symbol: "gearshape") {
+        item.actions.insert(PaletteAction(id: "settings", title: Self.settingsTitle(m), symbol: "gearshape") {
             .dismissThen { ModuleRegistry.shared.showSettings?(moduleID) }
         }, at: 0)
         return item
@@ -91,20 +95,26 @@ final class MacToysProvider: SearchProvider {
         let moduleID = m.info.id
         let enabled = registry.isEnabled(moduleID)
         return PaletteItem(
-            id: "mactoys:settings:\(moduleID)", title: m.info.name, subtitle: "MacToys settings · \(enabled ? "On" : "Off")",
-            icon: .symbol(m.info.symbol, m.info.tint), providerID: id, section: "MacToys", accessory: "Settings",
-            primary: PaletteAction(id: "open", title: "Open Settings", symbol: "gearshape") {
+            id: "mactoys:settings:\(moduleID)", title: m.info.name,
+            subtitle: enabled ? String(localized: "MacToys settings · On") : String(localized: "MacToys settings · Off"),
+            icon: .symbol(m.info.symbol, m.info.tint), providerID: id, section: "MacToys",
+            accessory: String(localized: "Settings", comment: "Row label: opens a utility's settings; Run keyword chip: System Settings"),
+            primary: PaletteAction(id: "open", title: Labels.openSettings, symbol: "gearshape") {
                 .dismissThen { ModuleRegistry.shared.showSettings?(moduleID) }
             },
-            actions: [PaletteAction(id: "toggle", title: enabled ? "Turn Off \(m.info.name)" : "Turn On \(m.info.name)",
+            actions: [PaletteAction(id: "toggle",
+                                    title: enabled ? String(localized: "Turn Off \(m.info.name)", comment: "%@ is a utility such as Color Picker")
+                                        : String(localized: "Turn On \(m.info.name)", comment: "%@ is a utility such as Color Picker"),
                                     symbol: enabled ? "power.circle" : "power.circle.fill") {
                 ModuleRegistry.shared.setEnabled(moduleID, !enabled)
-                HUD.show("\(m.info.name) · \(enabled ? "off" : "on")", symbol: m.info.symbol)
+                HUD.show(Self.stateMessage(m.info.name, on: !enabled), symbol: m.info.symbol)
                 return .refresh
             }],
             details: ItemDetails(icon: .symbol(m.info.symbol, m.info.tint), title: m.info.name, subtitle: m.info.summary,
-                                 rows: [DetailRow(label: "Status", value: enabled ? "On" : "Off", monospaced: false),
-                                        DetailRow(label: "Category", value: m.info.category.title, monospaced: false)]
+                                 rows: [DetailRow(label: String(localized: "Status", comment: "Detail row: whether the utility is on"),
+                                                  value: enabled ? Labels.on : Labels.off, monospaced: false),
+                                        DetailRow(label: Labels.category,
+                                                  value: m.info.category.title, monospaced: false)]
                                      + m.shortcutBindings.filter { !$0.keys.isEmpty }.prefix(6).map {
                                          DetailRow(label: $0.title, value: $0.keys.joined(separator: " "))
                                      }),
@@ -112,25 +122,36 @@ final class MacToysProvider: SearchProvider {
     }
 
     private func quickActionItem(_ a: QuickAction, module m: any ToyModule) -> PaletteItem {
-        let state = a.isOn.map { $0() ? "On" : "Off" }
+        let state = a.isOn.map { $0() ? Labels.on : Labels.off }
         var subtitle = m.info.name
         if let detail = a.detail?() { subtitle += " · \(detail)" } else if let state { subtitle += " · \(state)" }
         let perform = a.perform
         return PaletteItem(
             id: "mactoys:action:\(a.id)", title: a.title, subtitle: subtitle, icon: .symbol(a.symbol, a.tint), providerID: id,
-            section: "MacToys", accessory: state ?? "Action",
-            primary: PaletteAction(id: "run", title: a.isOn == nil ? "Run" : "Toggle", symbol: a.symbol) {
+            section: "MacToys", accessory: state ?? String(localized: "Action", comment: "Result row label: a utility's quick action"),
+            primary: PaletteAction(id: "run", title: a.isOn == nil ? Labels.run : String(localized: "Toggle", comment: "Action: turn the option on or off"),
+                                   symbol: a.symbol) {
                 if a.isOn != nil {
                     perform()
-                    HUD.show("\(a.title) · \(a.isOn?() == true ? "on" : "off")", symbol: a.symbol)
+                    HUD.show(Self.stateMessage(a.title, on: a.isOn?() == true), symbol: a.symbol)
                     return .dismiss
                 }
                 return .dismissThen(perform)
             },
-            actions: [PaletteAction(id: "settings", title: "\(m.info.name) Settings", symbol: "gearshape") {
+            actions: [PaletteAction(id: "settings", title: Self.settingsTitle(m), symbol: "gearshape") {
                 let moduleID = m.info.id
                 return .dismissThen { ModuleRegistry.shared.showSettings?(moduleID) }
             }],
             keywords: [m.info.name] + m.info.keywords)
+    }
+
+    private static func settingsTitle(_ m: any ToyModule) -> String {
+        String(localized: "\(m.info.name) Settings", comment: "Action: open a utility's settings; %@ is a utility such as Color Picker")
+    }
+
+    /// "Awake · on" after toggling.
+    private static func stateMessage(_ name: String, on: Bool) -> String {
+        on ? String(localized: "\(name) · on", comment: "HUD after turning something on; %@ is a utility or option")
+            : String(localized: "\(name) · off", comment: "HUD after turning something off; %@ is a utility or option")
     }
 }

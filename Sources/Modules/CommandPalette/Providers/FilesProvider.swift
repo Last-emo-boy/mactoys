@@ -73,17 +73,22 @@ final class SpotlightRequest {
 @MainActor
 final class FilesProvider: SearchProvider {
     let id = "files"
-    let name = "Files"
-    let summary = "Find files and folders with Spotlight, or browse a path"
+    let name = String(localized: "Files", comment: "Provider name: file search; also the kind of a clipboard entry with several files")
+    let summary = String(localized: "Find files and folders with Spotlight, or browse a path")
     let icon = ItemIcon.symbol("doc.text.magnifyingglass", .orange)
     let defaultKeyword = "("
-    let examples = ["report.pdf", "~/Documents/  (browse a folder)", "/Applications/*.app  (mask)"]
+    var examples: [String] {
+        ["report.pdf",
+         String(localized: "\("~/Documents/")  (browse a folder)", comment: "Run help example: %@ is what to type, the parentheses explain it"),
+         String(localized: "\("/Applications/*.app")  (mask)", comment: "Run help example: %@ is a file name pattern with wildcards")]
+    }
 
     private let engine: LauncherEngine
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Search Files", subtitle: "Find files and folders with Spotlight", keywords: ["find", "spotlight", "file"])]
+        [pageCommand(title: Phrase("Search Files"), subtitle: String(localized: "Find files and folders with Spotlight"),
+                     keywords: ["find", "spotlight", "file"])]
     }
 
     func search(_ query: SearchQuery) async -> [PaletteItem] {
@@ -158,7 +163,7 @@ final class FilesProvider: SearchProvider {
             .prefix(limit)
             .enumerated().map { i, hit in
                 var it = item(for: hit.url, score: Double(limit - i))
-                it.section = "Recent Files"
+                it.section = String(localized: "Recent Files", comment: "Section heading: recently used documents")
                 return it
             }
     }
@@ -223,7 +228,8 @@ final class FilesProvider: SearchProvider {
         if partial.isEmpty, !recursive, fm.fileExists(atPath: dir.path) {
             var folder = item(for: dir, score: 1000)
             folder.section = items.first?.section
-            folder.title = "Open “\(dir.lastPathComponent.isEmpty ? "/" : dir.lastPathComponent)”"
+            let folderName = dir.lastPathComponent.isEmpty ? "/" : dir.lastPathComponent
+            folder.title = String(localized: "Open “\(folderName)”", comment: "%@ is a folder name")
             items.insert(folder, at: 0)
         }
         return items
@@ -235,8 +241,8 @@ final class FilesProvider: SearchProvider {
         var item = PaletteItem(
             id: "files:\(url.path)", title: url.lastPathComponent,
             subtitle: (url.deletingLastPathComponent().path as NSString).abbreviatingWithTildeInPath,
-            icon: .file(url.path), providerID: id, accessory: isDir ? "Folder" : "File", score: score,
-            primary: PaletteAction(id: "open", title: "Open", symbol: "arrow.up.forward.app") {
+            icon: .file(url.path), providerID: id, accessory: isDir ? Labels.folder : Labels.file, score: score,
+            primary: PaletteAction(id: "open", title: Labels.open, symbol: "arrow.up.forward.app") {
                 Launch.open(url)
                 return .dismiss
             },
@@ -245,7 +251,7 @@ final class FilesProvider: SearchProvider {
         if isDir {
             let path = (url.path as NSString).abbreviatingWithTildeInPath + "/"
             item.autocomplete = path
-            item.actions.insert(PaletteAction(id: "browse", title: "Browse Folder", symbol: "folder.badge.gearshape") {
+            item.actions.insert(PaletteAction(id: "browse", title: String(localized: "Browse Folder"), symbol: "folder.badge.gearshape") {
                 .setQuery(path)
             }, at: 0)
         }

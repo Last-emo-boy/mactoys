@@ -4,8 +4,8 @@ import SwiftUI
 
 /// A text editor bound to a list of lines.
 struct LinesEditor: View {
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     @Binding var lines: [String]
     @State private var text = ""
 
@@ -29,8 +29,8 @@ struct LinesEditor: View {
 
 /// A multi-line text setting.
 struct TextBlockEditor: View {
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     @Binding var text: String
 
     var body: some View {
@@ -58,7 +58,9 @@ struct ProviderOptionsView: View {
         case "files": files
         case "calc": calculator
         case "units":
-            Toggle(isOn: $options.value.unitsCopyWithUnit) { RowLabel("Copy results with their unit", subtitle: "“6.21 mi” instead of “6.21”") }
+            Toggle(isOn: $options.value.unitsCopyWithUnit) {
+                RowLabel("Copy results with their unit", subtitle: "“\("6.21 mi")” instead of “\("6.21")”")
+            }
         case "time": time
         case "web": web
         case "url": browserPicker
@@ -92,9 +94,10 @@ struct ProviderOptionsView: View {
     @ViewBuilder private var apps: some View {
         Toggle(isOn: $options.value.appShowRunningIndicator) { RowLabel("Mark running apps") }
         Toggle(isOn: $options.value.appIncludeCoreServices) {
-            RowLabel("Include system utilities", subtitle: "Apps in /System/Library/CoreServices/Applications (Directory Utility, Ticket Viewer…)")
+            RowLabel("Include system utilities", subtitle: "Apps in \("/System/Library/CoreServices/Applications") (Directory Utility, Ticket Viewer…)")
         }
-        LinesEditor(title: "More app folders", subtitle: "Besides /Applications, /System/Applications and ~/Applications; one path per line.",
+        LinesEditor(title: "More app folders",
+                    subtitle: "Besides \("/Applications"), \("/System/Applications") and \("~/Applications"); one path per line.",
                     lines: $options.value.appExtraFolders)
         LabeledContent { Button("Re-index Now") { (LauncherEngine.shared.provider("apps") as? AppsProvider)?.reindex() } } label: {
             RowLabel("App index", subtitle: "Updates by itself when apps are installed")
@@ -122,14 +125,14 @@ struct ProviderOptionsView: View {
 
     @ViewBuilder private var time: some View {
         Toggle(isOn: $options.value.timeShowSeconds) { RowLabel("Show seconds") }
-        LinesEditor(title: "World clocks", subtitle: "Time zone identifiers listed with “time”, e.g. Europe/London; one per line.",
+        LinesEditor(title: "World clocks", subtitle: "Time zone identifiers listed with “\("time")”, e.g. \("Europe/London"); one per line.",
                     lines: $options.value.worldClocks)
         let invalid = options.value.worldClocks.filter { TimeZone(identifier: $0) == nil }
         if !invalid.isEmpty {
-            InfoBar(.warning, title: "Unknown time zones", message: invalid.joined(separator: ", "))
+            InfoBar(.warning, title: Text("Unknown time zones"), message: Text(verbatim: invalid.joined(separator: ", ")))
         }
         TextBlockEditor(title: "Custom formats",
-                        subtitle: "One per line: Name=pattern or Name=UTC:pattern (Unicode patterns plus UXT, UMS, WOY, DOW, DIM).",
+                        subtitle: "One per line: Name=pattern or Name=\("UTC:")pattern (Unicode patterns plus \("UXT, UMS, WOY, DOW, DIM")).",
                         text: $options.value.timeCustomFormats)
     }
 
@@ -139,8 +142,9 @@ struct ProviderOptionsView: View {
         } label: { RowLabel("Search engine") }
         if options.value.searchEngine == .custom {
             LabeledContent {
-                TextField("", text: $options.value.customSearchURL).textFieldStyle(.roundedBorder).frame(width: 300)
-            } label: { RowLabel("Search URL", subtitle: "%s is replaced by the query") }
+                TextField(text: $options.value.customSearchURL) { Text("Search URL") }.labelsHidden()
+                    .textFieldStyle(.roundedBorder).frame(width: 300)
+            } label: { RowLabel("Search URL", subtitle: "\("%s") is replaced by the query") }
         }
         browserPicker
     }
@@ -148,14 +152,18 @@ struct ProviderOptionsView: View {
     private var browserPicker: some View {
         Picker(selection: $options.value.browserBundleID) {
             Text("Default browser").tag("")
-            ForEach(Self.browsers, id: \.bundleID) { b in Text(b.name).tag(b.bundleID) }
+            ForEach(Self.browsers, id: \.bundleID) { b in Text(verbatim: b.name).tag(b.bundleID) }
         } label: { RowLabel("Open web pages in", subtitle: "Shared by web search and URLs") }
     }
 
     @ViewBuilder private var shell: some View {
         Picker(selection: $options.value.terminal) {
             ForEach(TerminalApp.allCases) { t in
-                Text(t.title + (NSWorkspace.shared.urlForApplication(withBundleIdentifier: t.bundleID) == nil ? " (not installed)" : "")).tag(t)
+                if NSWorkspace.shared.urlForApplication(withBundleIdentifier: t.bundleID) == nil {
+                    Text("\(t.title) (not installed)", comment: "%@ is a terminal app such as iTerm2").tag(t)
+                } else {
+                    Text(verbatim: t.title).tag(t)
+                }
             }
         } label: { RowLabel("Terminal app") }
         Picker(selection: $options.value.shellMode) {
@@ -173,18 +181,18 @@ struct ProviderOptionsView: View {
             let installed = NSWorkspace.shared.urlForApplication(withBundleIdentifier: b.bundleID) != nil
             Toggle(isOn: Binding(get: { options.value.bookmarkBrowsers[b.rawValue] ?? true },
                                  set: { options.value.bookmarkBrowsers[b.rawValue] = $0 })) {
-                RowLabel(b.title, subtitle: installed ? nil : "Not installed")
+                RowLabel(title: Text(verbatim: b.title), subtitle: installed ? nil : Text(Labels.notInstalled))
             }
         }
         InfoBar(.info, title: "Safari bookmarks need Full Disk Access",
-                message: "macOS protects ~/Library/Safari. Chrome-family bookmarks work without it.",
+                message: "macOS protects \("~/Library/Safari"). Chrome-family bookmarks work without it.",
                 actionTitle: "Open Settings") { PermissionCenter.shared.openSettings(.fullDiskAccess) }
     }
 
     @ViewBuilder private var brew: some View {
         Toggle(isOn: $options.value.brewIncludeCasks) { RowLabel("Include casks (apps)") }
         if HomebrewProvider.brewPath == nil {
-            InfoBar(.info, title: "Homebrew isn’t installed", message: "Install it from brew.sh to search and install packages.")
+            InfoBar(.info, title: "Homebrew isn’t installed", message: "Install it from \("brew.sh") to search and install packages.")
         }
     }
 
@@ -200,7 +208,7 @@ struct ProviderOptionsView: View {
                 if !options.value.scriptsFolder.isEmpty { Button("Default") { options.value.scriptsFolder = "" } }
             }
         } label: {
-            RowLabel("Script Commands folder", subtitle: (folder.path as NSString).abbreviatingWithTildeInPath)
+            RowLabel(title: Text("Script Commands folder"), subtitle: Text(verbatim: (folder.path as NSString).abbreviatingWithTildeInPath))
         }
         LabeledContent {
             Button("Add Example") {
@@ -210,7 +218,7 @@ struct ProviderOptionsView: View {
             }
         } label: {
             RowLabel("How scripts work",
-                     subtitle: "Executable files here become commands. Header lines like “# @mactoys.title …”, “@mactoys.icon”, “@mactoys.mode silent|output|inline|terminal” and “@mactoys.argument Placeholder” set the title, icon, how output shows and an argument. Raycast script headers work too.")
+                     subtitle: "Executable files here become commands. Header lines like “\("# @mactoys.title …")”, “\("@mactoys.icon")”, “\("@mactoys.mode silent|output|inline|terminal")” and “\("@mactoys.argument Placeholder")” set the title, icon, how output shows and an argument. Raycast script headers work too.")
         }
     }
 
@@ -218,7 +226,7 @@ struct ProviderOptionsView: View {
         ForEach(CodeEditor.allCases) { e in
             let installed = NSWorkspace.shared.urlForApplication(withBundleIdentifier: e.bundleID) != nil
             Toggle(isOn: Binding(get: { options.value.editors[e.rawValue] ?? true }, set: { options.value.editors[e.rawValue] = $0 })) {
-                RowLabel(e.title, subtitle: installed ? nil : "Not installed")
+                RowLabel(title: Text(verbatim: e.title), subtitle: installed ? nil : Text(Labels.notInstalled))
             }
         }
     }
@@ -228,7 +236,7 @@ struct ProviderOptionsView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.prompt = "Use Folder"
+        panel.prompt = String(localized: "Use Folder", comment: "Open panel button: use the chosen folder for scripts")
         if panel.runModal() == .OK, let url = panel.url {
             options.value.scriptsFolder = url.path
         }
@@ -255,8 +263,8 @@ struct ProviderHeader: View {
         HStack(spacing: 10) {
             ItemIconView(icon: provider.icon, size: 22).environment(\.colorScheme, .light)
             VStack(alignment: .leading, spacing: 1) {
-                Text(provider.name)
-                Text(detail ?? provider.summary).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(2)
+                Text(verbatim: provider.name)
+                Text(verbatim: detail ?? provider.summary).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(2)
             }
         }
     }

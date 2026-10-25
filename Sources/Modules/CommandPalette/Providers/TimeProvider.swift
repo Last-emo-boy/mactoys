@@ -5,8 +5,8 @@ import MacToysCore
 @MainActor
 final class TimeProvider: SearchProvider {
     let id = "time"
-    let name = "Time & Date"
-    let summary = "Current time and date, other time zones, Unix timestamps and calendar weeks"
+    let name = String(localized: "Time & Date")
+    let summary = String(localized: "Current time and date, other time zones, Unix timestamps and calendar weeks")
     let icon = ItemIcon.symbol("clock.fill", .orange)
     let defaultKeyword = ")"
     let examples = ["time", "time in Tokyo", "unix 1792852868", "week::2026-10-24", "unix::2026-10-24 10:30", "iso"]
@@ -15,7 +15,8 @@ final class TimeProvider: SearchProvider {
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(subtitle: "Time, date and time zones", keywords: ["clock", "timezone", "world clock", "calendar"])]
+        [pageCommand(title: Phrase("Time & Date"), subtitle: String(localized: "Time, date and time zones"),
+                     keywords: ["clock", "timezone", "world clock", "calendar"])]
     }
 
     func search(_ query: SearchQuery) async -> [PaletteItem] {
@@ -46,11 +47,12 @@ final class TimeProvider: SearchProvider {
             var list: [PaletteItem] = []
             let main = copyItem("time:now", title: time.string(from: now), subtitle: "\(fullDate.string(from: now)) · \(city)",
                                 copy: time.string(from: now), score: 990, details: detail)
-            let dateItem = copyItem("time:date", title: fullDate.string(from: now), subtitle: "Today · \(city)",
+            let dateItem = copyItem("time:date", title: fullDate.string(from: now),
+                                    subtitle: String(localized: "Today · \(city)", comment: "%@ is a city such as Shanghai"),
                                     copy: fullDate.string(from: now), score: 985, details: detail, symbol: "calendar")
-            func rowItem(_ label: String, score: Double) -> PaletteItem? {
-                rows.first { $0.label == label }.map {
-                    copyItem("time:\(label)", title: $0.value, subtitle: label, copy: $0.value, score: score, details: detail,
+            func rowItem(_ id: String, score: Double) -> PaletteItem? {
+                rows.first { $0.id == id }.map {
+                    copyItem("time:\(id)", title: $0.value, subtitle: $0.label, copy: $0.value, score: score, details: detail,
                              symbol: "number")
                 }
             }
@@ -62,7 +64,7 @@ final class TimeProvider: SearchProvider {
             case .utc: list = [rowItem("UTC", score: 995)].compactMap { $0 } + [main]
             case .time: list = [main]
             case .all:
-                list = [main, dateItem] + rows.enumerated().compactMap { i, r in rowItem(r.label, score: 980 - Double(i)) }
+                list = [main, dateItem] + rows.enumerated().compactMap { i, r in rowItem(r.id, score: 980 - Double(i)) }
             }
             if focus == .time || focus == .all {
                 list += o.worldClocks.compactMap(TimeZone.init(identifier:)).filter { $0.identifier != zone.identifier }
@@ -83,22 +85,25 @@ final class TimeProvider: SearchProvider {
                                 rows: r.map(DetailRow.init))
             var list = [copyItem("time:instant", title: dt, subtitle: "\(relative) · \(city)", copy: dt, score: 990, details: d)]
             list += r.enumerated().map { i, row in
-                copyItem("time:instant:\(row.label)", title: row.value, subtitle: row.label, copy: row.value,
+                copyItem("time:instant:\(row.id)", title: row.value, subtitle: row.label, copy: row.value,
                          score: 980 - Double(i), details: d, symbol: "number")
             }
             return list
         case .week(let date):
             let w = TimeFormats.isoWeek(date, in: zone)
             let dateText = TimeFormats.formatter(date: .long, zone: zone, locale: locale).string(from: date)
-            return [copyItem("time:week", title: "Week \(w.week) of \(w.of)", subtitle: "\(dateText) · ISO 8601 week, \(w.year)",
+            return [copyItem("time:week", title: String(localized: "Week \(w.week) of \(w.of)", comment: "ISO calendar week: “Week 43 of 53”"),
+                             subtitle: String(localized: "\(dateText) · ISO 8601 week, \(w.year)",
+                                              comment: "%1$@ is a date, %2$lld the ISO week-numbering year"),
                              copy: String(w.week), score: 990, details: detail, symbol: "calendar")]
         case .unixOf(let date):
             let v = TimeFormats.unix(date)
             let dateText = TimeFormats.formatter(date: .long, time: .medium, zone: zone, locale: locale).string(from: date)
-            return [copyItem("time:unix", title: v, subtitle: "Unix timestamp of \(dateText)", copy: v, score: 990,
+            return [copyItem("time:unix", title: v, subtitle: String(localized: "Unix timestamp of \(dateText)", comment: "%@ is a date and time"),
+                             copy: v, score: 990,
                              details: detail, symbol: "number"),
                     copyItem("time:unixms", title: String(Int64((date.timeIntervalSince1970 * 1000).rounded(.down))),
-                             subtitle: "Unix timestamp in milliseconds", copy: String(Int64((date.timeIntervalSince1970 * 1000).rounded(.down))),
+                             subtitle: String(localized: "Unix timestamp in milliseconds"), copy: String(Int64((date.timeIntervalSince1970 * 1000).rounded(.down))),
                              score: 985, details: detail, symbol: "number")]
         }
     }
@@ -107,7 +112,7 @@ final class TimeProvider: SearchProvider {
                            withDate: Bool = false) -> PaletteItem {
         let t = TimeFormats.formatter(time: .short, zone: tz, locale: locale).string(from: now)
         let offset = TimeFormats.offsetLabel(tz.secondsFromGMT(for: now))
-        let diff = TimeFormats.difference(tz, from: local, at: now)
+        let diff = TimeFormats.difference(tz, from: local, at: now, locale: locale)
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = local
         var otherCal = Calendar(identifier: .gregorian)
@@ -115,19 +120,24 @@ final class TimeProvider: SearchProvider {
         let dayShift = otherCal.component(.day, from: now) != cal.component(.day, from: now)
         let dateText = TimeFormats.formatter(date: .full, zone: tz, locale: locale).string(from: now)
         var subtitle = "\(offset) · \(diff)"
-        if withDate || dayShift { subtitle += " · \(TimeFormats.formatter("EEE d MMM", zone: tz, locale: locale).string(from: now))" }
+        if withDate || dayShift {
+            let pattern = DateFormatter.dateFormat(fromTemplate: "EEEdMMM", options: 0, locale: locale) ?? "EEE d MMM"
+            subtitle += " · \(TimeFormats.formatter(pattern, zone: tz, locale: locale).string(from: now))"
+        }
         let details = ItemDetails(icon: .symbol("globe", .blue), title: TimeFormats.formatter(time: .medium, zone: tz, locale: locale).string(from: now),
                                   largeTitle: true, subtitle: "\(dateText) · \(label)",
                                   rows: TimeFormats.rows(for: now, zone: tz, locale: locale).prefix(4).map(DetailRow.init) + [
-                                      DetailRow(label: "Offset", value: offset),
-                                      DetailRow(label: "Difference", value: diff, monospaced: false),
+                                      DetailRow(label: String(localized: "Offset", comment: "Detail row: the time zone's UTC offset"), value: offset),
+                                      DetailRow(label: String(localized: "Difference", comment: "Detail row: time difference to the local zone"),
+                                                value: diff, monospaced: false),
                                   ])
         return PaletteItem(
-            id: "time:zone:\(tz.identifier)", title: "\(t) in \(label)", subtitle: subtitle, icon: .symbol("globe", .blue),
-            providerID: id, accessory: "Clock", score: score,
-            primary: PaletteAction(id: "copy", title: "Copy", symbol: "doc.on.doc") {
+            id: "time:zone:\(tz.identifier)", title: String(localized: "\(t) in \(label)", comment: "World clock: “10:41 PM in London”; %1$@ is a time, %2$@ a place"),
+            subtitle: subtitle, icon: .symbol("globe", .blue), providerID: id,
+            accessory: String(localized: "Clock", comment: "Result row label: a world clock"), score: score,
+            primary: PaletteAction(id: "copy", title: Labels.copy, symbol: "doc.on.doc") {
                 Launch.copy("\(t) \(label)")
-                HUD.show("Copied \(t) \(label)", symbol: "doc.on.doc")
+                HUD.show("Copied \("\(t) \(label)")", symbol: "doc.on.doc")
                 return .dismiss
             },
             details: details, isPinnable: false)
@@ -136,14 +146,14 @@ final class TimeProvider: SearchProvider {
     private func copyItem(_ id: String, title: String, subtitle: String, copy: String, score: Double,
                           details: ItemDetails, symbol: String = "clock.fill") -> PaletteItem {
         PaletteItem(
-            id: id, title: title, subtitle: subtitle, icon: .symbol(symbol, .orange), providerID: self.id, accessory: "Copy",
+            id: id, title: title, subtitle: subtitle, icon: .symbol(symbol, .orange), providerID: self.id, accessory: Labels.copy,
             score: score,
-            primary: PaletteAction(id: "copy", title: "Copy", symbol: "doc.on.doc") {
+            primary: PaletteAction(id: "copy", title: Labels.copy, symbol: "doc.on.doc") {
                 Launch.copy(copy)
                 HUD.show("Copied \(copy)", symbol: "doc.on.doc")
                 return .dismiss
             },
-            actions: [PaletteAction(id: "paste", title: "Paste", symbol: "doc.on.clipboard", shortcut: ActionKeys.paste) {
+            actions: [PaletteAction(id: "paste", title: Labels.paste, symbol: "doc.on.clipboard", shortcut: ActionKeys.paste) {
                 Launch.pasteOutcome(copy)
             }],
             details: details, isPinnable: id == "time:now")

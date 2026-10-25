@@ -150,6 +150,44 @@ struct SearchQuery: Sendable {
     var frontEnd: FrontEnd
 }
 
+/// Action titles, row labels and section headings that many providers share: one catalog entry and
+/// one translator comment each.
+enum Labels {
+    static var open: String { String(localized: "Open", comment: "Action or row label: open the selected item") }
+    static var copy: String { String(localized: "Copy", comment: "Action or row label: copy the value") }
+    static var paste: String { String(localized: "Paste", comment: "Action or row label: paste into the front app") }
+    static var pasteResult: String { String(localized: "Paste Result", comment: "Action: paste the result into the front app") }
+    static var ok: String { String(localized: "OK", comment: "Action of a hint or error row; it does nothing") }
+    static var run: String { String(localized: "Run", comment: "Action: run the command or script") }
+    static var use: String { String(localized: "Use", comment: "Action: put the example into the search field") }
+    static var app: String { String(localized: "App", comment: "Row label or detail row: an application") }
+    static var size: String { String(localized: "Size", comment: "Detail row: a file's size, or width × height of an image or window") }
+    static var location: String { String(localized: "Where", comment: "Detail row: the folder that contains the item, like Finder's Get Info") }
+    static var kind: String { String(localized: "Kind", comment: "Detail row: the type of a file, like in Finder's Get Info") }
+    static var category: String { String(localized: "Category", comment: "Detail row: unit category such as Length, or a utility's category") }
+    static var file: String { String(localized: "File", comment: "Label: a file (row label, detail row or clipboard entry kind)") }
+    static var folder: String { String(localized: "Folder", comment: "Label: a folder (row label or detail row)") }
+    static var showInFinder: String { String(localized: "Show in Finder", comment: "Action: reveal the file in Finder") }
+    static var copyPath: String { String(localized: "Copy Path", comment: "Action: copy the file path") }
+    static var copyURL: String { String(localized: "Copy URL", comment: "Action: copy the web address") }
+    static var openSettings: String { String(localized: "Open Settings", comment: "Action: open the settings page") }
+    static var removeFromHistory: String { String(localized: "Remove from History", comment: "Action: forget this history entry") }
+    static var commands: String { String(localized: "Commands", comment: "Section heading: top-level commands") }
+    static var command: String { String(localized: "Command", comment: "Result row label: the result is a command") }
+    static var pinned: String { String(localized: "Pinned", comment: "Section heading: pinned items") }
+    static var recent: String { String(localized: "Recent", comment: "Section heading: recently used items") }
+    static var on: String { String(localized: "On", comment: "Status: the utility or option is turned on") }
+    static var off: String { String(localized: "Off", comment: "Status: the utility or option is turned off") }
+    static var notInstalled: String { String(localized: "Not installed", comment: "Status: the app is not installed") }
+    /// "Open in Terminal", "Run in iTerm2".
+    static func openIn(_ app: String) -> String {
+        String(localized: "Open in \(app)", comment: "Action; %@ is an app name such as Terminal or Safari")
+    }
+    static func runIn(_ app: String) -> String {
+        String(localized: "Run in \(app)", comment: "Action; %@ is a terminal app such as Terminal or iTerm2")
+    }
+}
+
 extension Shortcut {
     /// Shortcut helper for action key equivalents: `.cmd(kVK_ANSI_C)`.
     static func cmd(_ key: Int, shift: Bool = false, option: Bool = false) -> Shortcut {

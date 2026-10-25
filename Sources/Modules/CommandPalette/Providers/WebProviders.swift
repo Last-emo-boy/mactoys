@@ -50,11 +50,15 @@ enum URLDetection {
 @MainActor
 final class URLProvider: SearchProvider {
     let id = "url"
-    let name = "URLs"
-    let summary = "Open web addresses and app links like mailto: or x-apple.systempreferences:"
+    let name = String(localized: "URLs", comment: "Provider name: web addresses and app links")
+    let summary = String(localized: "Open web addresses and app links like \("mailto:") or \("x-apple.systempreferences:")",
+                         comment: "Both %@ are URL schemes")
     let icon = ItemIcon.symbol("link", .blue)
     let defaultKeyword = "//"
-    let examples = ["apple.com", "https://github.com/microsoft/PowerToys", "mailto:someone@example.com", "//  (open the browser)"]
+    var examples: [String] {
+        ["apple.com", "https://github.com/microsoft/PowerToys", "mailto:someone@example.com",
+         String(localized: "\("//")  (open the browser)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     init(engine: LauncherEngine) { self.engine = engine }
@@ -67,9 +71,10 @@ final class URLProvider: SearchProvider {
                   let app = browser.isEmpty ? NSWorkspace.shared.urlForApplication(toOpen: probe)
                     : NSWorkspace.shared.urlForApplication(withBundleIdentifier: browser) else { return [] }
             let appName = FileManager.default.displayName(atPath: app.path).replacingOccurrences(of: ".app", with: "")
-            return [PaletteItem(id: "url:browser", title: "Open \(appName)", subtitle: "Your web browser", icon: .file(app.path),
-                                providerID: id, accessory: "App", score: 900,
-                                primary: PaletteAction(id: "open", title: "Open", symbol: "safari") {
+            return [PaletteItem(id: "url:browser", title: String(localized: "Open \(appName)", comment: "Action: open something; %@ is an app, utility, website or address"),
+                                subtitle: String(localized: "Your web browser"), icon: .file(app.path),
+                                providerID: id, accessory: Labels.app, score: 900,
+                                primary: PaletteAction(id: "open", title: Labels.open, symbol: "safari") {
                                     Launch.open(app)
                                     return .dismiss
                                 })]
@@ -91,15 +96,18 @@ final class URLProvider: SearchProvider {
         let web = url.scheme == "http" || url.scheme == "https"
         let handler = NSWorkspace.shared.urlForApplication(toOpen: url)
         return PaletteItem(
-            id: "url:\(url.absoluteString)", title: "Open \(url.absoluteString)",
-            subtitle: web ? "Web page" : "Opens in \(handler.map { FileManager.default.displayName(atPath: $0.path) } ?? "its app")",
-            icon: web ? icon : handler.map { .file($0.path) } ?? icon, providerID: id, accessory: "URL", score: score,
-            primary: PaletteAction(id: "open", title: "Open", symbol: "safari") {
+            id: "url:\(url.absoluteString)", title: String(localized: "Open \(url.absoluteString)", comment: "Action: open something; %@ is an app, utility, website or address"),
+            subtitle: web ? String(localized: "Web page")
+                : handler.map { String(localized: "Opens in \(FileManager.default.displayName(atPath: $0.path))", comment: "%@ is an app name") }
+                    ?? String(localized: "Opens in its app"),
+            icon: web ? icon : handler.map { .file($0.path) } ?? icon, providerID: id,
+            accessory: String(localized: "URL", comment: "A web address (row label, Run keyword chip)"), score: score,
+            primary: PaletteAction(id: "open", title: Labels.open, symbol: "safari") {
                 Launch.open(url, bundleID: web ? browser : nil)
                 return .dismiss
             },
             actions: [
-                PaletteAction(id: "copy", title: "Copy URL", symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
+                PaletteAction(id: "copy", title: Labels.copyURL, symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
                     Launch.copy(url.absoluteString)
                     return .dismiss
                 },
@@ -111,22 +119,28 @@ final class URLProvider: SearchProvider {
 @MainActor
 final class WebSearchProvider: SearchProvider {
     let id = "web"
-    let name = "Web"
-    let summary = "Search the web with your chosen engine"
+    let name = String(localized: "Web", comment: "Provider name: web search")
+    let summary = String(localized: "Search the web with your chosen engine")
     let icon = ItemIcon.symbol("magnifyingglass", .cyan)
     let defaultKeyword = "??"
-    let examples = ["?? what is the answer to life", "??  (open the search page)"]
+    var examples: [String] {
+        ["?? what is the answer to life",
+         String(localized: "\("??")  (open the search page)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Web Search", subtitle: "Search with \(engineName)", keywords: ["google", "search", "internet"])]
+        [pageCommand(title: Phrase("Web Search"), subtitle: String(localized: "Search with \(engineName)", comment: "%@ is a search engine such as Google"),
+                     keywords: ["google", "search", "internet"])]
     }
 
     var engineName: String {
         let o = engine.options.value
-        if o.searchEngine == .custom { return URL(string: o.customSearchURL)?.host ?? "custom engine" }
+        if o.searchEngine == .custom {
+            return URL(string: o.customSearchURL)?.host ?? String(localized: "custom engine", comment: "Stands in for the search engine's name")
+        }
         return o.searchEngine.title
     }
 
@@ -135,9 +149,10 @@ final class WebSearchProvider: SearchProvider {
         let o = engine.options.value
         if text.isEmpty {
             guard query.scoped, let url = Launch.searchURL("", template: o.searchTemplate).flatMap(homepage) else { return [] }
-            return [PaletteItem(id: "web:home", title: "Open \(engineName)", subtitle: url.absoluteString, icon: icon,
-                                providerID: id, accessory: "Web", score: 900,
-                                primary: PaletteAction(id: "open", title: "Open", symbol: "safari") {
+            return [PaletteItem(id: "web:home", title: String(localized: "Open \(engineName)", comment: "Action: open something; %@ is an app, utility, website or address"),
+                                subtitle: url.absoluteString, icon: icon,
+                                providerID: id, accessory: name, score: 900,
+                                primary: PaletteAction(id: "open", title: Labels.open, symbol: "safari") {
                                     Launch.open(url, bundleID: o.browserBundleID)
                                     return .dismiss
                                 }, isPinnable: false)]
@@ -156,14 +171,16 @@ final class WebSearchProvider: SearchProvider {
         let o = engine.options.value
         guard let url = Launch.searchURL(text, template: o.searchTemplate) else { return nil }
         var item = PaletteItem(
-            id: "web:search:\(text)", title: "Search “\(text)” on \(engineName)",
-            subtitle: o.searchEngine == .google && o.browserBundleID.isEmpty ? "Web search · default engine" : "Web search",
-            icon: icon, providerID: id, accessory: "Web", score: 1,
-            primary: PaletteAction(id: "open", title: "Search", symbol: "magnifyingglass") {
+            id: "web:search:\(text)",
+            title: String(localized: "Search “\(text)” on \(engineName)", comment: "%1$@ is the search text, %2$@ a search engine such as Google"),
+            subtitle: o.searchEngine == .google && o.browserBundleID.isEmpty ? String(localized: "Web search · default engine")
+                : String(localized: "Web search"),
+            icon: icon, providerID: id, accessory: name, score: 1,
+            primary: PaletteAction(id: "open", title: String(localized: "Search", comment: "Action: search the web"), symbol: "magnifyingglass") {
                 Launch.open(url, bundleID: o.browserBundleID)
                 return .dismiss
             },
-            actions: [PaletteAction(id: "copy", title: "Copy Search URL", symbol: "link", shortcut: ActionKeys.copyPath) {
+            actions: [PaletteAction(id: "copy", title: String(localized: "Copy Search URL"), symbol: "link", shortcut: ActionKeys.copyPath) {
                 Launch.copy(url.absoluteString)
                 return .dismiss
             }],

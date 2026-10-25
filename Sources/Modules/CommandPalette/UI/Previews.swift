@@ -32,7 +32,9 @@ enum PalettePreviews {
             },
             PreviewScene("clipboard", size: CGSize(width: 900, height: 640)) {
                 let model = module.makeModel()
-                let page = ListPage(id: "clipboard:page", title: "Clipboard History", placeholder: "Search clipboard…",
+                let page = ListPage(id: "clipboard:page", title: String(localized: "Clipboard History"),
+                                    placeholder: String(localized: "Search \(String(localized: "Clipboard History"))…",
+                                                        comment: "Search field placeholder; %@ is a provider name such as “Calculator”"),
                                     icon: .symbol("doc.on.clipboard.fill", .purple)) { _ in [] }
                 model.showPreview(query: "", sections: clipboardSections(module), page: page)
                 return AnyView(framed(PaletteView(model: model, appearance: module.appearance), height: PaletteLayout.fullHeight))
@@ -46,23 +48,32 @@ enum PalettePreviews {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    /// The design board's formats in English; the user's own in other languages.
+    static var sampleLocale: Locale {
+        Locale.current.language.languageCode == .english ? Locale(identifier: "en_GB") : .current
+    }
+
+    static func title(_ module: CommandPaletteModule, _ providerID: String) -> String {
+        module.engine.provider(providerID)?.name ?? providerID
+    }
+
     /// The "time" search of the design: Time & Date, System Settings, Apps, Web.
     static func timeSections(_ module: CommandPaletteModule) -> [ResultSection] {
         let engine = module.engine
         var sections: [ResultSection] = []
         if let time = engine.provider("time") as? TimeProvider {
-            let items = time.items(for: .now(.time), now: sampleDate, zone: sampleZone, locale: Locale(identifier: "en_GB"), scoped: false)
+            let items = time.items(for: .now(.time), now: sampleDate, zone: sampleZone, locale: sampleLocale, scoped: false)
             let london = items.first { $0.id.hasSuffix("Europe/London") }
-            sections.append(ResultSection(id: "time", title: "Time & Date", items: [items[0]] + (london.map { [$0] } ?? [])))
+            sections.append(ResultSection(id: "time", title: time.name, items: [items[0]] + (london.map { [$0] } ?? [])))
         }
         if let settings = engine.provider("settings") as? SystemSettingsProvider {
             let panes = ["screentime", "datetime"].compactMap { id in SystemSettingsProvider.panes.first { $0.id == id } }
-            sections.append(ResultSection(id: "settings", title: "System Settings", items: panes.map { settings.item($0, score: 0) }))
+            sections.append(ResultSection(id: "settings", title: settings.name, items: panes.map { settings.item($0, score: 0) }))
         }
-        sections.append(ResultSection(id: "apps", title: "Apps", items: [app("/Applications/Time Machine.app", name: "Time Machine",
-                                                                             symbol: "clock.arrow.circlepath", tint: .green)]))
+        sections.append(ResultSection(id: "apps", title: title(module, "apps"), items: [app("/Applications/Time Machine.app", name: "Time Machine",
+                                                                                            symbol: "clock.arrow.circlepath", tint: .green)]))
         if let web = engine.provider("web") as? WebSearchProvider, let item = web.item("time") {
-            sections.append(ResultSection(id: "web", title: "Web", items: [item]))
+            sections.append(ResultSection(id: "web", title: web.name, items: [item]))
         }
         return sections
     }
@@ -75,8 +86,8 @@ enum PalettePreviews {
         if let shell = module.engine.provider("shell") as? ShellProvider {
             items.append(shell.item("term", mode: .terminal, score: 0))
         }
-        return [ResultSection(id: "apps", title: "Apps", items: [terminal]),
-                ResultSection(id: "shell", title: "Shell", items: Array(items.dropFirst()))]
+        return [ResultSection(id: "apps", title: title(module, "apps"), items: [terminal]),
+                ResultSection(id: "shell", title: title(module, "shell"), items: Array(items.dropFirst()))]
     }
 
     static func clipboardSections(_ module: CommandPaletteModule) -> [ResultSection] {
@@ -95,8 +106,8 @@ enum PalettePreviews {
         guard let pinned = sampleClip(now.addingTimeInterval(-3 * 86400), .text, "ssh debian@build.example.net -p 2222", app: "Notes",
                                       pinned: true) else { return [] }
         let items = ([pinned] + samples).enumerated().map { i, c in clip.item(c, score: 1000 - Double(i)) }
-        return [ResultSection(id: "pinned", title: "Pinned", items: Array(items.prefix(1))),
-                ResultSection(id: "recent", title: "Recent", items: Array(items.dropFirst()))]
+        return [ResultSection(id: "pinned", title: Labels.pinned, items: Array(items.prefix(1))),
+                ResultSection(id: "recent", title: Labels.recent, items: Array(items.dropFirst()))]
     }
 
     /// Mirrors `ClipItem`'s stored properties so sample entries can be decoded (its initializer is internal to Core).
@@ -120,11 +131,14 @@ enum PalettePreviews {
     static func app(_ path: String, name: String, symbol: String, tint: Tint) -> PaletteItem {
         let exists = FileManager.default.fileExists(atPath: path)
         return PaletteItem(id: "apps:\(path)", title: name, subtitle: path, icon: exists ? .file(path) : .symbol(symbol, tint),
-                           providerID: "apps", accessory: "App",
-                           primary: PaletteAction(id: "open", title: "Open", symbol: "arrow.up.forward.app") { .stay },
-                           details: ItemDetails(icon: exists ? .file(path) : .symbol(symbol, tint), title: name, subtitle: "Application",
-                                                rows: [DetailRow(label: "Kind", value: "Application", monospaced: false),
-                                                       DetailRow(label: "Where", value: "/Applications", monospaced: false)]))
+                           providerID: "apps", accessory: Labels.app,
+                           primary: PaletteAction(id: "open", title: Labels.open, symbol: "arrow.up.forward.app") { .stay },
+                           details: ItemDetails(icon: exists ? .file(path) : .symbol(symbol, tint), title: name,
+                                                subtitle: String(localized: "Application", comment: "Kind of a file: an app, like Finder shows it"),
+                                                rows: [DetailRow(label: Labels.kind,
+                                                                 value: String(localized: "Application", comment: "Kind of a file: an app, like Finder shows it"),
+                                                                 monospaced: false),
+                                                       DetailRow(label: Labels.location, value: "/Applications", monospaced: false)]))
     }
 }
 

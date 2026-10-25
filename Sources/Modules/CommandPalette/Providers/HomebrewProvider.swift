@@ -6,11 +6,14 @@ import MacToysCore
 final class HomebrewProvider: SearchProvider {
     let id = "brew"
     let name = "Homebrew"
-    let summary = "Search, install, upgrade and uninstall Homebrew formulae and casks"
+    let summary = String(localized: "Search, install, upgrade and uninstall Homebrew formulae and casks")
     let icon = ItemIcon.symbol("mug.fill", .yellow)
     let defaultKeyword = "brew"
     let globalByDefault = false
-    let examples = ["brew ripgrep", "brew  (installed packages)"]
+    var examples: [String] {
+        ["brew ripgrep",
+         String(localized: "\("brew")  (installed packages)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     private var installedFormulae: [String: String] = [:]
@@ -24,7 +27,8 @@ final class HomebrewProvider: SearchProvider {
     }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "Homebrew", subtitle: Self.brewPath == nil ? "Homebrew is not installed" : "Search and install packages",
+        [pageCommand(title: Phrase("Homebrew"),
+                     subtitle: Self.brewPath == nil ? String(localized: "Homebrew is not installed") : String(localized: "Search and install packages"),
                      keywords: ["brew", "install", "package", "cask", "formula"])]
     }
 
@@ -33,9 +37,10 @@ final class HomebrewProvider: SearchProvider {
     func search(_ query: SearchQuery) async -> [PaletteItem] {
         guard query.scoped else { return [] }
         guard let brew = Self.brewPath else {
-            return [PaletteItem(id: "brew:missing", title: "Homebrew is not installed", subtitle: "Open brew.sh to install it",
+            return [PaletteItem(id: "brew:missing", title: String(localized: "Homebrew is not installed"),
+                                subtitle: String(localized: "Open \("brew.sh") to install it", comment: "%@ is the Homebrew website"),
                                 icon: icon, providerID: id, score: 1000,
-                                primary: PaletteAction(id: "open", title: "Open brew.sh", symbol: "safari") {
+                                primary: PaletteAction(id: "open", title: String(localized: "Open \("brew.sh")", comment: "Action: open something; %@ is an app, utility, website or address"), symbol: "safari") {
                                     if let url = URL(string: "https://brew.sh") { Launch.open(url) }
                                     return .dismiss
                                 }, isPinnable: false)]
@@ -45,11 +50,13 @@ final class HomebrewProvider: SearchProvider {
         if text.isEmpty {
             var out = maintenanceItems()
             out += installedFormulae.sorted { $0.key < $1.key }.enumerated().map { i, kv in
-                item(kv.key, cask: false, version: kv.value, score: 500 - Double(i) / 100, section: "Installed Formulae")
+                item(kv.key, cask: false, version: kv.value, score: 500 - Double(i) / 100,
+                     section: String(localized: "Installed Formulae", comment: "Section heading: installed Homebrew formulae"))
             }
             if engine.options.value.brewIncludeCasks {
                 out += installedCasks.sorted { $0.key < $1.key }.enumerated().map { i, kv in
-                    item(kv.key, cask: true, version: kv.value, score: 400 - Double(i) / 100, section: "Installed Casks")
+                    item(kv.key, cask: true, version: kv.value, score: 400 - Double(i) / 100,
+                         section: String(localized: "Installed Casks", comment: "Section heading: installed Homebrew casks (apps)"))
                 }
             }
             return out
@@ -68,15 +75,17 @@ final class HomebrewProvider: SearchProvider {
                 .filter { !$0.isEmpty && !$0.hasPrefix("==>") && !$0.contains(" ") }
         }
         let formulaItems = names(f).map { n in
-            item(n, cask: false, version: installedFormulae[n], score: FuzzyMatcher.score(text, n) ?? 100, section: "Formulae")
+            item(n, cask: false, version: installedFormulae[n], score: FuzzyMatcher.score(text, n) ?? 100,
+                 section: String(localized: "Formulae", comment: "Section heading: Homebrew formulae (command-line packages)"))
         }
         let caskItems = names(c).map { n in
-            item(n, cask: true, version: installedCasks[n], score: (FuzzyMatcher.score(text, n) ?? 100) - 1, section: "Casks")
+            item(n, cask: true, version: installedCasks[n], score: (FuzzyMatcher.score(text, n) ?? 100) - 1,
+                 section: String(localized: "Casks", comment: "Section heading: Homebrew casks (apps)"))
         }
         if formulaItems.isEmpty && caskItems.isEmpty {
-            return [PaletteItem(id: "brew:none", title: "No packages match “\(text)”", subtitle: "brew search \(text)", icon: icon,
-                                providerID: id, score: 1,
-                                primary: PaletteAction(id: "none", title: "OK", symbol: "checkmark", recordsUsage: false) { .stay },
+            return [PaletteItem(id: "brew:none", title: String(localized: "No packages match “\(text)”", comment: "%@ is the search text"),
+                                subtitle: "brew search \(text)", icon: icon, providerID: id, score: 1,
+                                primary: PaletteAction(id: "none", title: Labels.ok, symbol: "checkmark", recordsUsage: false) { .stay },
                                 isPinnable: false)]
         }
         return formulaItems + caskItems
@@ -104,16 +113,17 @@ final class HomebrewProvider: SearchProvider {
         let o = engine.options.value
         func command(_ id: String, _ title: String, _ subtitle: String, _ symbol: String, _ cmd: String) -> PaletteItem {
             PaletteItem(id: "brew:\(id)", title: title, subtitle: subtitle, icon: .symbol(symbol, .yellow), providerID: self.id,
-                        section: "Homebrew", accessory: "Terminal", score: 900,
-                        primary: PaletteAction(id: "run", title: "Run in \(o.terminal.title)", symbol: "terminal") {
+                        section: "Homebrew", accessory: TerminalApp.terminal.title, score: 900,
+                        primary: PaletteAction(id: "run", title: Labels.runIn(o.terminal.title), symbol: "terminal") {
                             Launch.runInTerminal(cmd, app: o.terminal, keepOpen: true)
                             return .dismiss
                         }, isPinnable: false)
         }
-        return [command("update", "Update Homebrew", "brew update", "arrow.down.circle.fill", "brew update"),
-                command("upgrade", "Upgrade All Packages", "brew upgrade", "arrow.up.circle.fill", "brew upgrade"),
-                command("outdated", "List Outdated Packages", "brew outdated", "clock.badge.exclamationmark", "brew outdated"),
-                command("cleanup", "Clean Up", "brew cleanup", "sparkles", "brew cleanup")]
+        return [command("update", String(localized: "Update Homebrew"), "brew update", "arrow.down.circle.fill", "brew update"),
+                command("upgrade", String(localized: "Upgrade All Packages"), "brew upgrade", "arrow.up.circle.fill", "brew upgrade"),
+                command("outdated", String(localized: "List Outdated Packages"), "brew outdated", "clock.badge.exclamationmark", "brew outdated"),
+                command("cleanup", String(localized: "Clean Up", comment: "Homebrew command: remove old package versions"), "brew cleanup",
+                        "sparkles", "brew cleanup")]
     }
 
     func item(_ pkg: String, cask: Bool, version: String?, score: Double, section: String) -> PaletteItem {
@@ -127,37 +137,48 @@ final class HomebrewProvider: SearchProvider {
         }
         var actions: [PaletteAction] = []
         if installed {
-            actions.append(PaletteAction(id: "upgrade", title: "Upgrade", symbol: "arrow.up.circle") { terminal("upgrade") })
-            actions.append(PaletteAction(id: "uninstall", title: "Uninstall", symbol: "trash", shortcut: ActionKeys.trash, destructive: true) {
-                .confirm(Confirmation(title: "Uninstall \(pkg)?", message: "brew uninstall\(flag) \(pkg)", confirmTitle: "Uninstall") {
+            actions.append(PaletteAction(id: "upgrade", title: String(localized: "Upgrade", comment: "Action: upgrade the Homebrew package"),
+                                         symbol: "arrow.up.circle") { terminal("upgrade") })
+            actions.append(PaletteAction(id: "uninstall", title: String(localized: "Uninstall", comment: "Action: uninstall the Homebrew package"),
+                                         symbol: "trash", shortcut: ActionKeys.trash, destructive: true) {
+                .confirm(Confirmation(title: String(localized: "Uninstall \(pkg)?", comment: "Confirmation prompt; %@ is a package name"),
+                                      message: "brew uninstall\(flag) \(pkg)",
+                                      confirmTitle: String(localized: "Uninstall", comment: "Action: uninstall the Homebrew package")) {
                     terminal("uninstall")
                 })
             })
         }
         let page = URL(string: "https://formulae.brew.sh/\(cask ? "cask" : "formula")/\(pkg)")
         actions += [
-            PaletteAction(id: "homepage", title: "Open on formulae.brew.sh", symbol: "safari", shortcut: ActionKeys.secondary) {
+            PaletteAction(id: "homepage", title: String(localized: "Open on \("formulae.brew.sh")", comment: "%@ is the Homebrew package website"),
+                          symbol: "safari", shortcut: ActionKeys.secondary) {
                 if let page { Launch.open(page) }
                 return .dismiss
             },
-            PaletteAction(id: "copy", title: "Copy Install Command", symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
+            PaletteAction(id: "copy", title: String(localized: "Copy Install Command"), symbol: "doc.on.doc", shortcut: ActionKeys.copy) {
                 Launch.copy("brew install\(flag) \(pkg)")
                 return .dismiss
             },
         ]
         let primary = installed
-            ? PaletteAction(id: "info", title: "Show Info", symbol: "info.circle") {
+            ? PaletteAction(id: "info", title: String(localized: "Show Info", comment: "Action: show `brew info` for the package"), symbol: "info.circle") {
                 .push(OutputPage.make(id: "brew:info:\(pkg)", title: "brew info \(pkg)", icon: self.icon, providerID: self.id) {
                     await AsyncProcess.run(Self.brewPath ?? "brew", ["info"] + (cask ? ["--cask"] : []) + [pkg], timeout: 30)
                 })
             }
-            : PaletteAction(id: "install", title: "Install", symbol: "arrow.down.circle") { terminal("install") }
-        if installed { actions.insert(PaletteAction(id: "reinstall", title: "Reinstall", symbol: "arrow.clockwise") { terminal("reinstall") }, at: 1) }
+            : PaletteAction(id: "install", title: String(localized: "Install", comment: "Action: install the Homebrew package"),
+                            symbol: "arrow.down.circle") { terminal("install") }
+        if installed {
+            actions.insert(PaletteAction(id: "reinstall", title: String(localized: "Reinstall", comment: "Action: reinstall the Homebrew package"),
+                                         symbol: "arrow.clockwise") { terminal("reinstall") }, at: 1)
+        }
+        let kind = cask ? Self.caskLabel : Self.formulaLabel
         return PaletteItem(
             id: "brew:\(cask ? "cask" : "formula"):\(pkg)", title: pkg,
-            subtitle: (cask ? "Cask" : "Formula") + (version.map { " · installed \($0)" } ?? ""),
+            subtitle: version.map { String(localized: "\(kind) · installed \($0)", comment: "%1$@ is Formula or Cask, %2$@ the installed version") } ?? kind,
             icon: .symbol(cask ? "shippingbox.fill" : "mug.fill", .yellow), providerID: id, section: section,
-            accessory: installed ? "Installed" : (cask ? "Cask" : "Formula"), score: score, primary: primary, actions: actions,
+            accessory: installed ? String(localized: "Installed", comment: "A Homebrew package is installed (row label), or its installed version (detail row)") : kind,
+            score: score, primary: primary, actions: actions,
             loadDetails: { await Self.details(pkg, cask: cask, version: version) }, isPinnable: false)
     }
 
@@ -172,11 +193,18 @@ final class HomebrewProvider: SearchProvider {
         let homepage = entry["homepage"] as? String ?? ""
         let latest = cask ? entry["version"] as? String : (entry["versions"] as? [String: Any])?["stable"] as? String
         let displayName = cask ? ((entry["name"] as? [String])?.first ?? pkg) : pkg
-        var rows = [DetailRow(label: "Latest", value: latest ?? "—")]
-        if let version { rows.append(DetailRow(label: "Installed", value: version)) }
-        if !homepage.isEmpty { rows.append(DetailRow(label: "Homepage", value: homepage)) }
-        if let license = entry["license"] as? String { rows.append(DetailRow(label: "License", value: license, monospaced: false)) }
+        var rows = [DetailRow(label: String(localized: "Latest", comment: "Detail row: the newest version of the package"), value: latest ?? "—")]
+        if let version {
+            rows.append(DetailRow(label: String(localized: "Installed", comment: "A Homebrew package is installed (row label), or its installed version (detail row)"), value: version))
+        }
+        if !homepage.isEmpty { rows.append(DetailRow(label: String(localized: "Homepage", comment: "Detail row: the package's website"), value: homepage)) }
+        if let license = entry["license"] as? String {
+            rows.append(DetailRow(label: String(localized: "License", comment: "Detail row: the package's software license"), value: license, monospaced: false))
+        }
         return ItemDetails(icon: .symbol(cask ? "shippingbox.fill" : "mug.fill", .yellow), title: displayName,
-                           subtitle: desc ?? (cask ? "Cask" : "Formula"), rows: rows)
+                           subtitle: desc ?? (cask ? caskLabel : formulaLabel), rows: rows)
     }
+
+    static var formulaLabel: String { String(localized: "Formula", comment: "A Homebrew command-line package") }
+    static var caskLabel: String { String(localized: "Cask", comment: "A Homebrew app package") }
 }

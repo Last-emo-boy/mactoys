@@ -25,13 +25,13 @@ struct ResultRow: View {
         HStack(spacing: 11) {
             ItemIconView(icon: item.icon, size: iconSize)
             VStack(alignment: .leading, spacing: 1) {
-                Text(item.title)
+                Text(verbatim: item.title)
                     .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(LauncherStyle.primary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 if !item.subtitle.isEmpty {
-                    Text(item.subtitle)
+                    Text(verbatim: item.subtitle)
                         .font(.system(size: 11.5))
                         .foregroundStyle(LauncherStyle.secondary)
                         .lineLimit(1)
@@ -40,10 +40,10 @@ struct ResultRow: View {
             }
             Spacer(minLength: 8)
             if let hint, selected {
-                Text(hint).font(.system(size: 11)).foregroundStyle(LauncherStyle.tertiary)
+                Text(verbatim: hint).font(.system(size: 11)).foregroundStyle(LauncherStyle.tertiary)
             }
             if showAccessory, let accessory = item.accessory {
-                Text(accessory)
+                Text(verbatim: accessory)
                     .font(.system(size: 11.5))
                     .foregroundStyle(LauncherStyle.secondary)
             }
@@ -59,7 +59,7 @@ struct ResultRow: View {
 struct SectionHeader: View {
     let title: String
     var body: some View {
-        Text(title)
+        Text(verbatim: title)
             .font(.system(size: 11.5, weight: .semibold))
             .foregroundStyle(LauncherStyle.secondary)
             .padding(.leading, 10)
@@ -245,7 +245,7 @@ struct ActionsMenuView: View {
             Rectangle().fill(LauncherStyle.hairline).frame(height: 1).padding(.top, 5)
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass").font(.system(size: 11)).foregroundStyle(LauncherStyle.tertiary)
-                Text(state.filter.isEmpty ? "Search actions…" : state.filter)
+                Text(verbatim: state.filter.isEmpty ? String(localized: "Search actions…") : state.filter)
                     .font(.system(size: 12.5))
                     .foregroundStyle(state.filter.isEmpty ? LauncherStyle.tertiary : LauncherStyle.primary)
                 Spacer()
@@ -283,7 +283,7 @@ struct ConfirmationView: View {
             }
             HStack(spacing: 8) {
                 Spacer()
-                button("Cancel", selected: choice == 0, tint: Color.white.opacity(0.12)) { onAnswer(0) }
+                button(String(localized: "Cancel"), selected: choice == 0, tint: Color.white.opacity(0.12)) { onAnswer(0) }
                 button(confirmation.confirmTitle, selected: choice == 1,
                        tint: confirmation.destructive ? Color.red.opacity(0.85) : Color.accentColor) { onAnswer(1) }
                 if let alt = confirmation.alternateTitle {
@@ -300,7 +300,7 @@ struct ConfirmationView: View {
     }
 
     private func button(_ title: String, selected: Bool, tint: Color, action: @escaping () -> Void) -> some View {
-        Text(title)
+        Text(verbatim: title)
             .font(.system(size: 12.5, weight: .semibold))
             .foregroundStyle(.white)
             .padding(.horizontal, 14)

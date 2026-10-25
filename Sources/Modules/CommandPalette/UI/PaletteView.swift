@@ -118,18 +118,19 @@ struct PaletteView: View {
     }
 
     private var filterMenu: some View {
-        let title = model.filter.flatMap { id in appearance.filters.first { $0.id == id }?.name } ?? "All results"
+        let title = model.filter.flatMap { id in appearance.filters.first { $0.id == id }?.name }
+            ?? String(localized: "All results", comment: "Result filter: every provider")
         return Menu {
-            Button("All results") { model.filter = nil }
+            Button(String(localized: "All results", comment: "Result filter: every provider")) { model.filter = nil }
             Divider()
             ForEach(appearance.filters, id: \.id) { f in
                 Button { model.filter = f.id } label: {
-                    if model.filter == f.id { Label(f.name, systemImage: "checkmark") } else { Text(f.name) }
+                    if model.filter == f.id { Label(f.name, systemImage: "checkmark") } else { Text(verbatim: f.name) }
                 }
             }
         } label: {
             HStack(spacing: 5) {
-                Text(title).font(.system(size: 12))
+                Text(verbatim: title).font(.system(size: 12))
                 Image(systemName: "chevron.up.chevron.down").font(.system(size: 9, weight: .semibold))
             }
             .foregroundStyle(LauncherStyle.secondary)
@@ -164,9 +165,9 @@ struct PaletteView: View {
         let selected = model.shelfSelection == i
         return HStack(spacing: 7) {
             ItemIconView(icon: item.icon, size: 20)
-            Text(item.title).font(.system(size: 12.5, weight: .medium)).foregroundStyle(LauncherStyle.primary).lineLimit(1)
+            Text(verbatim: item.title).font(.system(size: 12.5, weight: .medium)).foregroundStyle(LauncherStyle.primary).lineLimit(1)
             if i < 9 {
-                Text("⌥\(i + 1)").font(.system(size: 11)).foregroundStyle(LauncherStyle.tertiary)
+                Text(verbatim: "⌥\(i + 1)").font(.system(size: 11)).foregroundStyle(LauncherStyle.tertiary)
             }
         }
         .padding(.leading, 7)
@@ -238,8 +239,10 @@ struct PaletteView: View {
                 ProgressView().controlSize(.small).tint(.white)
             } else {
                 Image(systemName: "magnifyingglass").font(.system(size: 26, weight: .light)).foregroundStyle(LauncherStyle.tertiary)
-                Text(model.query.isEmpty ? "Nothing here yet" : "No results for “\(model.query)”")
-                    .font(.system(size: 13, weight: .medium)).foregroundStyle(LauncherStyle.secondary)
+                Group {
+                    if model.query.isEmpty { Text("Nothing here yet") } else { Text("No results for “\(model.query)”", comment: "%@ is the search text") }
+                }
+                .font(.system(size: 13, weight: .medium)).foregroundStyle(LauncherStyle.secondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -250,12 +253,12 @@ struct PaletteView: View {
     private var footer: some View {
         HStack(spacing: 8) {
             Image(systemName: "square.grid.2x2").font(.system(size: 12)).foregroundStyle(LauncherStyle.secondary)
-            Text(footerText).font(.system(size: 12)).foregroundStyle(LauncherStyle.secondary).lineLimit(1)
+            Text(verbatim: footerText).font(.system(size: 12)).foregroundStyle(LauncherStyle.secondary).lineLimit(1)
             Spacer()
             if let item = model.selectedItem {
                 Button { model.runSelected() } label: {
                     HStack(spacing: 6) {
-                        Text(item.primary.title).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(LauncherStyle.primary)
+                        Text(verbatim: item.primary.title).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(LauncherStyle.primary)
                             .lineLimit(1)
                         LauncherKey(key: "↵")
                     }
@@ -264,7 +267,7 @@ struct PaletteView: View {
                 Rectangle().fill(LauncherStyle.hairline).frame(width: 1, height: 16).padding(.horizontal, 4)
                 Button { model.toggleActionsMenu() } label: {
                     HStack(spacing: 6) {
-                        Text("Actions").font(.system(size: 12.5)).foregroundStyle(LauncherStyle.secondary)
+                        Text("Actions", comment: "Footer button that opens the ⌘K actions menu").font(.system(size: 12.5)).foregroundStyle(LauncherStyle.secondary)
                         LauncherKey(key: "⌘")
                         LauncherKey(key: "K")
                     }
@@ -278,11 +281,10 @@ struct PaletteView: View {
 
     private var footerText: String {
         if let page = model.currentPage {
-            let n = model.items.count
-            return "\(page.title) · \(n) item\(n == 1 ? "" : "s")"
+            return "\(page.title) · \(String(localized: "\(model.items.count) items", comment: "How many items: results on a page, or entries in a folder"))"
         }
-        if model.isHome { return "Command Palette" }
-        let n = model.providerCount
-        return "Command Palette · \(n) provider\(n == 1 ? "" : "s")"
+        let name = String(localized: "Command Palette")
+        if model.isHome { return name }
+        return "\(name) · \(String(localized: "\(model.providerCount) providers", comment: "How many providers returned results"))"
     }
 }

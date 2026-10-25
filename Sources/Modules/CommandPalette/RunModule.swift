@@ -116,14 +116,23 @@ public final class RunModule: ToyModule {
     /// Keyword chips for the symbolic keywords of enabled plugins, plus `?` help.
     var hints: [RunHint] {
         guard settings.value.showPluginHints else { return [] }
-        let short: [String: String] = ["calc": "Calc", "shell": "Shell", "url": "URL", "windows": "Windows", "units": "Units",
-                                       "settings": "Settings", "history": "History", "files": "Files", "values": "Values"]
+        let short: [String: String] = [
+            "calc": String(localized: "Calc", comment: "Run keyword chip: short for Calculator"),
+            "shell": String(localized: "Shell", comment: "Provider name: shell commands"),
+            "url": String(localized: "URL", comment: "A web address (row label, Run keyword chip)"),
+            "windows": String(localized: "Windows", comment: "Provider name: open windows"),
+            "units": String(localized: "Units", comment: "Run keyword chip: short for Unit Converter"),
+            "settings": String(localized: "Settings", comment: "Row label: opens a utility's settings; Run keyword chip: System Settings"),
+            "history": String(localized: "History", comment: "Provider name: results selected before"),
+            "files": String(localized: "Files", comment: "Provider name: file search; also the kind of a clipboard entry with several files"),
+            "values": String(localized: "Values", comment: "Run keyword chip: short for Value Generator"),
+        ]
         let order = ["calc", "shell", "url", "windows", "units", "settings", "history"]
         var out: [RunHint] = order.compactMap { id in
             guard let p = engine.provider(id), let kw = Optional(settings.value.plugin(for: p)), kw.enabled, !kw.keyword.isEmpty else { return nil }
             return RunHint(keyword: kw.keyword, label: short[id] ?? p.name)
         }
-        out.append(RunHint(keyword: "?", label: "Help"))
+        out.append(RunHint(keyword: "?", label: String(localized: "Help", comment: "Run keyword chip: ? lists every plugin")))
         return out
     }
 
@@ -153,17 +162,23 @@ public final class RunModule: ToyModule {
         let s = settings.value
         let items = enabledProviders.compactMap { p -> PaletteItem? in
             let kw = s.plugin(for: p).keyword
-            let example = p.examples.first.map { " · e.g. \($0)" } ?? ""
+            let subtitle = p.examples.first.map {
+                String(localized: "\(p.summary) · e.g. \($0)", comment: "Run help: %1$@ describes a plugin, %2$@ is an example query")
+            } ?? p.summary
+            let exampleLabel = String(localized: "Example", comment: "Subtitle of an example query")
             let item = PaletteItem(
                 id: "run:help:\(p.id)", title: kw.isEmpty ? p.name : "\(kw)   \(p.name)",
-                subtitle: p.summary + example, icon: p.icon, providerID: "run", score: 0,
-                primary: PaletteAction(id: "use", title: "Use Keyword", symbol: "arrow.right", recordsUsage: false) {
+                subtitle: subtitle, icon: p.icon, providerID: "run", score: 0,
+                primary: PaletteAction(id: "use", title: String(localized: "Use Keyword"), symbol: "arrow.right", recordsUsage: false) {
                     kw.isEmpty ? .stay : .setQuery(kw + " ")
                 },
                 details: ItemDetails(icon: p.icon, title: p.name, subtitle: p.summary,
-                                     rows: [DetailRow(label: "Keyword", value: kw.isEmpty ? "—" : kw),
-                                            DetailRow(label: "Global results", value: s.plugin(for: p).global ? "Yes" : "No", monospaced: false)]
-                                         + p.examples.map { DetailRow(label: "Example", value: $0) }),
+                                     rows: [DetailRow(label: String(localized: "Keyword", comment: "Detail row: the plugin's Run keyword"),
+                                                      value: kw.isEmpty ? "—" : kw),
+                                            DetailRow(label: String(localized: "Global results", comment: "Detail row: whether results show without the keyword"),
+                                                      value: s.plugin(for: p).global ? String(localized: "Yes") : String(localized: "No"),
+                                                      monospaced: false)]
+                                         + p.examples.map { DetailRow(label: exampleLabel, value: $0) }),
                 isPinnable: false, keywords: [kw, p.summary])
             return item
         }

@@ -123,8 +123,10 @@ final class LauncherModel {
 
     var placeholder: String {
         if let p = currentPage { return p.placeholder }
-        if let f = filter, let p = engine.provider(f) { return "Search \(p.name)…" }
-        return frontEnd == .run ? "Start typing…" : "Search apps, files, commands…"
+        if let f = filter, let p = engine.provider(f) {
+            return String(localized: "Search \(p.name)…", comment: "Search field placeholder; %@ is a provider name such as “Calculator”")
+        }
+        return frontEnd == .run ? String(localized: "Start typing…") : String(localized: "Search apps, files, commands…")
     }
 
     // MARK: Lifecycle

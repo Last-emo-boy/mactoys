@@ -84,11 +84,15 @@ enum AppIndexer {
 @MainActor
 final class AppsProvider: SearchProvider {
     let id = "apps"
-    let name = "Apps"
-    let summary = "Search and launch installed applications"
+    let name = String(localized: "Apps", comment: "Provider name: installed applications")
+    let summary = String(localized: "Search and launch installed applications")
     let icon = ItemIcon.symbol("square.grid.3x3.fill", .blue)
     let defaultKeyword = "."
-    let examples = ["safari", "vsc  (acronyms)", "code -- ~/src  (launch with arguments)"]
+    var examples: [String] {
+        ["safari",
+         String(localized: "\("vsc")  (acronyms)", comment: "Run help example: %@ is what to type, the parentheses explain it"),
+         String(localized: "\("code -- ~/src")  (launch with arguments)", comment: "Run help example: %@ is what to type, the parentheses explain it")]
+    }
 
     private let engine: LauncherEngine
     private var entries: [AppEntry] = []
@@ -100,7 +104,7 @@ final class AppsProvider: SearchProvider {
     init(engine: LauncherEngine) { self.engine = engine }
 
     var commands: [PaletteItem] {
-        [pageCommand(title: "All Apps", subtitle: "Browse every installed application", keywords: ["applications", "programs"])]
+        [pageCommand(title: Phrase("All Apps"), subtitle: String(localized: "Browse every installed application"), keywords: ["applications", "programs"])]
     }
 
     func activate() {
@@ -184,16 +188,19 @@ final class AppsProvider: SearchProvider {
     func item(for e: AppEntry, score: Double, arguments: [String] = [], running runningIDs: Set<String> = []) -> PaletteItem {
         let url = URL(fileURLWithPath: e.path)
         let running = e.bundleID.map { runningIDs.contains($0) } ?? false
-        let open = PaletteAction(id: "open", title: arguments.isEmpty ? "Open" : "Open with Arguments",
+        let open = PaletteAction(id: "open", title: arguments.isEmpty ? Labels.open : String(localized: "Open with Arguments"),
                                  symbol: "arrow.up.forward.app") {
             Launch.open(url, arguments: arguments)
             return .dismiss
         }
         var subtitle = (e.path as NSString).abbreviatingWithTildeInPath
-        if !arguments.isEmpty { subtitle = "Arguments: " + arguments.joined(separator: " ") }
+        if !arguments.isEmpty {
+            subtitle = String(localized: "Arguments: \(arguments.joined(separator: " "))", comment: "%@ is the command-line arguments typed")
+        }
         return PaletteItem(
             id: "apps:\(e.path)", title: e.name, subtitle: subtitle, icon: .file(e.path), providerID: id,
-            accessory: running ? "Running" : "App", score: score, primary: open,
+            accessory: running ? String(localized: "Running", comment: "Result row label: the app is running") : Labels.app,
+            score: score, primary: open,
             moreActions: { [engine] in FileActions.actions(for: url, terminal: engine.options.value.terminal) },
             loadDetails: { await FileActions.details(for: url) }, keywords: e.keywords)
     }

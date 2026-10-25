@@ -9,10 +9,10 @@ enum LauncherScreen: String, Codable, CaseIterable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .mouse: "Screen with mouse pointer"
-        case .primary: "Primary screen"
-        case .focusedWindow: "Screen with focused window"
-        case .lastPosition: "Last position"
+        case .mouse: String(localized: "Screen with mouse pointer")
+        case .primary: String(localized: "Primary screen")
+        case .focusedWindow: String(localized: "Screen with focused window")
+        case .lastPosition: String(localized: "Last position", comment: "Open the launcher where it was last placed")
         }
     }
 }
@@ -56,13 +56,16 @@ struct CommandPaletteSettings: Codable, Equatable, Sendable {
     enum OpenMode: String, Codable, CaseIterable, Sendable, Identifiable {
         case full, compact
         var id: String { rawValue }
-        var title: String { self == .full ? "Full palette" : "Compact search box" }
+        var title: String { self == .full ? String(localized: "Full palette") : String(localized: "Compact search box") }
     }
 
     enum RecentPlacement: String, Codable, CaseIterable, Sendable, Identifiable {
         case hidden, afterPinned
         var id: String { rawValue }
-        var title: String { self == .hidden ? "Don’t show" : "After pinned" }
+        var title: String {
+            self == .hidden ? String(localized: "Don’t show", comment: "Recent items: not shown")
+                : String(localized: "After pinned", comment: "Recent items: shown after the pinned items")
+        }
     }
 
     enum EscapeBehavior: String, Codable, CaseIterable, Sendable, Identifiable {
@@ -70,9 +73,9 @@ struct CommandPaletteSettings: Codable, Equatable, Sendable {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .clearThenBack: "Clear search first, then go back"
-            case .back: "Always go back"
-            case .dismiss: "Always close"
+            case .clearThenBack: String(localized: "Clear search first, then go back")
+            case .back: String(localized: "Always go back")
+            case .dismiss: String(localized: "Always close")
             }
         }
     }
@@ -80,7 +83,7 @@ struct CommandPaletteSettings: Codable, Equatable, Sendable {
     enum NumberKeys: String, Codable, CaseIterable, Sendable, Identifiable {
         case run, select
         var id: String { rawValue }
-        var title: String { self == .run ? "Run item" : "Select item" }
+        var title: String { self == .run ? String(localized: "Run item") : String(localized: "Select item") }
     }
 
     // Activation
@@ -119,33 +122,43 @@ struct CommandPaletteSettings: Codable, Equatable, Sendable {
     var enableCommandLinks = true
     var allowedLinks: [String] = []
 
-    static let defaultPins: [PinnedCommand] = [
-        PinnedCommand(id: "mactoys:open:colorpicker", title: "Color Picker", icon: .symbol("eyedropper.halffull", .pink)),
-        PinnedCommand(id: "clipboard:page", title: "Clipboard", icon: .symbol("doc.on.clipboard.fill", .purple)),
-        PinnedCommand(id: "calc:page", title: "Calculator", icon: .symbol("plus.forwardslash.minus", .graphite)),
-        PinnedCommand(id: "apps:/System/Applications/Utilities/Terminal.app", title: "Terminal",
-                      icon: .file("/System/Applications/Utilities/Terminal.app")),
-        PinnedCommand(id: "mactoys:open:fancyzones", title: "Zones", icon: .symbol("square.grid.2x2.fill", .blue)),
-    ]
+    /// Titles are stored with the settings, so they stay in the language they were created in.
+    static var defaultPins: [PinnedCommand] {
+        [
+            PinnedCommand(id: "mactoys:open:colorpicker", title: String(localized: "Color Picker", comment: "Short name of the Color Picker utility"),
+                          icon: .symbol("eyedropper.halffull", .pink)),
+            PinnedCommand(id: "clipboard:page", title: String(localized: "Clipboard", comment: "Short title of the clipboard history pin"),
+                          icon: .symbol("doc.on.clipboard.fill", .purple)),
+            PinnedCommand(id: "calc:page", title: String(localized: "Calculator"), icon: .symbol("plus.forwardslash.minus", .graphite)),
+            PinnedCommand(id: "apps:/System/Applications/Utilities/Terminal.app", title: TerminalApp.terminal.title,
+                          icon: .file("/System/Applications/Utilities/Terminal.app")),
+            PinnedCommand(id: "mactoys:open:fancyzones", title: String(localized: "Zones", comment: "Short name of the FancyZones window layout utility"),
+                          icon: .symbol("square.grid.2x2.fill", .blue)),
+        ]
+    }
 
-    static let defaultAliases: [CommandAlias] = [
-        CommandAlias(alias: "cb", target: "clipboard:page", title: "Clipboard History", direct: false),
-        CommandAlias(alias: ">", target: "shell:page", title: "Shell", direct: true),
-        CommandAlias(alias: "=", target: "calc:page", title: "Calculator", direct: true),
-        CommandAlias(alias: "$", target: "settings:page", title: "System Settings", direct: true),
-        CommandAlias(alias: "??", target: "web:page", title: "Web Search", direct: true),
-        CommandAlias(alias: "<", target: "windows:page", title: "Windows", direct: true),
-        CommandAlias(alias: "%%", target: "units:page", title: "Unit Converter", direct: true),
-        CommandAlias(alias: "#", target: "values:page", title: "Value Generator", direct: true),
-        CommandAlias(alias: "!!", target: "history:page", title: "History", direct: true),
-        CommandAlias(alias: "@", target: "mactoys:page", title: "MacToys", direct: true),
-        CommandAlias(alias: "{", target: "editors:page", title: "Code Workspaces", direct: true),
-        CommandAlias(alias: "file", target: "files:page", title: "Search Files", direct: false),
-        CommandAlias(alias: "bm", target: "bookmarks:page", title: "Bookmarks", direct: false),
-        CommandAlias(alias: "kill", target: "processes:page", title: "Processes", direct: false),
-        CommandAlias(alias: "brew", target: "brew:page", title: "Homebrew", direct: false),
-        CommandAlias(alias: "sc", target: "scripts:page", title: "Script Commands", direct: false),
-    ]
+    static var defaultAliases: [CommandAlias] {
+        [
+            CommandAlias(alias: "cb", target: "clipboard:page", title: String(localized: "Clipboard History"), direct: false),
+            CommandAlias(alias: ">", target: "shell:page", title: String(localized: "Shell", comment: "Provider name: shell commands"), direct: true),
+            CommandAlias(alias: "=", target: "calc:page", title: String(localized: "Calculator"), direct: true),
+            CommandAlias(alias: "$", target: "settings:page",
+                         title: String(localized: "System Settings", comment: "Provider name: the macOS System Settings app"), direct: true),
+            CommandAlias(alias: "??", target: "web:page", title: String(localized: "Web Search"), direct: true),
+            CommandAlias(alias: "<", target: "windows:page", title: String(localized: "Windows", comment: "Provider name: open windows"), direct: true),
+            CommandAlias(alias: "%%", target: "units:page", title: String(localized: "Unit Converter"), direct: true),
+            CommandAlias(alias: "#", target: "values:page", title: String(localized: "Value Generator"), direct: true),
+            CommandAlias(alias: "!!", target: "history:page", title: String(localized: "History", comment: "Provider name: results selected before"),
+                         direct: true),
+            CommandAlias(alias: "@", target: "mactoys:page", title: "MacToys", direct: true),
+            CommandAlias(alias: "{", target: "editors:page", title: String(localized: "Code Workspaces"), direct: true),
+            CommandAlias(alias: "file", target: "files:page", title: String(localized: "Search Files"), direct: false),
+            CommandAlias(alias: "bm", target: "bookmarks:page", title: String(localized: "Bookmarks"), direct: false),
+            CommandAlias(alias: "kill", target: "processes:page", title: String(localized: "Processes"), direct: false),
+            CommandAlias(alias: "brew", target: "brew:page", title: "Homebrew", direct: false),
+            CommandAlias(alias: "sc", target: "scripts:page", title: String(localized: "Script Commands"), direct: false),
+        ]
+    }
 
     @MainActor func toggle(for p: any SearchProvider) -> ProviderToggle {
         providers[p.id] ?? ProviderToggle(enabled: p.enabledByDefault, global: p.globalByDefault)
