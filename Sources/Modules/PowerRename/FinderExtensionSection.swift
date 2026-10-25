@@ -15,9 +15,9 @@ struct FinderExtensionSection: View {
                     Image(systemName: enabled ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                         .foregroundStyle(enabled ? .green : .orange)
                         .font(.system(size: 16))
-                    RowLabel(enabled ? "The MacToys Finder extension is on" : "The MacToys Finder extension is off",
-                             subtitle: "It adds the MacToys submenu (PowerRename, Image Resizer, File Locksmith, Peek) "
-                                 + "and New+ to Finder’s context menu. Turn it on under File Providers & Finder Extensions.")
+                    RowLabel(title: enabled ? Text("The MacToys Finder extension is on") : Text("The MacToys Finder extension is off"),
+                             subtitle: Text("It adds the MacToys submenu (PowerRename, Image Resizer, File Locksmith, Peek) and New+ to Finder’s context menu. Turn it on under File Providers & Finder Extensions.",
+                                            comment: "“File Providers & Finder Extensions” is the System Settings pane: use its name in macOS"))
                 }
             }
         }

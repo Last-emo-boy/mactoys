@@ -11,9 +11,9 @@ public enum RenameScope: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .name: "Name"
-        case .extension: "Extension"
-        case .both: "Both"
+        case .name: String(localized: "Name", comment: "PowerRename: apply to the file name without its extension")
+        case .extension: String(localized: "Extension", comment: "PowerRename: apply to the file extension only")
+        case .both: String(localized: "Both", comment: "PowerRename: apply to both name and extension")
         }
     }
 }
@@ -35,11 +35,11 @@ public enum TextFormat: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .none: "None"
-        case .lowercase: "Lowercase"
-        case .uppercase: "Uppercase"
-        case .titleCase: "Title case"
-        case .capitalized: "Capitalize every word"
+        case .none: String(localized: "None", comment: "PowerRename text format: no case change")
+        case .lowercase: String(localized: "Lowercase")
+        case .uppercase: String(localized: "Uppercase")
+        case .titleCase: String(localized: "Title case")
+        case .capitalized: String(localized: "Capitalize every word")
         }
     }
 }
@@ -50,9 +50,9 @@ public enum RenameDateSource: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .created: "Date created"
-        case .modified: "Date modified"
-        case .accessed: "Date last opened"
+        case .created: String(localized: "Date created")
+        case .modified: String(localized: "Date modified")
+        case .accessed: String(localized: "Date last opened")
         }
     }
 }
@@ -67,8 +67,8 @@ public enum RegexFlavor: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .standard: "Standard (ECMAScript)"
-        case .extended: "Extended (Perl / Boost)"
+        case .standard: String(localized: "Standard (ECMAScript)", comment: "PowerRename regular expression syntax; ECMAScript is a name")
+        case .extended: String(localized: "Extended (Perl / Boost)", comment: "PowerRename regular expression syntax; Perl and Boost are names")
         }
     }
 }

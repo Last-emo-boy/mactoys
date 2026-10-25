@@ -91,7 +91,7 @@ final class FileLocksmithModel {
         DispatchQueue.main.async { [weak self] in
             guard let self, gen == self.generation else { return }
             do {
-                _ = try Privileged.run(command, prompt: "File Locksmith needs administrator access to see the processes of all users.")
+                _ = try Privileged.run(command, prompt: String(localized: "File Locksmith needs administrator access to see the processes of all users."))
             } catch {
                 self.scanning = false
                 if (error as? AppleScript.Failure)?.code != -128 {
@@ -176,7 +176,8 @@ final class FileLocksmithModel {
         }
         do {
             _ = try Privileged.run("/bin/kill -\(sig) \(p.pid)",
-                                   prompt: "File Locksmith needs administrator access to end “\(p.name)”.")
+                                   prompt: String(localized: "File Locksmith needs administrator access to end “\(p.name)”.",
+                                                  comment: "Password prompt; the value is a process name"))
         } catch {
             ending[p.pid] = nil
             if (error as? AppleScript.Failure)?.code != -128 { lastError = error.localizedDescription }
@@ -187,9 +188,10 @@ final class FileLocksmithModel {
 
     /// "~/Projects/mactoys/build" or "3 items".
     var pathTitle: String {
-        guard let first = paths.first else { return "No items" }
+        guard let first = paths.first else { return String(localized: "No items") }
         let shown = Self.abbreviate(first.path)
-        return paths.count == 1 ? shown : "\(shown) and \(paths.count - 1) more"
+        return paths.count == 1 ? shown
+            : String(localized: "\(shown) and \(paths.count - 1) more", comment: "File Locksmith: first scanned path, then how many more items")
     }
 
     var isFolder: Bool {
@@ -214,15 +216,15 @@ final class FileLocksmithModel {
 
     /// "PID 4182 · w33d · 7 files · DerivedData/Build.db"
     func subtitle(_ p: LockingProcess) -> String {
-        var parts = ["PID \(p.pid)", p.user]
+        var parts = [String(localized: "PID \(String(p.pid))", comment: "File Locksmith: process identifier (the number is not formatted)"), p.user]
         let open = p.files.filter { $0.kind != .workingDirectory && $0.kind != .rootDirectory }
-        if open.count > 1 { parts.append("\(open.count) files") }
+        if open.count > 1 { parts.append(String(localized: "\(open.count) files", comment: "File Locksmith: number of files a process has open")) }
         if let first = open.first {
             parts.append(displayPath(first.path))
         } else if p.files.contains(where: { $0.kind == .workingDirectory }) {
-            parts.append("cwd")
+            parts.append(String(localized: "cwd", comment: "File Locksmith badge: the process’s current working directory (Unix term, as lsof shows it); keep it short"))
         } else if p.files.contains(where: { $0.kind == .rootDirectory }) {
-            parts.append("root")
+            parts.append(String(localized: "root", comment: "File Locksmith badge: the process’s root directory (chroot, as lsof shows it); keep it short"))
         }
         return parts.joined(separator: " · ")
     }

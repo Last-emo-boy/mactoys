@@ -11,17 +11,27 @@ public enum PhotoMetadata {
         "DATE_TAKEN_mm", "DATE_TAKEN_SS", "EXPOSURE_BIAS", "ORIENTATION", "COLOR_SPACE",
     ]
 
+    /// Token and localized description, for the variables menu.
     public static let help: [(token: String, meaning: String)] = [
-        ("$CAMERA_MAKE", "Camera manufacturer"), ("$CAMERA_MODEL", "Camera model"), ("$LENS", "Lens model"),
-        ("$ISO", "ISO sensitivity"), ("$APERTURE", "Aperture, e.g. f2.8"), ("$SHUTTER", "Shutter speed, e.g. 1-250s"),
-        ("$FOCAL", "Focal length, e.g. 35mm"), ("$FLASH", "Flash On or Off"), ("$WIDTH", "Width in pixels"),
-        ("$HEIGHT", "Height in pixels"), ("$AUTHOR", "Author or artist"), ("$COPYRIGHT", "Copyright"),
-        ("$LATITUDE", "GPS latitude"), ("$LONGITUDE", "GPS longitude"), ("$ALTITUDE", "GPS altitude in meters"),
-        ("$DATE_TAKEN_YYYY", "Year taken"), ("$DATE_TAKEN_YY", "Year taken, two digits"),
-        ("$DATE_TAKEN_MM", "Month taken"), ("$DATE_TAKEN_DD", "Day taken"), ("$DATE_TAKEN_HH", "Hour taken"),
-        ("$DATE_TAKEN_mm", "Minute taken"), ("$DATE_TAKEN_SS", "Second taken"),
-        ("$EXPOSURE_BIAS", "Exposure compensation"), ("$ORIENTATION", "Orientation (1–8)"),
-        ("$COLOR_SPACE", "Color space"),
+        ("$CAMERA_MAKE", String(localized: "Camera manufacturer")), ("$CAMERA_MODEL", String(localized: "Camera model")),
+        ("$LENS", String(localized: "Lens model")), ("$ISO", String(localized: "ISO sensitivity")),
+        ("$APERTURE", String(localized: "Aperture, e.g. f2.8", comment: "PowerRename photo variable; keep the sample value f2.8")),
+        ("$SHUTTER", String(localized: "Shutter speed, e.g. 1-250s", comment: "PowerRename photo variable; keep the sample value 1-250s")),
+        ("$FOCAL", String(localized: "Focal length, e.g. 35mm", comment: "PowerRename photo variable; keep the sample value 35mm")),
+        ("$FLASH", String(localized: "Flash On or Off", comment: "PowerRename photo variable; the value written is the English word On or Off")),
+        ("$WIDTH", String(localized: "Width in pixels")), ("$HEIGHT", String(localized: "Height in pixels")),
+        ("$AUTHOR", String(localized: "Author or artist")),
+        ("$COPYRIGHT", String(localized: "Copyright", comment: "PowerRename photo variable: the picture's copyright notice")),
+        ("$LATITUDE", String(localized: "GPS latitude")), ("$LONGITUDE", String(localized: "GPS longitude")),
+        ("$ALTITUDE", String(localized: "GPS altitude in meters")),
+        ("$DATE_TAKEN_YYYY", String(localized: "Year taken")),
+        ("$DATE_TAKEN_YY", String(localized: "Year taken, two digits")),
+        ("$DATE_TAKEN_MM", String(localized: "Month taken")), ("$DATE_TAKEN_DD", String(localized: "Day taken")),
+        ("$DATE_TAKEN_HH", String(localized: "Hour taken")), ("$DATE_TAKEN_mm", String(localized: "Minute taken")),
+        ("$DATE_TAKEN_SS", String(localized: "Second taken")),
+        ("$EXPOSURE_BIAS", String(localized: "Exposure compensation")),
+        ("$ORIENTATION", String(localized: "Orientation (1–8)", comment: "PowerRename photo variable: the EXIF orientation number")),
+        ("$COLOR_SPACE", String(localized: "Color space")),
     ]
 
     /// Longest first, so `$DATE_TAKEN_YYYY` wins over `$DATE_TAKEN_YY`.

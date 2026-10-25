@@ -73,7 +73,8 @@ public enum NewPlusTemplates {
             }
     }
 
-    /// Fills an empty templates folder with a few useful starting points.
+    /// Fills an empty templates folder with a few useful starting points. The names are in the user's
+    /// language at the time (this runs once); from then on they are the user's files. Contents stay as they are.
     public static func seed(_ folder: URL) throws {
         let fm = FileManager.default
         try fm.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -83,13 +84,20 @@ public enum NewPlusTemplates {
             try Data(text.utf8).write(to: url)
             if executable { try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path) }
         }
-        try write("Text Document.txt", "")
-        try write("Markdown Note.md", "# Untitled\n\n")
-        try write("Rich Text Document.rtf", #"{\rtf1\ansi\ansicpg1252\cocoartf2822{\fonttbl\f0\fswiss Helvetica;}\f0\fs24 }"#)
-        try write("Shell Script.sh", "#!/bin/zsh\nset -euo pipefail\n\n", executable: true)
-        try write("Python Script.py", "#!/usr/bin/env python3\n\n\ndef main() -> None:\n    pass\n\n\nif __name__ == \"__main__\":\n    main()\n",
+        // A translated name is one path component, whatever the translation holds.
+        func name(_ s: String) -> String { String(s.map { $0 == "/" || $0 == ":" ? "-" : $0 }) }
+        let project = name(String(localized: "Project", comment: "New+ default template: a folder, created once with this name"))
+        try write(name(String(localized: "Text Document", comment: "New+ default template file name, created once (.txt is added)")) + ".txt", "")
+        try write(name(String(localized: "Markdown Note", comment: "New+ default template file name, created once (.md is added)")) + ".md",
+                  "# Untitled\n\n")
+        try write(name(String(localized: "Rich Text Document", comment: "New+ default template file name, created once (.rtf is added)")) + ".rtf",
+                  #"{\rtf1\ansi\ansicpg1252\cocoartf2822{\fonttbl\f0\fswiss Helvetica;}\f0\fs24 }"#)
+        try write(name(String(localized: "Shell Script", comment: "New+ default template file name, created once (.sh is added)")) + ".sh",
+                  "#!/bin/zsh\nset -euo pipefail\n\n", executable: true)
+        try write(name(String(localized: "Python Script", comment: "New+ default template file name, created once (.py is added)")) + ".py",
+                  "#!/usr/bin/env python3\n\n\ndef main() -> None:\n    pass\n\n\nif __name__ == \"__main__\":\n    main()\n",
                   executable: true)
-        try write("Web Page.html", """
+        try write(name(String(localized: "Web Page", comment: "New+ default template file name, created once (.html is added)")) + ".html", """
             <!doctype html>
             <html lang="en">
             <head>
@@ -103,10 +111,10 @@ public enum NewPlusTemplates {
             </html>
 
             """)
-        try write("Project/README.md", "# Project\n\n")
-        for sub in ["Project/docs", "Project/src"] {
-            try fm.createDirectory(at: folder.appendingPathComponent(sub), withIntermediateDirectories: true)
+        try write(project + "/README.md", "# Project\n\n")
+        for sub in ["docs", "src"] {
+            try fm.createDirectory(at: folder.appendingPathComponent(project).appendingPathComponent(sub), withIntermediateDirectories: true)
         }
-        try write("Project/.gitignore", ".DS_Store\n")
+        try write(project + "/.gitignore", ".DS_Store\n")
     }
 }
