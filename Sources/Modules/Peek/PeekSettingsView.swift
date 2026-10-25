@@ -11,8 +11,13 @@ struct PeekSettingsView: View {
         self.settings = module.settings
     }
 
-    private static let sizeChoices: [(String, Int)] = [("256 KB", 256), ("1 MB", 1024), ("5 MB", 5120), ("10 MB", 10_240),
-                                                         ("25 MB", 25_600), ("50 MB", 51_200), ("100 MB", 102_400)]
+    /// Size limits in KB.
+    private static let sizeChoices = [256, 1024, 5120, 10_240, 25_600, 51_200, 102_400]
+
+    /// "256 KB", "10 MB" in the user's language.
+    private static func sizeTitle(_ kb: Int) -> String {
+        ByteCountFormatter.string(fromByteCount: Int64(kb) * 1024, countStyle: .memory)
+    }
 
     var body: some View {
         SettingsPage(module: module) {
@@ -47,9 +52,9 @@ struct PeekSettingsView: View {
                     RowLabel("Format JSON and XML for reading", subtitle: "The file itself is never changed")
                 }
                 Picker(selection: $settings.value.codeMaxFileSizeKB) {
-                    ForEach(Self.sizeChoices, id: \.1) { Text($0.0).tag($0.1) }
-                    if !Self.sizeChoices.contains(where: { $0.1 == settings.value.codeMaxFileSizeKB }) {
-                        Text("\(settings.value.codeMaxFileSizeKB) KB").tag(settings.value.codeMaxFileSizeKB)
+                    ForEach(Self.sizeChoices, id: \.self) { Text(verbatim: Self.sizeTitle($0)).tag($0) }
+                    if !Self.sizeChoices.contains(settings.value.codeMaxFileSizeKB) {
+                        Text(verbatim: Self.sizeTitle(settings.value.codeMaxFileSizeKB)).tag(settings.value.codeMaxFileSizeKB)
                     }
                 } label: {
                     RowLabel("Maximum file size to preview", subtitle: "Larger text files show their details instead")
@@ -76,11 +81,11 @@ struct PeekSettingsView: View {
 }
 
 private struct KeyRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let keys: [String]
     let alternative: [String]?
 
-    init(_ title: String, keys: [String], alternative: [String]? = nil) {
+    init(_ title: LocalizedStringKey, keys: [String], alternative: [String]? = nil) {
         self.title = title
         self.keys = keys
         self.alternative = alternative
@@ -91,7 +96,7 @@ private struct KeyRow: View {
             HStack(spacing: 6) {
                 Keycaps(keys)
                 if let alternative {
-                    Text("or").foregroundStyle(.secondary).font(.system(size: 11.5))
+                    Text("or", comment: "Between two alternative keyboard shortcuts").foregroundStyle(.secondary).font(.system(size: 11.5))
                     Keycaps(alternative)
                 }
             }

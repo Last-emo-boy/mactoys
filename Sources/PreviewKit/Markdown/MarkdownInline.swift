@@ -525,7 +525,7 @@ private struct InlineParser {
             if let src = ctx.image(dest) {
                 nodes.append(.html("<img src=\"\(HTML.escape(src))\" alt=\"\(HTML.escape(alt))\"\(titleAttr)>"))
             } else {
-                nodes.append(.html("<span class=\"img-blocked\" title=\"\(HTML.escape(dest))\">\(HTML.escape(alt.isEmpty ? "Image" : alt))</span>"))
+                nodes.append(.html("<span class=\"img-blocked\" title=\"\(HTML.escape(dest))\">\(HTML.escape(alt.isEmpty ? String(localized: "Image", comment: "Markdown preview: stands in for an image that isn't loaded") : alt))</span>"))
             }
         } else {
             nodes.append(.html("<a href=\"\(HTML.escape(MDInline.safeURL(dest)))\"\(titleAttr)>\(inner)</a>"))

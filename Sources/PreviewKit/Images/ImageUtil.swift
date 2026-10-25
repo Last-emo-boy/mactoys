@@ -102,11 +102,11 @@ public enum ImageBackground: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .transparent: "Transparent"
-        case .checkerboard: "Light checkerboard"
-        case .checkerboardDark: "Dark checkerboard"
-        case .white: "White"
-        case .black: "Black"
+        case .transparent: String(localized: "Transparent", comment: "Preview background")
+        case .checkerboard: String(localized: "Light checkerboard", comment: "Preview background")
+        case .checkerboardDark: String(localized: "Dark checkerboard", comment: "Preview background")
+        case .white: String(localized: "White", comment: "Preview background")
+        case .black: String(localized: "Black", comment: "Preview background")
         }
     }
 }

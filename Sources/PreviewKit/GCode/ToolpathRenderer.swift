@@ -6,7 +6,12 @@ public struct ToolpathStyle: Sendable, Equatable {
     public enum View: String, Codable, CaseIterable, Sendable {
         case isometric, top
 
-        public var title: String { self == .isometric ? "Isometric" : "Top" }
+        public var title: String {
+            switch self {
+            case .isometric: String(localized: "Isometric", comment: "G-code view: seen at an angle from above")
+            case .top: String(localized: "Top", comment: "G-code view: seen straight from above")
+            }
+        }
     }
 
     public var view: View

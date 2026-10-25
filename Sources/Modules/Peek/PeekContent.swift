@@ -25,6 +25,23 @@ enum PeekContent {
 struct PeekField: Hashable {
     var label: String
     var value: String
+
+    static func dimensions(_ width: Int, _ height: Int) -> PeekField {
+        PeekField(label: PeekLabel.dimensions, value: "\(width) × \(height)")
+    }
+}
+
+/// Footer labels.
+enum PeekLabel {
+    static var size: String { String(localized: "Size", comment: "Detail label: a file's size, or a model's width × depth × height") }
+    static var dimensions: String { String(localized: "Dimensions", comment: "Peek footer: width × height in pixels") }
+    static var modified: String { String(localized: "Modified", comment: "Peek footer: date the file was last changed") }
+    static var type: String { String(localized: "Type", comment: "Peek footer: kind of file") }
+    static var lines: String { String(localized: "Lines", comment: "Peek footer: number of lines in a text file") }
+    static var language: String { String(localized: "Language", comment: "Peek footer: programming language of a source file") }
+    static var duration: String { String(localized: "Duration", comment: "Peek footer: length of a video or audio file") }
+    static var pages: String { String(localized: "Pages", comment: "Peek footer: number of pages in a PDF") }
+    static var tables: String { String(localized: "Tables", comment: "Peek footer: number of tables in a database") }
 }
 
 /// Picks a renderer for a file and produces its content and extra footer fields.
@@ -45,7 +62,7 @@ enum PeekLoader {
             do {
                 let tables = try SQLitePreview.read(url)
                 return (.html(SQLitePreview.page(tables, title: url.lastPathComponent, theme: options.code.theme)),
-                        [PeekField(label: "Tables", value: "\(tables.count)")])
+                        [PeekField(label: PeekLabel.tables, value: tables.count.formatted())])
             } catch {
                 return (.quickLook(url), [])         // not an SQLite file after all
             }
@@ -61,9 +78,9 @@ enum PeekLoader {
                 o.svgBackground = .transparent
                 let image = try await PreviewRenderer.image(for: url, kind: kind, maxSize: imageSize, options: o)
                 var fields: [PeekField] = []
-                if kind == .qoi { fields.append(PeekField(label: "Dimensions", value: "\(image.width) × \(image.height)")) }
+                if kind == .qoi { fields.append(.dimensions(image.width, image.height)) }
                 if kind == .svg, let data = try? Data(contentsOf: url), let s = SVGRenderer.intrinsicSize(data) {
-                    fields.append(PeekField(label: "Dimensions", value: "\(Int(s.width)) × \(Int(s.height))"))
+                    fields.append(.dimensions(Int(s.width), Int(s.height)))
                 }
                 return (.image(image, .checkerboard), fields)
             } catch {
@@ -80,8 +97,8 @@ enum PeekLoader {
             var fields: [PeekField] = []
             if case .code(let id) = kind, let text = try? PreviewRenderer.readText(url, maxBytes: options.maxTextBytes) {
                 let lines = text.reduce(into: 1) { n, c in if c == "\n" { n += 1 } } - (text.hasSuffix("\n") ? 1 : 0)
-                fields.append(PeekField(label: "Lines", value: NumberFormatter.localizedString(from: NSNumber(value: lines), number: .decimal)))
-                if let l = Language.all.first(where: { $0.id == id }), id != "text" { fields.append(PeekField(label: "Language", value: l.name)) }
+                fields.append(PeekField(label: PeekLabel.lines, value: NumberFormatter.localizedString(from: NSNumber(value: lines), number: .decimal)))
+                if let l = Language.all.first(where: { $0.id == id }), id != "text" { fields.append(PeekField(label: PeekLabel.language, value: l.name)) }
             }
             return (.html(html), fields)
         } catch PreviewError.binary {
@@ -92,32 +109,32 @@ enum PeekLoader {
     }
 
     private static func toolpath(_ url: URL, kind: PreviewKind, options: PreviewOptions, size: CGSize) -> (PeekContent, [PeekField]) {
-        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return (.details("The file couldn't be read."), []) }
+        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return (.details(String(localized: "The file couldn't be read.")), []) }
         let path: GCodeToolpath
         if kind == .bgcode {
-            guard let p = try? BGCode.toolpath(data) else { return (.details("This binary G-code file couldn't be decoded."), []) }
+            guard let p = try? BGCode.toolpath(data) else { return (.details(String(localized: "This binary G-code file couldn't be decoded.")), []) }
             path = p
         } else {
             path = GCodeParser.parse(data)
         }
-        let fields = path.summary.filter { $0.0 != "Moves" }.map { PeekField(label: $0.0, value: $0.1) }
+        let fields = path.summary.filter { $0.0 != GCodeToolpath.movesLabel }.map { PeekField(label: $0.0, value: $0.1) }
         if path.moveCount == 0, let thumb = path.bestThumbnail?.image() {
             return (.image(thumb, .dark), fields)
         }
         guard let image = ToolpathRenderer.render(path, size: size, style: options.toolpath) else {
-            return (.details("Nothing to draw in this G-code file."), fields)
+            return (.details(String(localized: "Nothing to draw in this G-code file.")), fields)
         }
         return (.image(image, .dark), fields)
     }
 
     private static func stl(_ url: URL, options: PreviewOptions, size: CGSize) -> (PeekContent, [PeekField]) {
         guard let data = try? Data(contentsOf: url, options: .mappedIfSafe), let mesh = try? STLParser.parse(data) else {
-            return (.details("This isn't a valid STL file."), [])
+            return (.details(String(localized: "This isn't a valid STL file.")), [])
         }
-        let fields = mesh.summary.filter { $0.0 != "Name" }.map { PeekField(label: $0.0, value: $0.1) }
+        let fields = mesh.summary.filter { $0.0 != STLMesh.nameLabel }.map { PeekField(label: $0.0, value: $0.1) }
         guard let image = STLRenderer.render(mesh, size: size, color: HexColor.cgColor(options.stlColor),
                                              background: HexColor.cgColor(options.stlBackground ?? "#1B1D22")) else {
-            return (.details("The model couldn't be rendered."), fields)
+            return (.details(String(localized: "The model couldn't be rendered.")), fields)
         }
         return (.image(image, .dark), fields)
     }
@@ -127,11 +144,11 @@ enum PeekLoader {
         let type = (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType
         var fields: [PeekField] = []
         if let type, type.conforms(to: .image), let size = ImageUtil.pixelSize(of: url) {
-            fields.append(PeekField(label: "Dimensions", value: "\(Int(size.width)) × \(Int(size.height))"))
+            fields.append(.dimensions(Int(size.width), Int(size.height)))
         }
         if let type, type.conforms(to: .audiovisualContent), let duration = try? await AVURLAsset(url: url).load(.duration),
            duration.isNumeric, duration.seconds > 0 {
-            fields.append(PeekField(label: "Duration", value: formatDuration(duration.seconds)))
+            fields.append(PeekField(label: PeekLabel.duration, value: formatDuration(duration.seconds)))
         }
         if let type, quickLookTypes.contains(where: { type.conforms(to: $0) }) { return (.quickLook(url), fields) }
         let size = PreviewRenderer.fileSize(url)
@@ -145,16 +162,17 @@ enum PeekLoader {
         return (.quickLook(url), fields)
     }
 
+    /// "1:15", "1:02:05".
     static func formatDuration(_ seconds: Double) -> String {
         let s = Int(seconds.rounded())
-        return s >= 3600 ? String(format: "%d:%02d:%02d", s / 3600, s % 3600 / 60, s % 60) : String(format: "%d:%02d", s / 60, s % 60)
+        return Duration.seconds(s).formatted(.time(pattern: s >= 3600 ? .hourMinuteSecond : .minuteSecond))
     }
 }
 
 private enum PDFThumbnailFields {
     static func fields(_ url: URL) -> [PeekField] {
         guard let pages = PDFThumbnail.pageCount(of: url) else { return [] }
-        return [PeekField(label: "Pages", value: "\(pages)")]
+        return [PeekField(label: PeekLabel.pages, value: pages.formatted())]
     }
 }
 
@@ -164,19 +182,21 @@ enum PeekMetadata {
         let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey, .localizedTypeDescriptionKey, .isDirectoryKey])
         var size: PeekField?
         if values?.isDirectory != true, let bytes = values?.fileSize {
-            size = PeekField(label: "Size", value: ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file))
+            size = PeekField(label: PeekLabel.size, value: ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file))
         }
-        let modified = values?.contentModificationDate.map { PeekField(label: "Modified", value: relativeDate($0)) }
+        let modified = values?.contentModificationDate.map { PeekField(label: PeekLabel.modified, value: relativeDate($0)) }
         let kind = PreviewKind.of(url)
         let typeName = values?.localizedTypeDescription.flatMap { $0.isEmpty ? nil : $0 } ?? kind.displayName
-        return (size, modified, PeekField(label: "Type", value: typeName))
+        return (size, modified, PeekField(label: PeekLabel.type, value: typeName))
     }
 
     /// "Today 21:10", "Yesterday 09:12", or a short date.
     static func relativeDate(_ date: Date, now: Date = Date(), calendar: Calendar = .current) -> String {
         let time = date.formatted(date: .omitted, time: .shortened)
-        if calendar.isDate(date, inSameDayAs: now) { return "Today \(time)" }
-        if let y = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: y) { return "Yesterday \(time)" }
+        if calendar.isDate(date, inSameDayAs: now) { return String(localized: "Today \(time)", comment: "Date modified: %@ is a time of day") }
+        if let y = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: y) {
+            return String(localized: "Yesterday \(time)", comment: "Date modified: %@ is a time of day")
+        }
         return date.formatted(date: .abbreviated, time: .shortened)
     }
 }

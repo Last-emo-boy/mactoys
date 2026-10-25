@@ -83,18 +83,26 @@ public struct GCodeToolpath: Sendable {
         thumbnails.max { $0.width * $0.height < $1.width * $1.height }
     }
 
+    /// Label of the move count row (Peek leaves it out).
+    public static var movesLabel: String { String(localized: "Moves", comment: "G-code detail: number of tool moves") }
+
     /// Human summary lines for previews and the Peek footer.
     public var summary: [(String, String)] {
         var rows: [(String, String)] = []
-        if let slicer { rows.append(("Slicer", slicer)) }
-        if hasExtrusion, layerCount > 0 { rows.append(("Layers", "\(layerCount)")) }
+        if let slicer { rows.append((String(localized: "Slicer", comment: "G-code detail: the app that made the file"), slicer)) }
+        if hasExtrusion, layerCount > 0 { rows.append((String(localized: "Layers", comment: "G-code detail: number of printed layers"), layerCount.formatted())) }
         if let b = bounds {
             let d = b.max - b.min
-            rows.append(("Size", String(format: "%.1f × %.1f × %.1f mm", d.x, d.y, d.z)))
+            let n = { (v: Float) in Double(v).formatted(.number.precision(.fractionLength(1))) }
+            rows.append((String(localized: "Size", comment: "Detail label: a file's size, or a model's width × depth × height"), "\(n(d.x)) × \(n(d.y)) × \(n(d.z)) mm"))
         }
-        if filamentMM > 0 { rows.append(("Filament", String(format: "%.2f m", filamentMM / 1000))) }
-        if let estimatedTime { rows.append(("Print time", estimatedTime)) }
-        rows.append(("Moves", NumberFormatter.localizedString(from: NSNumber(value: moveCount), number: .decimal)))
+        if filamentMM > 0 {
+            let meters = Measurement(value: filamentMM / 1000, unit: UnitLength.meters)
+            rows.append((String(localized: "Filament", comment: "G-code detail: length of filament used"),
+                         meters.formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(2))))))
+        }
+        if let estimatedTime { rows.append((String(localized: "Print time", comment: "G-code detail: estimated printing time"), estimatedTime)) }
+        rows.append((Self.movesLabel, NumberFormatter.localizedString(from: NSNumber(value: moveCount), number: .decimal)))
         return rows
     }
 }

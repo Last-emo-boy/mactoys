@@ -15,9 +15,9 @@ public enum PreviewTheme: String, Codable, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .auto: "Match system"
-        case .light: "Light"
-        case .dark: "Dark"
+        case .auto: String(localized: "Match system", comment: "Color theme: follow the system's light or dark appearance")
+        case .light: String(localized: "Light", comment: "Color theme")
+        case .dark: String(localized: "Dark", comment: "Color theme")
         }
     }
 }

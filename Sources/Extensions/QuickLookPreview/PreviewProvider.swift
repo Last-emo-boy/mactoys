@@ -30,7 +30,7 @@ final class MacToysPreviewProvider: QLPreviewProvider, QLPreviewingController {
         do {
             if kind.isImage {
                 let image = try await PreviewRenderer.image(for: url, kind: kind, maxSize: Self.imagePixels, options: options)
-                guard let png = ImageUtil.pngData(image) else { throw PreviewError.unreadable("PNG encoding failed") }
+                guard let png = ImageUtil.pngData(image) else { throw PreviewError.unreadable(String(localized: "PNG encoding failed", comment: "Reason after “The file couldn't be read:”")) }
                 let size = CGSize(width: max(320, CGFloat(image.width) / 2), height: max(240, CGFloat(image.height) / 2))
                 return QLPreviewReply(dataOfContentType: .png, contentSize: size) { _ in png }
             }

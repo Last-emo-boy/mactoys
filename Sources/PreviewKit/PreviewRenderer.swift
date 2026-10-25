@@ -44,10 +44,11 @@ public enum PreviewError: Error, LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .tooLarge(let bytes):
-            "The file is too large to preview (\(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)))."
-        case .binary: "The file doesn't contain text."
-        case .unreadable(let why): "The file couldn't be read: \(why)"
-        case .unsupported: "There is no preview for this kind of file."
+            String(localized: "The file is too large to preview (\(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))).",
+                   comment: "%@ is the file size, e.g. “12 MB”")
+        case .binary: String(localized: "The file doesn't contain text.")
+        case .unreadable(let why): String(localized: "The file couldn't be read: \(why)", comment: "%@ is the reason")
+        case .unsupported: String(localized: "There is no preview for this kind of file.")
         }
     }
 }
@@ -112,14 +113,14 @@ public enum PreviewRenderer {
             if options.formatJSONXML, !fileName.lowercased().hasSuffix(".jsonl"), let pretty = SourceFormatter.prettyJSON(text),
                pretty.trimmingCharacters(in: .whitespacesAndNewlines) != text.trimmingCharacters(in: .whitespacesAndNewlines) {
                 shown = pretty
-                notice = "Formatted for reading — the file itself is unchanged."
+                notice = formattedNotice
             }
         case .xml:
             language = .xml
             if options.formatJSONXML, let pretty = SourceFormatter.prettyXML(text),
                pretty.trimmingCharacters(in: .whitespacesAndNewlines) != text.trimmingCharacters(in: .whitespacesAndNewlines) {
                 shown = pretty
-                notice = "Formatted for reading — the file itself is unchanged."
+                notice = formattedNotice
             }
         case .code(let id):
             language = Language.all.first { $0.id == id }
@@ -128,9 +129,14 @@ public enum PreviewRenderer {
             language = Language.detect(fileName: fileName, text: text)
         }
         if text.utf8.count > CodeRenderer.highlightLimit {
-            notice = (notice.map { $0 + " " } ?? "") + "Large file: shown without colors."
+            notice = (notice.map { $0 + " " } ?? "") + String(localized: "Large file: shown without colors.",
+                                                              comment: "Banner above a source listing too large to highlight")
         }
         return CodeRenderer.page(text: shown, language: language, title: fileName, options: options.code, notice: notice)
+    }
+
+    private static var formattedNotice: String {
+        String(localized: "Formatted for reading — the file itself is unchanged.", comment: "Banner above reformatted JSON or XML")
     }
 
     // MARK: Images
@@ -154,18 +160,18 @@ public enum PreviewRenderer {
             }
         case .stl:
             let mesh: STLMesh
-            do { mesh = try STLParser.parse(try read(url)) } catch let e as PreviewError { throw e } catch { throw PreviewError.unreadable("not a valid STL file") }
+            do { mesh = try STLParser.parse(try read(url)) } catch let e as PreviewError { throw e } catch { throw PreviewError.unreadable(String(localized: "not a valid STL file", comment: "Reason after “The file couldn't be read:”")) }
             result = STLRenderer.render(mesh, size: maxSize, color: HexColor.cgColor(options.stlColor),
                                         background: options.stlBackground.map { HexColor.cgColor($0) })
         case .qoi:
             do { result = ImageUtil.scaled(try QOI.image(try read(url)), toFit: maxSize) }
-            catch let e as PreviewError { throw e } catch { throw PreviewError.unreadable("not a valid QOI image") }
+            catch let e as PreviewError { throw e } catch { throw PreviewError.unreadable(String(localized: "not a valid QOI image", comment: "Reason after “The file couldn't be read:”")) }
         case .pdf:
             result = PDFThumbnail.firstPage(of: url, maxSize: maxSize)
         default:
             throw PreviewError.unsupported
         }
-        guard let result else { throw PreviewError.unreadable("the renderer produced no image") }
+        guard let result else { throw PreviewError.unreadable(String(localized: "the renderer produced no image", comment: "Reason after “The file couldn't be read:”")) }
         return result
     }
 

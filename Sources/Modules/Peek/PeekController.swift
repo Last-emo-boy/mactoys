@@ -230,12 +230,12 @@ final class PeekController: NSObject, NSWindowDelegate {
         }
         guard settings.value.confirmDelete else { trash(url); return }
         let alert = NSAlert()
-        alert.messageText = "Move “\(url.lastPathComponent)” to the Trash?"
-        alert.informativeText = "You can put it back from the Trash."
-        alert.addButton(withTitle: "Move to Trash")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = String(localized: "Move “\(url.lastPathComponent)” to the Trash?", comment: "Alert: %@ is a file name")
+        alert.informativeText = String(localized: "You can put it back from the Trash.")
+        alert.addButton(withTitle: String(localized: "Move to Trash", comment: "Alert button"))
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
         alert.showsSuppressionButton = true
-        alert.suppressionButton?.title = "Don't ask again"
+        alert.suppressionButton?.title = String(localized: "Don't ask again", comment: "Alert checkbox")
         showingAlert = true
         alert.beginSheetModal(for: w) { [weak self] response in
             MainActor.assumeIsolated {

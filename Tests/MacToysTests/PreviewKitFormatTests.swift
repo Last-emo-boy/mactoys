@@ -99,7 +99,11 @@ import Testing
         G1 X1 E1
         """
         let path = GCodeParser.parse(text)
-        #expect(path.estimatedTime == "1h 2m")
+        #expect(path.estimatedTime == GCodeParser.duration(3723))
+        let english = Locale(identifier: "en_US")
+        #expect(GCodeParser.duration(3723, locale: english) == "1h 2m")
+        #expect(GCodeParser.duration(86_400 + 300, locale: english) == "1d 0h 5m")
+        #expect(GCodeParser.duration(125, locale: english) == "2m 5s")
         #expect(path.slicer == "Cura 5.4.0")
         #expect(path.thumbnails.count == 1)
         #expect(path.thumbnails.first?.data == png)

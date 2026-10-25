@@ -62,9 +62,14 @@ struct PeekView: View {
     @ViewBuilder
     private var toolbarButtons: some View {
         Button(action: model.onTogglePin) {
-            Label(model.pinned ? "Unpin" : "Pin", systemImage: model.pinned ? "pin.fill" : "pin")
+            Label {
+                model.pinned ? Text("Unpin", comment: "Toolbar button: let the Peek window fit each file again")
+                    : Text("Pin", comment: "Toolbar button: keep the Peek window's position and size")
+            } icon: {
+                Image(systemName: model.pinned ? "pin.fill" : "pin")
+            }
         }
-        .help(model.pinned ? "Unpin: fit the window to each file" : "Pin the window's position and size")
+        .help(pinHelp)
         if model.items.count > 1 {
             ControlGroup {
                 Button(action: model.onPrevious) { Label("Previous", systemImage: "chevron.left") }
@@ -75,10 +80,23 @@ struct PeekView: View {
         }
         if model.items.current != nil {
             Button(action: model.onOpen) {
-                Text(model.defaultApp.map { "Open with \($0)" } ?? "Open")
+                openTitle
             }
             .buttonStyle(.borderedProminent)
             .help("Open with the default app (⌘↩)")
+        }
+    }
+
+    private var pinHelp: Text {
+        model.pinned ? Text("Unpin: fit the window to each file") : Text("Pin the window's position and size")
+    }
+
+    /// "Open with Photos", or "Open" when no app is known.
+    private var openTitle: Text {
+        if let app = model.defaultApp {
+            Text("Open with \(app)", comment: "Button: %@ is the app that opens the file")
+        } else {
+            Text("Open", comment: "Button: open the file in its default app")
         }
     }
 
@@ -101,7 +119,7 @@ struct PeekView: View {
             }
             .buttonStyle(.borderless)
             .foregroundStyle(model.pinned ? Color.accentColor : .secondary)
-            .help(model.pinned ? "Unpin: fit the window to each file" : "Pin the window's position and size")
+            .help(pinHelp)
             if model.items.count > 1 {
                 HStack(spacing: 6) {
                     Button(action: model.onPrevious) { Image(systemName: "chevron.left").frame(width: 14, height: 14) }
@@ -113,7 +131,7 @@ struct PeekView: View {
             }
             if model.items.current != nil {
                 Button(action: model.onOpen) {
-                    Text(model.defaultApp.map { "Open with \($0)" } ?? "Open").lineLimit(1)
+                    openTitle.lineLimit(1)
                 }
                 .buttonStyle(.borderedProminent)
                 .help("Open with the default app (⌘↩)")
@@ -140,7 +158,7 @@ struct PeekView: View {
         case .details(let message):
             PeekDetailsView(url: model.items.current, message: message)
         case .empty:
-            PeekDetailsView(url: nil, message: "No more files to preview.")
+            PeekDetailsView(url: nil, message: String(localized: "No more files to preview."))
         }
     }
 
@@ -148,8 +166,8 @@ struct PeekView: View {
         HStack(spacing: 18) {
             ForEach(model.fields, id: \.self) { field in
                 HStack(spacing: 5) {
-                    Text(field.label).foregroundStyle(.secondary)
-                    Text(field.value).lineLimit(1)
+                    Text(verbatim: field.label).foregroundStyle(.secondary)
+                    Text(verbatim: field.value).lineLimit(1)
                 }
             }
             Spacer(minLength: 0)
