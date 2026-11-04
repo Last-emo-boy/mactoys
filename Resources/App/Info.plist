@@ -55,7 +55,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>MacToys controls Finder (selection for Peek, PowerRename and New+, Empty Trash), System Events (Dark Mode for Light Switch, mute) and the login window (restart, shut down and log out from Command Palette).</string>
+	<string>MacToys controls Finder (selection for Peek, PowerRename and New+, Empty Trash), System Events (Dark Mode, mute, and hiding the Dock and menu bar from Light Switch and Quick Switches) and the login window (restart, shut down and log out from Command Palette).</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_mactoys-mwb._tcp</string>
@@ -64,12 +64,16 @@
 	<true/>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>App Volume changes the volume of each app by passing its sound through MacToys on this Mac.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Quick Switches connects and disconnects your paired Bluetooth devices, like AirPods.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Menu Bar Calendar shows your events and reminds you of upcoming meetings.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Menu Bar Calendar shows your events and reminds you of upcoming meetings.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera Mirror shows your camera so you can check how you look before a call.</string>
+	<key>NSCameraUseContinuityCameraDeviceType</key>
+	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Mouse Without Borders finds and connects to your other Macs on the local network.</string>
 	<key>NSLocationUsageDescription</key>
