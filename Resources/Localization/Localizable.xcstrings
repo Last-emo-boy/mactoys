@@ -5910,10 +5910,50 @@
       }
     },
     "%lld W power adapter": {
-      "comment": "The placeholder is the adapter's wattage"
+      "comment": "The placeholder is the adapter's wattage",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld W power adapter"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld W power adapter"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld adjusted": {
-      "comment": "App Volume flyout: number of apps whose sound MacToys changes right now"
+      "comment": "App Volume flyout: number of apps whose sound MacToys changes right now",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld adjusted"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld adjusted"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld apps": {
       "comment": "Workspace summary: number of apps",
@@ -6083,7 +6123,27 @@
       }
     },
     "%lld apps. Kept only on this Mac.": {
-      "comment": "Number of apps whose minimum window size is known"
+      "comment": "Number of apps whose minimum window size is known",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld app. Kept only on this Mac."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld apps. Kept only on this Mac."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld arguments": {
       "comment": "How many arguments a calculator function takes",
@@ -6420,13 +6480,73 @@
       }
     },
     "%lld captures": {
-      "comment": "Capture history footer: how many captures are kept\nHow many recent captures are kept"
+      "comment": "Capture history footer: how many captures are kept\nHow many recent captures are kept",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld capture"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld captures"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld captures collected": {
-      "comment": "Additive clipboard state"
+      "comment": "Additive clipboard state",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld capture collected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld captures collected"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld captures on the clipboard": {
-      "comment": "Card title: captures collected on the additive clipboard"
+      "comment": "Card title: captures collected on the additive clipboard",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld capture on the clipboard"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld captures on the clipboard"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld captures · %@": {
       "comment": "Capture history size: number of captures, then disk space, e.g. 48 captures · 123 MB",
@@ -6617,7 +6737,27 @@
       }
     },
     "%lld codes copied": {
-      "comment": "Card title: several QR codes or barcodes"
+      "comment": "Card title: several QR codes or barcodes",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld code copied"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld codes copied"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld colors": {
       "comment": "Optimizer: PNG palette size\nOptimizer: palette size of a PNG",
@@ -7139,6 +7279,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld connected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld connected"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -7601,7 +7759,27 @@
       }
     },
     "%lld cycles": {
-      "comment": "Flyout footer: battery cycle count"
+      "comment": "Flyout footer: battery cycle count",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld cycle"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld cycles"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld days": {
       "comment": "Age of hosts file backups",
@@ -7953,6 +8131,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld deaktiviert"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld disabled"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld disabled"
                 }
               }
             }
@@ -8421,7 +8617,27 @@
       }
     },
     "%lld dpi": {
-      "comment": "Optimizer: PDF image resolution, dots per inch"
+      "comment": "Optimizer: PDF image resolution, dots per inch",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld dpi"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld dpi"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld entries": {
       "comment": "Number of entries in a PATH-like list\nNumber of hosts entries",
@@ -8757,7 +8973,27 @@
       }
     },
     "%lld failed attempts while locked": {
-      "comment": "Title after unlocking; the number counts wrong passwords and unrecognized fingerprints\nVoiceOver announcement after unlocking"
+      "comment": "Title after unlocking; the number counts wrong passwords and unrecognized fingerprints\nVoiceOver announcement after unlocking",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld failed attempt while locked"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld failed attempts while locked"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld files": {
       "comment": "A clipboard entry holding several files\nClipboard preview: number of copied files\nFile Locksmith: number of files a process has open\nWhere a capture came from: several files",
@@ -8927,7 +9163,27 @@
       }
     },
     "%lld files optimized": {
-      "comment": "Optimizer batch card title"
+      "comment": "Optimizer batch card title",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld file optimized"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld files optimized"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld formulae · updated %@": {
       "comment": "First a number of Homebrew packages, then when, e.g. '2 days ago'",
@@ -9260,6 +9516,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld fps"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld fps"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -9389,16 +9663,96 @@
       }
     },
     "%lld hidden items · click one to open it": {
-      "comment": "Separate menu bar: caption when no item is under the pointer; the number counts hidden icons"
+      "comment": "Separate menu bar: caption when no item is under the pointer; the number counts hidden icons",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hidden item · click one to open it"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hidden items · click one to open it"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld icons": {
-      "comment": "Number of menu bar icons in a section"
+      "comment": "Number of menu bar icons in a section",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld icon"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld icons"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld icons don't fit beside the notch": {
-      "comment": "Notch warning title; the number counts menu bar icons"
+      "comment": "Notch warning title; the number counts menu bar icons",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld icon doesn't fit beside the notch"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld icons don't fit beside the notch"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld icons hidden": {
-      "comment": "Hero title; number of hidden menu bar icons\nQuick action detail; the number counts hidden menu bar icons"
+      "comment": "Hero title; number of hidden menu bar icons\nQuick action detail; the number counts hidden menu bar icons",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld icon hidden"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld icons hidden"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld icons hidden · %lld always hidden": {
       "comment": "Hero title; numbers of hidden and always-hidden menu bar icons",
@@ -9426,6 +9780,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld in der Hauptsuche; Seiten und Filter zeigen alle"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld in the main search; pages and filters show all"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld in the main search; pages and filters show all"
                 }
               }
             }
@@ -9586,6 +9958,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld ungültig"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld invalid"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld invalid"
                 }
               }
             }
@@ -10154,6 +10544,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld language with line numbers — Swift, C, Python, Rust, Go, shell…"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld languages with line numbers — Swift, C, Python, Rust, Go, shell…"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -10470,6 +10878,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld linked"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld linked"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -10669,7 +11095,28 @@
         }
       }
     },
-    "%lld menu bar icons don't fit beside the notch": {},
+    "%lld menu bar icons don't fit beside the notch": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld menu bar icon doesn't fit beside the notch"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld menu bar icons don't fit beside the notch"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld of %lld": {
       "comment": "A number out of a total: “43 of 53” (ISO week of the weeks in the year), “297 of 365” (day of the days in the year)",
       "localizations": {
@@ -11337,6 +11784,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld on the Files page; fewer in the main search"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld on the Files page; fewer in the main search"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -11633,7 +12098,27 @@
       }
     },
     "%lld pages": {
-      "comment": "Optimizer: PDF page count"
+      "comment": "Optimizer: PDF page count",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld page"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld pages"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld pinned in %lld apps": {
       "comment": "%1$lld pinned shortcuts in %2$lld apps",
@@ -11707,7 +12192,27 @@
       }
     },
     "%lld playing": {
-      "comment": "App Volume flyout: number of apps playing sound\nHero status: number of apps playing sound"
+      "comment": "App Volume flyout: number of apps playing sound\nHero status: number of apps playing sound",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld playing"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld playing"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld playing · %lld adjusted": {
       "comment": "Hero status: apps playing sound, then apps whose sound MacToys changes",
@@ -12220,10 +12725,50 @@
       }
     },
     "%lld pt": {
-      "comment": "A distance in points\nA length in points, e.g. 56 pt"
+      "comment": "A distance in points\nA length in points, e.g. 56 pt",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld pt"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld pt"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld queued · ⌘V pastes the next": {
-      "comment": "Paste stack status; %lld is the number of items"
+      "comment": "Paste stack status; %lld is the number of items",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld queued · ⌘V pastes the next"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld queued · ⌘V pastes the next"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld recent texts are kept for each field.": {
       "localizations": {
@@ -12722,6 +13267,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld renamed with a number"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld renamed with a number"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -13204,6 +13767,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -13510,10 +14091,50 @@
       }
     },
     "%lld steps at once": {
-      "comment": "Window Controls editor: a chain that runs every step together"
+      "comment": "Window Controls editor: a chain that runs every step together",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld step at once"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld steps at once"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld steps in turn": {
-      "comment": "Window Controls editor: a chain that runs one step per use"
+      "comment": "Window Controls editor: a chain that runs one step per use",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld step in turn"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld steps in turn"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld tables": {
       "comment": "Database preview: heading of the list of tables",
@@ -13694,7 +14315,27 @@
       }
     },
     "%lld times": {
-      "comment": "How often a menu command was run"
+      "comment": "How often a menu command was run",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld time"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld times"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld variables applied": {
       "comment": "Environment Variables status",
@@ -14197,7 +14838,27 @@
       }
     },
     "%lld windows tiled. Each display keeps its own layout.": {
-      "comment": "Auto Tiling hero"
+      "comment": "Auto Tiling hero",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld window tiled. Each display keeps its own layout."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld windows tiled. Each display keeps its own layout."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld windows · %lld apps · %@": {
       "comment": "Saved layout summary: windows, apps, then the names of its displays",
@@ -14226,6 +14887,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld mit doppelten Hosts"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld with duplicate hosts"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld with duplicate hosts"
                 }
               }
             }
@@ -15063,7 +15742,27 @@
       "comment": "Clipboard history retention"
     },
     "1/%lld of the display": {
-      "comment": "FancyZones grid step: a fraction of the display's width and height"
+      "comment": "FancyZones grid step: a fraction of the display's width and height",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1/%lld of the display"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1/%lld of the display"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "127.0.0.1 or ::1": {
       "localizations": {
@@ -18104,7 +18803,27 @@
       "comment": "Optimizer: time left while encoding a video; the value is a duration like '40 sec'"
     },
     "About %lld more icons fit": {
-      "comment": "Notch status: how many more menu bar icons fit beside the notch"
+      "comment": "Notch status: how many more menu bar icons fit beside the notch",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "About %lld more icon fits"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "About %lld more icons fit"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "About scanning": {
       "localizations": {
@@ -19922,7 +20641,27 @@
       }
     },
     "Add %lld items": {
-      "comment": "Drop label on a shelf: number of items being dropped"
+      "comment": "Drop label on a shelf: number of items being dropped",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Add %lld Item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Add %lld items"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Add Action": {},
     "Add Alias": {
@@ -39665,10 +40404,50 @@
       }
     },
     "Choose a folder to move %lld items to.": {
-      "comment": "Folder picker message"
+      "comment": "Folder picker message",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Choose a folder to move %lld item to."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Choose a folder to move %lld items to."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Choose a folder to save %lld items in.": {
-      "comment": "Folder picker message"
+      "comment": "Folder picker message",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Choose a folder to save %lld item in."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Choose a folder to save %lld items in."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Choose a format: jpeg, png, heic, avif or webp": {},
     "Choose controls for keyboard mode in Settings.": {
@@ -54667,6 +55446,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Custom %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Custom %lld"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -58628,7 +59425,28 @@
         }
       }
     },
-    "Delete %lld Items": {},
+    "Delete %lld Items": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld Item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld Items"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Delete %lld entries?": {
       "comment": "Confirmation: number of hosts entries to delete",
       "localizations": {
@@ -61167,6 +61985,24 @@
       "comment": "A display of the workspace; %lld is its number",
       "localizations": {
         "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Display %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Display %lld"
+                }
+              }
+            }
+          }
+        },
+        "en": {
           "variations": {
             "plural": {
               "one": {
@@ -65572,7 +66408,27 @@
       }
     },
     "Earlier attempts: %lld": {
-      "comment": "Failed attempts list footer"
+      "comment": "Failed attempts list footer",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Earlier attempt: %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Earlier attempts: %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Easy Mouse": {
       "localizations": {
@@ -70850,6 +71706,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Exitcode %d"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Exit %d"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Exit %d"
                 }
               }
             }
@@ -78161,6 +79035,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Frame %lld konnte nicht dekodiert werden"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Frame %lld could not be decoded"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Frame %lld could not be decoded"
                 }
               }
             }
@@ -87680,6 +88572,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "ID %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "ID %lld"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -89201,7 +90111,27 @@
       }
     },
     "Imported %lld actions.": {
-      "comment": "%lld is the number of imported custom actions"
+      "comment": "%lld is the number of imported custom actions",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Imported %lld action."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Imported %lld actions."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Imported “%@” · %lld remaps": {
       "localizations": {
@@ -92637,6 +93567,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Item %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Item %lld"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -94629,7 +95577,27 @@
       }
     },
     "Key %lld in keyboard mode": {
-      "comment": "Window Controls editor: this control's number key"
+      "comment": "Window Controls editor: this control's number key",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Key %lld in keyboard mode"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Key %lld in keyboard mode"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Key %u": {
       "comment": "Name of a key with no label; the number is its key code",
@@ -98679,7 +99647,27 @@
       }
     },
     "Layout %lld": {
-      "comment": "Default name of a saved window layout; %lld is a number"
+      "comment": "Default name of a saved window layout; %lld is a number",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Layout %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Layout %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Layout editor": {},
     "Layout name": {
@@ -99076,7 +100064,27 @@
       }
     },
     "Left %lld": {
-      "comment": "Balance value; the number is a percentage toward the left"
+      "comment": "Balance value; the number is a percentage toward the left",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Left %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Left %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Left Half": {
       "comment": "Window Controls preset"
@@ -101570,6 +102578,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Zeile %lld"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Line %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Line %lld"
                 }
               }
             }
@@ -107922,6 +108948,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Media %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Media %lld"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -108460,7 +109504,28 @@
     "Merge": {
       "comment": "Footer hint: merge the selected clipboard items"
     },
-    "Merge %lld Items": {},
+    "Merge %lld Items": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Merge %lld Item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Merge %lld Items"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Merge with": {},
     "Merge zones": {
       "localizations": {
@@ -117730,6 +118795,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Kein Mac an Position %lld"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "No Mac in position %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "No Mac in position %lld"
                 }
               }
             }
@@ -131417,7 +132500,27 @@
     "Optimized files": {},
     "Optimizer": {},
     "Optimizing %lld files": {
-      "comment": "Optimizer batch card title"
+      "comment": "Optimizer batch card title",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Optimizing %lld file"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Optimizing %lld files"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Optimizing…": {},
     "Optional": {
@@ -132787,7 +133890,27 @@
       "comment": "Open With menu: choose another app"
     },
     "Out of date · version %lld": {
-      "comment": "Charge helper status; the placeholder is a number"
+      "comment": "Charge helper status; the placeholder is a number",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Out of date · version %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Out of date · version %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Out-of-order data.": {
       "comment": "File transfer failed: parts of the file arrived in the wrong order",
@@ -133319,7 +134442,27 @@
       }
     },
     "PDF images at %lld dpi, text stays selectable": {
-      "comment": "Optimizer settings hero summary"
+      "comment": "Optimizer settings hero summary",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PDF images at %lld dpi, text stays selectable"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PDF images at %lld dpi, text stays selectable"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "PDF pages with text are read exactly; scanned pages and images are recognized. Drop files on the card, or use Services › Extract Text in Finder.": {},
     "PDFs": {
@@ -133739,7 +134882,27 @@
       }
     },
     "PNGs to %lld colors": {
-      "comment": "Optimizer settings hero summary"
+      "comment": "Optimizer settings hero summary",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PNGs to %lld color"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PNGs to %lld colors"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "PNGs without transparency": {},
     "Padding": {
@@ -135012,7 +136175,27 @@
     "Paste stack finished": {},
     "Paste stack on/off": {},
     "Paste stack · %lld": {
-      "comment": "Footer status: number of items waiting in the paste stack"
+      "comment": "Footer status: number of items waiting in the paste stack",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Paste stack · %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Paste stack · %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Paste with AI": {
       "localizations": {
@@ -141138,7 +142321,27 @@
     },
     "Presets": {},
     "Press %lld in keyboard mode": {
-      "comment": "Window Controls editor: the number key of this control"
+      "comment": "Window Controls editor: the number key of this control",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Press %lld in keyboard mode"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Press %lld in keyboard mode"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Press Left ⌃ twice": {
       "comment": "Find My Mouse activation: the left Control key",
@@ -144078,6 +145281,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Profil %lld"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Profile %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Profile %lld"
                 }
               }
             }
@@ -157920,7 +159141,27 @@
       }
     },
     "Right %lld": {
-      "comment": "Balance value; the number is a percentage toward the right"
+      "comment": "Balance value; the number is a percentage toward the right",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Right %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Right %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Right Click": {
       "comment": "Keystroke Overlay: a click with the secondary mouse button"
@@ -160680,7 +161921,27 @@
       "comment": "Charge Limit headline while discharging to the limit"
     },
     "Running · version %lld": {
-      "comment": "Charge helper status; the placeholder is a number"
+      "comment": "Charge helper status; the placeholder is a number",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Running · version %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Running · version %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Runs as root from /Library/PrivilegedHelperTools and switches charging. Only you can talk to it.": {},
     "Runs in zsh as a login shell. The selection arrives on standard input and in $MACTOYS_TEXT; what the script prints is the result. A non-zero exit status shows the error.": {},
@@ -175535,7 +176796,27 @@
       }
     },
     "Showing %lld icons": {
-      "comment": "Quick action detail; the number counts hidden menu bar icons now shown"
+      "comment": "Quick action detail; the number counts hidden menu bar icons now shown",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Showing %lld icon"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Showing %lld icons"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Showing it in the menu bar — allow Accessibility to open items directly": {},
     "Showing keystrokes · %@": {},
@@ -182836,6 +184117,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Switch to Mac %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Switch to Mac %lld"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -187493,7 +188792,27 @@
     "The PDF is password-protected": {},
     "The action failed": {},
     "The action failed with exit status %lld.": {
-      "comment": "%lld is the process exit status"
+      "comment": "%lld is the process exit status",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The action failed with exit status %lld."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The action failed with exit status %lld."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "The action finished without output.": {},
     "The action took too long and was stopped.": {},
@@ -189991,6 +191310,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Das Profil wurde von einer neueren Version von MacToys geschrieben (Format %lld)."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The profile was written by a newer version of MacToys (format %lld)."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The profile was written by a newer version of MacToys (format %lld)."
                 }
               }
             }
@@ -194880,6 +196217,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Toleranz %lld"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Tolerance %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Tolerance %lld"
                 }
               }
             }
@@ -200579,6 +201934,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "UUID v%lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "UUID v%lld"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -203336,7 +204709,27 @@
     },
     "Untitled event": {},
     "Up to %lld fps": {
-      "comment": "Optimizer: frame rate limit; the value is frames per second"
+      "comment": "Optimizer: frame rate limit; the value is frames per second",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Up to %lld fps"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Up to %lld fps"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Update Helper…": {},
     "Update Homebrew": {
@@ -212244,6 +213637,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Workspace %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Workspace %lld"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -215641,7 +217052,27 @@
       "comment": "Arrangement card counter label, after a number"
     },
     "and %lld more": {
-      "comment": "More files than the preview lists\nOptimizer batch card: files not listed\nPaste stack: items beyond the visible rows"
+      "comment": "More files than the preview lists\nOptimizer batch card: files not listed\nPaste stack: items beyond the visible rows",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "and %lld more"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "and %lld more"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "any": {
       "comment": "Database preview: type of a column declared without a type",
@@ -219237,7 +220668,27 @@
       }
     },
     "images at %lld dpi": {
-      "comment": "Optimizer: PDF image resolution"
+      "comment": "Optimizer: PDF image resolution",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "images at %lld dpi"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "images at %lld dpi"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "in %@": {
       "comment": "New+ picker: the folder the new item is created in",
@@ -220300,7 +221751,27 @@
     "macOS charge limit": {},
     "macOS checks your password": {},
     "macOS didn't let MacToys take this app's sound (error %lld).": {
-      "comment": "App Volume error; the number is a Core Audio status code"
+      "comment": "App Volume error; the number is a Core Audio status code",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "macOS didn't let MacToys take this app's sound (error %lld)."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "macOS didn't let MacToys take this app's sound (error %lld)."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "macOS doesn't let one app float another app's windows, so a pinned window is kept in front by a live mirror while you work elsewhere. Pointing at it brings the real window forward in place.": {
       "localizations": {
@@ -223373,6 +224844,24 @@
             }
           }
         },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "rotated %lld°"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "rotated %lld°"
+                }
+              }
+            }
+          }
+        },
         "es": {
           "variations": {
             "plural": {
@@ -225624,7 +227113,27 @@
       }
     },
     "up to %lld px": {
-      "comment": "Optimizer settings hero summary: longest side limit"
+      "comment": "Optimizer settings hero summary: longest side limit",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "up to %lld px"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "up to %lld px"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "user": {
       "comment": "Variable source: User variables",

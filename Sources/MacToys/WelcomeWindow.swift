@@ -53,7 +53,7 @@ struct WelcomeView: View {
             VStack(alignment: .leading, spacing: 18) {
                 AppMark(size: 64)
                 Text("Welcome to MacToys").font(.system(size: 30, weight: .bold)).kerning(-0.6)
-                Text("31 power-user utilities for macOS, modeled on Microsoft PowerToys. Everything runs from the menu bar; each utility can be switched on or off in Settings.")
+                Text("\(ModuleRegistry.shared.modules.count) power-user utilities for macOS: every Microsoft PowerToys utility, and more. Everything runs from the menu bar; each utility can be switched on or off in Settings.", comment: "Welcome window; the number counts the utilities")
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 12) {
