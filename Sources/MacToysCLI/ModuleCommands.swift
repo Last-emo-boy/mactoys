@@ -9,6 +9,7 @@ import ImageResizer
 import LightSwitch
 import MacToysCore
 import PowerDisplay
+import PrivacyScreen
 
 /// Per-utility subcommands. Each entry returns the process exit code.
 /// Modules that ship their own argument parser (`AwakeCLI.run` …) get the remaining arguments,
@@ -50,6 +51,8 @@ enum ModuleCommands {
             CLI.open(AppCommand(module: "workspaces", action: "launch", parameters: ["name": name]))
             return 0
         },
+        // Hidden: started by Privacy Screen while something is locked (not listed in help).
+        PrivacyGuard.subcommand: { PrivacyGuard.run($0) },
         "palette": { args in
             CLI.open(AppCommand(module: "cmdpal", action: "show",
                                 parameters: args.isEmpty ? [:] : ["query": args.joined(separator: " ")]))
