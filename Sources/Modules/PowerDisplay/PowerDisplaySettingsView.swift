@@ -19,17 +19,23 @@ struct PowerDisplaySettingsView: View {
     var body: some View {
         SettingsPage(module: module) {
             HeroCard(tint: .yellow) {
-                HStack(spacing: 14) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Brightness, contrast, volume and input for every display")
+                HStack(alignment: .center, spacing: 20) {
+                    DisplayArrangementDiagram(module: module)
+                        .frame(width: 250, height: 132)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Brightness, resolution, color and arrangement for every display")
                             .font(.system(size: 14, weight: .semibold))
-                        (store.hasScanned ? Text(verbatim: summary) : Text("Looking for displays…"))
+                            .fixedSize(horizontal: false, vertical: true)
+                        (store.hasScanned ? Text(verbatim: summary) : Text(verbatim: DisplayArrangementDiagram.liveSummary()))
                             .font(.system(size: 12)).foregroundStyle(.secondary)
+                        HStack(spacing: 8) {
+                            Button("Open Power Display") { module.toggleFlyout(from: nil) }.buttonStyle(.borderedProminent)
+                            Button("Identify") { module.identify() }
+                            Keycaps(s.value.activation)
+                        }
+                        .padding(.top, 4)
                     }
-                    Spacer()
-                    Button("Identify") { module.identify() }
-                    Button("Open Power Display") { module.toggleFlyout(from: nil) }.buttonStyle(.borderedProminent)
-                    Keycaps(s.value.activation)
+                    Spacer(minLength: 0)
                 }
             }
         } content: {
@@ -56,7 +62,58 @@ struct PowerDisplaySettingsView: View {
                 Toggle(isOn: $s.value.showIdentifyButton) {
                     RowLabel("Show identify monitors button", subtitle: "Briefly shows each display's number on it.")
                 }
+                if NightShift.isAvailable {
+                    Toggle(isOn: $s.value.showNightShiftButton) { RowLabel("Show Night Shift button") }
+                }
             }
+
+            Section("Brightness") {
+                Toggle(isOn: $s.value.softwareDimming) {
+                    RowLabel("Dim below the hardware minimum",
+                             subtitle: "Brightness sliders continue past 0 % by dimming in software. Displays without a brightness control always dim in software.")
+                }
+                Picker(selection: $s.value.dimMethod) {
+                    ForEach(DimMethod.allCases, id: \.self) { Text($0.title).tag($0) }
+                } label: {
+                    RowLabel("Software dimming method",
+                             subtitle: "Color table dims everything, the pointer too. Overlay works on every display, including AirPlay and DisplayLink.")
+                }
+                SliderRow("Darkest software dimming", subtitle: "How much light is taken away at the end of the slider.",
+                          value: $s.value.maxSoftwareDim, in: PowerDisplaySettings.maxSoftwareDimRange, step: 0.05,
+                          format: { $0.formatted(.percent.precision(.fractionLength(0))) })
+                Toggle(isOn: Binding(get: { s.value.extraBrightness }, set: { module.setExtraBrightness($0) })) {
+                    RowLabel("Extra brightness on XDR displays",
+                             subtitle: "On HDR-capable panels (MacBook Pro Liquid Retina XDR, Pro Display XDR) the slider continues past 100 % into the HDR headroom.")
+                }
+                SliderRow("Maximum extra brightness", value: $s.value.maxExtraBrightness,
+                          in: PowerDisplaySettings.maxExtraBrightnessRange, step: 0.1,
+                          format: { String(localized: "\($0.formatted(.number.precision(.fractionLength(1))))×", comment: "A brightness multiplier such as 1.6×") })
+                    .disabled(!s.value.extraBrightness)
+                Picker(selection: Binding(get: { syncChoice }, set: { setSyncChoice($0) })) {
+                    Text("Independent", comment: "Brightness sync: every display on its own").tag("")
+                    Text("Linked", comment: "Brightness sync: one slider for all displays").tag("linked")
+                    ForEach(module.brightnessMonitors) { m in
+                        Text("Follow \(m.name)", comment: "Brightness sync menu item: other displays follow this one, keeping their distance").tag("follow:" + m.id)
+                    }
+                } label: {
+                    RowLabel("Brightness sync",
+                             subtitle: "Linked moves every display with one slider. Follow keeps each display's distance to the one you pick, for example the built-in display as it adapts to ambient light.")
+                }
+                .disabled(!module.canLinkBrightness)
+            }
+
+            Section("Resolution") {
+                Toggle(isOn: $s.value.confirmModeChanges) {
+                    RowLabel("Ask to keep a new resolution", subtitle: "Switches back after 15 seconds unless you keep it, in case the display can't show it.")
+                }
+                Toggle(isOn: $s.value.hideLowResolutionModes) {
+                    RowLabel("Hide low-resolution duplicates", subtitle: "Leave out 1× modes when the same desktop size exists in HiDPI.")
+                }
+            }
+
+            PiPSettingsSection(module: module)
+
+            VirtualDisplaysSection(module: module)
 
             Section {
                 if store.monitors.isEmpty {
@@ -108,12 +165,30 @@ struct PowerDisplaySettingsView: View {
                 })) {
                     RowLabel("Max compatibility mode", subtitle: "Broader, slower discovery for monitors the standard path misses.")
                 }
-                Text("External monitors are controlled over DDC/CI on Apple silicon; the built-in display and Apple displays use macOS's own brightness control. Many USB-C/Thunderbolt docks and DisplayLink adapters don't pass DDC/CI through. Rotation isn't offered: macOS has no public API to rotate a display — use System Settings › Displays › Rotation.")
+                Text("External monitors are controlled over DDC/CI on Apple silicon; the built-in display and Apple displays use macOS's own brightness control. Many USB-C/Thunderbolt docks and DisplayLink adapters don't pass DDC/CI through; those displays dim in software. Software dimming and extra brightness last only while MacToys runs: macOS restores the displays when it quits. Rotation isn't offered: macOS has no public API to rotate a display — use System Settings › Displays › Rotation.")
                     .font(.system(size: 11.5)).foregroundStyle(.secondary)
             }
         }
         .sheet(item: $editing) { profile in
             ProfileEditor(module: module, profile: profile) { editing = nil }
+        }
+    }
+
+    /// "", "linked" or "follow:<monitor id>".
+    private var syncChoice: String {
+        if s.value.linkedBrightness { return "linked" }
+        return s.value.syncSource.map { "follow:" + $0 } ?? ""
+    }
+
+    private func setSyncChoice(_ choice: String) {
+        if choice == "linked" {
+            module.setSyncSource(nil)
+            s.value.linkedBrightness = true
+        } else if choice.hasPrefix("follow:") {
+            module.setSyncSource(String(choice.dropFirst(7)))
+        } else {
+            s.value.linkedBrightness = false
+            module.setSyncSource(nil)
         }
     }
 
@@ -207,7 +282,7 @@ private struct MonitorSettingsRow: View {
                 Toggle("Hide monitor", isOn: binding(\.hidden)).toggleStyle(.checkbox)
             }
             if snap.kind == .unsupported {
-                Text("MacToys can't talk to this display. DisplayLink, AirPlay and Sidecar displays, and some docks and adapters, don't support DDC/CI.")
+                Text("This display has no hardware controls MacToys can reach (DisplayLink, AirPlay and Sidecar displays, and some docks and adapters, don't support DDC/CI). Its brightness slider dims in software.")
                     .font(.system(size: 11.5)).foregroundStyle(.secondary)
             } else if snap.kind == .ddc {
                 controls(snap)
@@ -225,6 +300,9 @@ private struct MonitorSettingsRow: View {
 
     private func detail(_ snap: MonitorSnapshot) -> String {
         var parts = [snap.transportTitle]
+        if let mode = monitor.modes?.current {
+            parts.append(PowerDisplayModule.modeTitle(mode, builtIn: snap.kind == .builtIn, rates: monitor.modes?.refreshRates ?? []))
+        }
         if snap.rotation != 0 {
             parts.append(String(localized: "rotated \(snap.rotation)°", comment: "Display rotation in degrees"))
         }

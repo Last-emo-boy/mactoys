@@ -13,6 +13,18 @@ final class PowerDisplayStore {
     var hasScanned = false
 
     var visibleMonitors: [MonitorState] = []
+
+    /// Monitors whose resolution, color and arrangement controls are open in the flyout.
+    var expanded: Set<String> = []
+    /// The pane shown for each expanded monitor.
+    var panes: [String: DisplayPane] = [:]
+    /// Installed RGB display profiles (loaded off the main thread).
+    var colorProfiles: [ColorProfile] = []
+    var nightShiftOn: Bool?
+    /// Monitors with an open picture-in-picture window.
+    var pipOpen: Set<String> = []
+    /// Virtual display configurations currently connected.
+    var connectedVirtual: Set<UUID> = []
 }
 
 /// Brightness, contrast, volume, input, color preset and power control for every display:
@@ -21,10 +33,12 @@ final class PowerDisplayStore {
 public final class PowerDisplayModule: ToyModule {
     public let info = ModuleInfo(
         id: "powerdisplay", name: "Power Display",
-        summary: "Control brightness, contrast, volume and input of your displays from one flyout.",
+        summary: "Control brightness, resolution, color and arrangement of your displays from one flyout.",
         symbol: "sun.max.fill", tint: .yellow, category: .systemTools,
         permissions: [], enabledByDefault: false,
-        keywords: ["ddc", "monitor", "brightness", "contrast", "volume", "input", "display", "lunar", "monitorcontrol"])
+        keywords: ["ddc", "monitor", "brightness", "contrast", "volume", "input", "display", "resolution", "hidpi",
+                   "refresh rate", "dimming", "xdr", "hdr", "virtual display", "dummy", "mirror", "picture in picture",
+                   "color profile", "night shift"])
 
     let settings: Persisted<PowerDisplaySettings>
     let store = PowerDisplayStore()
@@ -32,12 +46,12 @@ public final class PowerDisplayModule: ToyModule {
 
     private let engine = DisplayEngine()
     private let queue = DispatchQueue(label: "com.w33d.mactoys.powerdisplay.ddc", qos: .userInitiated)
-    private var running = false
+    var running = false
     private var observers: [(NotificationCenter, NSObjectProtocol)] = []
     private var rescanWork: DispatchWorkItem?
     private var scanGeneration = 0
     private var restorePending = false
-    private var pending: [String: (String, DisplayFeature, UInt16)] = [:]
+    var pending: [String: (String, DisplayFeature, UInt16)] = [:]
     private var flushScheduled = false
     private var statusItem: NSStatusItem?
     private var scrollMonitor: Any?
@@ -45,6 +59,22 @@ public final class PowerDisplayModule: ToyModule {
     private var lastShortcut: Shortcut??
     /// The flyout slider under the pointer, for scroll-wheel steps.
     var hoveredSlider: (monitor: String?, feature: DisplayFeature)?
+
+    // Resolution, software brightness, arrangement, picture in picture, virtual displays
+    // (`PowerDisplayModule+Displays.swift`).
+    let software = SoftwareBrightnessController()
+    var confirmation = ModeConfirmation()
+    let confirmationPresenter = ModeConfirmationPresenter()
+    var confirmationTimer: Timer?
+    var pipWindows: [String: PiPWindow] = [:]
+    var virtualHandles: [UUID: VirtualDisplayHandle] = [:]
+    var syncTimer: Timer?
+    var lastSourceReading: Double?
+    /// Follower offsets while syncing, saved to prefs with `scheduleStateSave`.
+    var syncOffsets: [String: Double] = [:]
+    var stateSave: DispatchWorkItem?
+    var pendingMirrors: [DispatchWorkItem] = []
+    var appliedFeatureSettings: DisplayFeatureSettings?
 
     public convenience init() {
         self.init(store: .shared)
@@ -80,8 +110,20 @@ public final class PowerDisplayModule: ToyModule {
             // The CLI changed values or settings: pick them up without locking the controls.
             $0.settings.reload()
             $0.refreshValues()
+            $0.refreshDisplayFacts()
+        }
+        observe(DistributedNotificationCenter.default(), ColorProfiles.changedNotification) {
+            $0.colorSyncChanged()
+        }
+        if settings.value.gammaDimmed {
+            // A previous run ended with a dimmed color table: hand the tables back to ColorSync.
+            CGDisplayRestoreColorSyncSettings()
+            settings.value.gammaDimmed = false
         }
         restorePending = settings.value.restoreOnLaunch
+        connectVirtualDisplays()
+        loadColorProfiles()
+        store.nightShiftOn = NightShift.isOn
         rescan()
     }
 
@@ -96,6 +138,7 @@ public final class PowerDisplayModule: ToyModule {
         rescanWork = nil
         scanGeneration += 1
         flushWrites()
+        stopDisplayFeatures()
         closeFlyout()
         IdentifyOverlay.dismiss()
         if let statusItem { NSStatusBar.system.removeStatusItem(statusItem) }
@@ -123,6 +166,7 @@ public final class PowerDisplayModule: ToyModule {
         registerHotkey()
         updateStatusItem()
         refreshVisible()
+        displaySettingsChanged()
     }
 
     private func registerHotkey() {
@@ -180,6 +224,8 @@ public final class PowerDisplayModule: ToyModule {
         store.isRefreshing = false
         store.hasScanned = true
         refreshVisible()
+        refreshDisplayFacts()
+        displaysChanged()
         if restorePending {
             restorePending = false
             restoreSavedValues()
@@ -189,7 +235,9 @@ public final class PowerDisplayModule: ToyModule {
 
     private func refreshVisible() {
         let s = settings.value
-        store.visibleMonitors = store.monitors.filter { !s.prefs($0.id).hidden && $0.snapshot.kind != .unsupported }
+        // Displays without DDC still get software dimming, resolutions and picture in picture.
+        let visible = store.monitors.filter { !s.prefs($0.id).hidden }
+        if visible.map(\.id) != store.visibleMonitors.map(\.id) { store.visibleMonitors = visible }
     }
 
     /// Re-reads one monitor's capabilities string (settings page button).
@@ -241,21 +289,24 @@ public final class PowerDisplayModule: ToyModule {
         flushWrites()
     }
 
-    /// One wheel notch on a slider (or `steps` notches).
+    /// One wheel notch on a slider (or `steps` notches). Brightness continues into software
+    /// dimming and extra brightness where those are on.
     func step(_ feature: DisplayFeature, on monitor: MonitorState?, by steps: Int) {
         let delta = Double(steps * settings.value.wheelIncrement)
         if let monitor {
             if feature == .brightness && isLinked && !settings.value.prefs(monitor.id).excludeFromLinkedBrightness {
-                setLinkedBrightness(linkedBrightness + delta)
+                setLinkedLevel(linkedLevel + delta)
+            } else if feature == .brightness {
+                stepBrightness(monitor, by: delta)
             } else {
                 set(feature, percent: (monitor.percent[feature] ?? 0) + delta, on: monitor)
             }
         } else {
-            setLinkedBrightness(linkedBrightness + delta)
+            setLinkedLevel(linkedLevel + delta)
         }
     }
 
-    private func enqueue(_ id: String, _ feature: DisplayFeature, _ raw: UInt16) {
+    func enqueue(_ id: String, _ feature: DisplayFeature, _ raw: UInt16) {
         pending["\(id)|\(feature.rawValue)"] = (id, feature, raw)
         guard !flushScheduled else { return }
         flushScheduled = true
@@ -264,7 +315,7 @@ public final class PowerDisplayModule: ToyModule {
         }
     }
 
-    private func flushWrites() {
+    func flushWrites() {
         flushScheduled = false
         guard !pending.isEmpty else { return }
         let writes = Array(pending.values)
@@ -294,6 +345,10 @@ public final class PowerDisplayModule: ToyModule {
             if let c = p.lastColorPreset, m.supports(.colorTemperature) {
                 m.discrete[.colorTemperature] = UInt16(clamping: c)
                 enqueue(m.id, .colorTemperature, UInt16(clamping: c))
+            }
+            if let d = p.lastSoftDim, d > 0, track(for: m).dimShare > 0 {
+                m.softDim = min(1, d)
+                applySoftware(m)
             }
         }
         flushWrites()
@@ -350,6 +405,8 @@ public final class PowerDisplayModule: ToyModule {
         if let flyout, flyout.isVisible { closeFlyout(); return }
         let panel = flyout ?? FlyoutPanel(module: self)
         flyout = panel
+        store.nightShiftOn = NightShift.isOn
+        refreshDisplayFacts()
         panel.present(below: button)
         refreshValues()
     }
@@ -467,8 +524,7 @@ public final class PowerDisplayModule: ToyModule {
         } else {
             for m in targets { step(.brightness, on: m, by: steps) }
         }
-        let percent = ((first.percent[.brightness] ?? 0) / 100).formatted(.percent.precision(.fractionLength(0)))
-        HUD.show("Brightness \(percent)", symbol: "sun.max.fill", duration: 0.9)
+        showBrightnessHUD(first)
     }
 
     // MARK: - ToyModule
@@ -478,8 +534,14 @@ public final class PowerDisplayModule: ToyModule {
     }
 
     public var quickActions: [QuickAction] {
-        [QuickAction(id: "powerdisplay.open", title: "Displays", symbol: "sun.max.fill", tint: .yellow,
-                     shortcut: settings.value.activation, perform: { [weak self] in self?.toggleFlyout(from: nil) })]
+        var actions = [QuickAction(id: "powerdisplay.open", title: "Displays", symbol: "sun.max.fill", tint: .yellow,
+                                   shortcut: settings.value.activation, perform: { [weak self] in self?.toggleFlyout(from: nil) })]
+        if NightShift.isAvailable {
+            actions.append(QuickAction(id: "powerdisplay.nightshift", title: "Night Shift", symbol: "moon.fill", tint: .orange,
+                                       isOn: { NightShift.isOn ?? false },
+                                       perform: { [weak self] in self?.toggleNightShift() }))
+        }
+        return actions
     }
 
     public var shortcutBindings: [ShortcutBinding] {
@@ -487,8 +549,13 @@ public final class PowerDisplayModule: ToyModule {
     }
 
     /// `mactoys://powerdisplay/<action>`: `open`/`show` (flyout), `settings`, `identify`, `rescan`,
-    /// `apply-profile?id=3`, `save-profile?name=Work`.
+    /// `apply-profile?id=3`, `save-profile?name=Work`,
+    /// `set-mode?monitor=2&mode=2560x1440@60[&hidpi=1]` (asks to keep it), `dim?monitor=2&level=40`
+    /// (0 turns software dimming off; `monitor=all`), `pip?monitor=2[&close=1]`, `set-main?monitor=2`,
+    /// `mirror?monitor=2&of=1`, `unmirror?monitor=2`, `night-shift[?on=1|0]`,
+    /// `virtual-display?name=Stream[&on=1|0]`. `monitor` takes a number from `list` or a stable id.
     public func handle(_ command: AppCommand) -> Bool {
+        if let handled = handleDisplayCommand(command) { return handled }
         switch command.action {
         case "open", "show", "flyout":
             guard running else { ModuleRegistry.shared.showSettings?(info.id); return true }
@@ -514,11 +581,35 @@ public final class PowerDisplayModule: ToyModule {
     }
 
     public var previewScenes: [PreviewScene] {
-        [PreviewScene("flyout", size: CGSize(width: 440, height: 520)) {
-            AnyView(PowerDisplayFlyout.preview())
+        [PreviewScene("flyout", size: CGSize(width: 460, height: 560)) {
+            AnyView(PowerDisplayPreviews.flyout())
         },
-         PreviewScene("flyout-linked", size: CGSize(width: 440, height: 640)) {
-            AnyView(PowerDisplayFlyout.preview(linked: true))
+         PreviewScene("flyout-linked", size: CGSize(width: 460, height: 620)) {
+            AnyView(PowerDisplayPreviews.flyout(linked: true))
+        },
+         PreviewScene("flyout-modes", size: CGSize(width: 460, height: 900)) {
+            AnyView(PowerDisplayPreviews.flyout(expanded: .resolution))
+        },
+         PreviewScene("flyout-dimming", size: CGSize(width: 460, height: 560)) {
+            AnyView(PowerDisplayPreviews.flyout(dimmed: true))
+        },
+         PreviewScene("flyout-arrange", size: CGSize(width: 460, height: 760)) {
+            AnyView(PowerDisplayPreviews.flyout(expanded: .arrange))
+        },
+         PreviewScene("flyout-color", size: CGSize(width: 460, height: 700)) {
+            AnyView(PowerDisplayPreviews.flyout(expanded: .color))
+        },
+         PreviewScene("confirm-resolution", size: CGSize(width: 900, height: 560)) {
+            AnyView(PowerDisplayPreviews.confirmation())
+        },
+         PreviewScene("pip", size: CGSize(width: 1100, height: 680)) {
+            AnyView(PowerDisplayPreviews.pip())
+        },
+         PreviewScene("virtual-displays", size: CGSize(width: 760, height: 560), wallpaper: false) {
+            AnyView(PowerDisplayPreviews.virtualDisplays())
+        },
+         PreviewScene("settings-displays", size: CGSize(width: 860, height: 2300), wallpaper: false) {
+            AnyView(PowerDisplayPreviews.settings())
         }]
     }
 }

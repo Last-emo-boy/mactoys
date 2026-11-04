@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import Foundation
 import MacToysCore
@@ -20,6 +21,12 @@ struct MonitorPrefs: Codable, Equatable {
     var capabilities: String?
     /// The name last seen, for disconnected monitors in profile editors.
     var lastName: String?
+    /// Starred resolutions (`ResolutionKey.string`), in the order they were starred.
+    var favoriteModes: [String] = []
+    /// Software dimming (0…1) last set, restored at launch with "restore" on.
+    var lastSoftDim: Double?
+    /// Brightness level offset to the sync source (`BrightnessLevel` units).
+    var syncOffset: Double?
 
     func shows(_ feature: DisplayFeature) -> Bool {
         switch feature {
@@ -30,6 +37,29 @@ struct MonitorPrefs: Codable, Equatable {
         case .colorTemperature: showColorTemperature
         case .powerState: showPowerState
         }
+    }
+}
+
+extension MonitorPrefs {
+    /// Missing keys take their defaults: monitor entries live in a dictionary, which the settings
+    /// store's default merge doesn't reach, and older files lack the newer fields.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = MonitorPrefs()
+        hidden = try c.decodeIfPresent(Bool.self, forKey: .hidden) ?? d.hidden
+        showContrast = try c.decodeIfPresent(Bool.self, forKey: .showContrast) ?? d.showContrast
+        showVolume = try c.decodeIfPresent(Bool.self, forKey: .showVolume) ?? d.showVolume
+        showInputSource = try c.decodeIfPresent(Bool.self, forKey: .showInputSource) ?? d.showInputSource
+        showColorTemperature = try c.decodeIfPresent(Bool.self, forKey: .showColorTemperature) ?? d.showColorTemperature
+        showPowerState = try c.decodeIfPresent(Bool.self, forKey: .showPowerState) ?? d.showPowerState
+        excludeFromLinkedBrightness = try c.decodeIfPresent(Bool.self, forKey: .excludeFromLinkedBrightness) ?? d.excludeFromLinkedBrightness
+        lastBrightness = try c.decodeIfPresent(Int.self, forKey: .lastBrightness)
+        lastColorPreset = try c.decodeIfPresent(Int.self, forKey: .lastColorPreset)
+        capabilities = try c.decodeIfPresent(String.self, forKey: .capabilities)
+        lastName = try c.decodeIfPresent(String.self, forKey: .lastName)
+        favoriteModes = try c.decodeIfPresent([String].self, forKey: .favoriteModes) ?? d.favoriteModes
+        lastSoftDim = try c.decodeIfPresent(Double.self, forKey: .lastSoftDim)
+        syncOffset = try c.decodeIfPresent(Double.self, forKey: .syncOffset)
     }
 }
 
@@ -93,7 +123,31 @@ struct PowerDisplaySettings: Codable, Equatable {
     var vcpNames: [VCPNameMapping] = []
     var monitors: [String: MonitorPrefs] = [:]
 
+    /// Brightness sliders continue below the hardware minimum by dimming in software.
+    var softwareDimming = true
+    var dimMethod: DimMethod = .automatic
+    /// How dark software dimming goes at the end of the slider: 0.85 leaves 15 % of the light.
+    var maxSoftwareDim = 0.85
+    /// Brightness sliders of EDR displays continue past 100 % into the extra headroom.
+    var extraBrightness = false
+    /// The multiplier at the end of the extra brightness range.
+    var maxExtraBrightness = 1.6
+    /// After a resolution change, ask to keep it and switch back after 15 seconds otherwise.
+    var confirmModeChanges = true
+    /// Leave out 1× modes whose size also exists as HiDPI.
+    var hideLowResolutionModes = false
+    /// Displays follow this monitor's brightness, keeping their distance (nil: off). Linked
+    /// brightness takes precedence.
+    var syncSource: String?
+    var showNightShiftButton = true
+    var pip = PiPOptions()
+    var virtualDisplays: [VirtualDisplayConfig] = []
+    /// Set while a color table is dimmed; a launch that finds it set hands the tables back to ColorSync.
+    var gammaDimmed = false
+
     static let wheelIncrements = [1, 2, 5, 10, 15, 20, 25]
+    static let maxSoftwareDimRange: ClosedRange<Double> = 0.5...0.95
+    static let maxExtraBrightnessRange: ClosedRange<Double> = 1.2...2.0
 
     func prefs(_ id: String) -> MonitorPrefs { monitors[id] ?? MonitorPrefs() }
 
@@ -184,6 +238,15 @@ final class MonitorState: Identifiable {
     var percent: [DisplayFeature: Double] = [:]
     /// Selected discrete values.
     var discrete: [DisplayFeature: UInt16] = [:]
+    /// Software dimming, 0…1, and extra brightness, 0…1 (see `BrightnessComponents`).
+    var softDim: Double = 0
+    var boost: Double = 0
+    /// Resolutions, read from CoreGraphics on the main thread after each scan.
+    var modes: ModeCatalog?
+    var facts = DisplayFacts()
+    /// The ColorSync profile in use and the display's own.
+    var colorProfile: URL?
+    var factoryProfile: URL?
 
     init(_ snapshot: MonitorSnapshot) {
         self.id = snapshot.id
@@ -201,4 +264,32 @@ final class MonitorState: Identifiable {
 
     func supports(_ f: DisplayFeature) -> Bool { snapshot.readings[f] != nil }
     var name: String { snapshot.isUnnamed ? String(localized: "Display \(snapshot.number)") : snapshot.name }
+
+    /// The combined slider's components (hardware percent, software dim, boost).
+    var components: BrightnessComponents {
+        BrightnessComponents(hardware: percent[.brightness] ?? 100, dim: softDim, boost: boost)
+    }
+}
+
+/// Facts about a display that change with the arrangement, read on the main thread.
+struct DisplayFacts: Equatable, Sendable {
+    var isMain = false
+    /// The display this one shows a copy of.
+    var mirrorOf: CGDirectDisplayID?
+    /// Global top-left bounds, in points.
+    var bounds = CGRect.zero
+    /// `NSScreen.maximumPotentialExtendedDynamicRangeColorComponentValue` (1 without EDR).
+    var edrPotential: Double = 1
+    var gammaCapacity = 0
+
+    var supportsExtraBrightness: Bool { edrPotential > 1.5 }
+
+    @MainActor
+    static func read(_ id: CGDirectDisplayID) -> DisplayFacts {
+        let screen = NSScreen.screens.first { $0.displayID == id }
+        return DisplayFacts(isMain: CGDisplayIsMain(id) != 0, mirrorOf: DisplayArranger.mirrorSource(of: id),
+                            bounds: CGDisplayBounds(id),
+                            edrPotential: Double(screen?.maximumPotentialExtendedDynamicRangeColorComponentValue ?? 1),
+                            gammaCapacity: Int(CGDisplayGammaTableCapacity(id)))
+    }
 }
