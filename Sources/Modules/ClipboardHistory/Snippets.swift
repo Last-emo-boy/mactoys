@@ -62,7 +62,9 @@ public enum SnippetExpander {
         var i = template.startIndex
         while i < template.endIndex {
             let ch = template[i]
-            guard ch == "{", let close = template[i...].firstIndex(of: "}") else {
+            // The nearest brace pair: in "{ return {date} }" the outer braces stay as typed.
+            guard ch == "{", let close = template[template.index(after: i)...].firstIndex(where: { $0 == "{" || $0 == "}" }),
+                  template[close] == "}" else {
                 out.append(ch)
                 i = template.index(after: i)
                 continue
