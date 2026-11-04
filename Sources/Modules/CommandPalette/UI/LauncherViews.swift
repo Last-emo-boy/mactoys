@@ -24,6 +24,7 @@ struct ResultRow: View {
     var body: some View {
         HStack(spacing: 11) {
             ItemIconView(icon: item.icon, size: iconSize)
+                .opacity(item.isDimmed ? 0.45 : 1)
             VStack(alignment: .leading, spacing: 1) {
                 Text(verbatim: item.title)
                     .font(.system(size: 13.5, weight: .medium))
@@ -38,11 +39,18 @@ struct ResultRow: View {
                         .truncationMode(.middle)
                 }
             }
+            .opacity(item.isDimmed ? 0.5 : 1)
             Spacer(minLength: 8)
             if let hint, selected {
                 Text(verbatim: hint).font(.system(size: 11)).foregroundStyle(LauncherStyle.tertiary)
             }
-            if showAccessory, let accessory = item.accessory {
+            if !item.keycaps.isEmpty {
+                HStack(spacing: 3) {
+                    ForEach(Array(item.keycaps.enumerated()), id: \.offset) { LauncherKey(key: $0.element) }
+                }
+                .opacity(item.isDimmed ? 0.5 : 1)
+                .fixedSize()
+            } else if showAccessory, let accessory = item.accessory {
                 Text(verbatim: accessory)
                     .font(.system(size: 11.5))
                     .foregroundStyle(LauncherStyle.secondary)

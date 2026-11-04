@@ -128,6 +128,12 @@ struct ProviderOptions: Codable, Equatable, Sendable {
     var brewIncludeCasks = true
     // Editors (VS Code workspaces): editor id → enabled
     var editors: [String: Bool] = [:]
+    // Menu commands
+    var menusShowDisabled = true
+    /// Apps whose menus are never read (names or bundle ids).
+    var menusExcludedApps: [String] = []
+    /// App key (bundle id) → ids of commands the user hid.
+    var menusHidden: [String: [String]] = [:]
 
     /// The script folder, defaulting to ~/Library/Application Support/MacToys/cmdpal/scripts.
     var resolvedScriptsFolder: URL {

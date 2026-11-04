@@ -19,6 +19,7 @@ struct CommandPaletteSettingsView: View {
     var body: some View {
         SettingsPage(module: module, hero: { hero }) {
             activation
+            menuCommands
             behavior
             layout
             pinned
@@ -55,6 +56,28 @@ struct CommandPaletteSettingsView: View {
             Toggle(isOn: $settings.value.ignoreInFullScreen) {
                 RowLabel("Ignore the shortcut while an app is full screen")
             }
+        }
+    }
+
+    private var menuCommands: some View {
+        Section {
+            ShortcutRow("Search the menus of the front app", subtitle: "Opens Command Palette on the menu bar commands of the app you’re using",
+                        shortcut: $settings.value.menuActivation)
+            LabeledContent {
+                if let alias = settings.value.aliases.first(where: { $0.target == MenuCommandsProvider.pageID }) {
+                    Keycaps(alias.direct ? [alias.alias] : [alias.alias, "␣"])
+                } else {
+                    Text("No alias").foregroundStyle(.secondary)
+                }
+            } label: {
+                RowLabel("In the main search",
+                         subtitle: "Type the alias and a space, then the command. Turn on Main search under Extensions › Menu Commands to mix them into every search.")
+            }
+        } header: {
+            Text("Menu Commands")
+        } footer: {
+            Text("Each command shows where it is in the menus and its shortcut; ↵ switches back to the app and chooses it. Commands that can’t run right now are dimmed.")
+                .font(.footnote).foregroundStyle(.secondary)
         }
     }
 

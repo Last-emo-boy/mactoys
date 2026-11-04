@@ -121,6 +121,10 @@ struct PaletteItem: Identifiable {
     var keywords: [String] = []
     /// Text Tab puts in the search field (a folder path to browse into).
     var autocomplete: String?
+    /// Shown faded: a menu command that can't run right now.
+    var isDimmed = false
+    /// Keycaps shown on the right instead of the accessory label (a menu command's shortcut).
+    var keycaps: [String] = []
 
     /// Every action, primary first.
     @MainActor func allActions() -> [PaletteAction] { [primary] + actions + (moreActions?() ?? []) }

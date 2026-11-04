@@ -88,6 +88,8 @@ struct CommandPaletteSettings: Codable, Equatable, Sendable {
 
     // Activation
     var activation: Shortcut? = Shortcut(kVK_Space, [.option])
+    /// Opens the palette on the menu commands of the front app.
+    var menuActivation: Shortcut? = Shortcut(kVK_ANSI_M, [.control, .option, .shift])
     var ignoreInFullScreen = false
     // Behavior
     var keepQuery = false
@@ -121,6 +123,8 @@ struct CommandPaletteSettings: Codable, Equatable, Sendable {
     // Command links
     var enableCommandLinks = true
     var allowedLinks: [String] = []
+    /// Set once the menu commands alias was added to settings saved before it existed.
+    var menuAliasAdded = false
 
     /// Titles are stored with the settings, so they stay in the language they were created in.
     static var defaultPins: [PinnedCommand] {
@@ -157,7 +161,13 @@ struct CommandPaletteSettings: Codable, Equatable, Sendable {
             CommandAlias(alias: "kill", target: "processes:page", title: String(localized: "Processes"), direct: false),
             CommandAlias(alias: "brew", target: "brew:page", title: "Homebrew", direct: false),
             CommandAlias(alias: "sc", target: "scripts:page", title: String(localized: "Script Commands"), direct: false),
+            menuAlias,
         ]
+    }
+
+    static var menuAlias: CommandAlias {
+        CommandAlias(alias: MenuCommandsProvider.keyword, target: MenuCommandsProvider.pageID,
+                     title: String(localized: "Menu Commands", comment: "Provider name: the menu bar commands of the front app"), direct: false)
     }
 
     @MainActor func toggle(for p: any SearchProvider) -> ProviderToggle {

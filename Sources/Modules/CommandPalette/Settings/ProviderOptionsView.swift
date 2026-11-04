@@ -82,6 +82,7 @@ struct ProviderOptionsView: View {
         case "brew": brew
         case "scripts": scripts
         case "editors": editors
+        case "menus": MenuOptionsView(options: options)
         case "history":
             LabeledContent { Button("Clear History") { LauncherEngine.shared.usage.clearHistory() } } label: {
                 RowLabel("History", subtitle: "\(LauncherEngine.shared.usage.history.count) entries, shared by Command Palette and Run")
@@ -272,4 +273,50 @@ struct ProviderHeader: View {
 
 /// Providers that have their own options.
 let providersWithOptions: Set<String> = ["apps", "files", "calc", "units", "time", "web", "url", "shell", "windows", "system",
-                                         "clipboard", "bookmarks", "processes", "brew", "scripts", "editors", "history"]
+                                         "clipboard", "bookmarks", "processes", "brew", "scripts", "editors", "menus", "history"]
+
+/// Options of Menu Commands: dimmed commands, apps left out, hidden commands, usage.
+struct MenuOptionsView: View {
+    @Bindable var options: Persisted<ProviderOptions>
+
+    var body: some View {
+        Toggle(isOn: $options.value.menusShowDisabled) {
+            RowLabel("Show commands that can’t run right now", subtitle: "Dimmed, as in the menu; choosing one does nothing.")
+        }
+        ExcludedAppsEditor("Apps without menu commands", apps: $options.value.menusExcludedApps)
+        let hidden = options.value.menusHidden.filter { !$0.value.isEmpty }.sorted { $0.key < $1.key }
+        if hidden.isEmpty {
+            RowLabel("Hidden commands", subtitle: "None. Press ⌘K on a menu command and choose Hide This Command.")
+        } else {
+            ForEach(hidden, id: \.key) { app, ids in
+                ForEach(ids, id: \.self) { id in
+                    LabeledContent {
+                        Button("Show Again") {
+                            options.update { o in
+                                o.menusHidden[app]?.removeAll { $0 == id }
+                                if o.menusHidden[app]?.isEmpty == true { o.menusHidden[app] = nil }
+                            }
+                        }
+                    } label: {
+                        RowLabel(title: Text(verbatim: Self.path(id)), subtitle: Text(verbatim: Self.appName(app)))
+                    }
+                }
+            }
+        }
+        LabeledContent {
+            Button("Clear") { (LauncherEngine.shared.provider("menus") as? MenuCommandsProvider)?.usage.clear() }
+        } label: {
+            RowLabel("Recently used commands", subtitle: "Commands you run often rise to the top, separately in each app.")
+        }
+    }
+
+    /// "File › Export To › PDF…" from a command id.
+    static func path(_ id: String) -> String {
+        id.split(separator: "\u{1F}").filter { !$0.hasPrefix("#") }.joined(separator: " › ")
+    }
+
+    static func appName(_ key: String) -> String {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: key) else { return key }
+        return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
+    }
+}

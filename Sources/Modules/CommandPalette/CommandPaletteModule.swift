@@ -5,6 +5,7 @@ import SwiftUI
 
 /// PowerToys Command Palette: one search box for apps, files, windows, commands, clipboard
 /// history and more, with nested pages, a quick access shelf, aliases and command hotkeys.
+/// ⌃⌥⇧M opens it on the menu bar commands of the app in front.
 @MainActor
 public final class CommandPaletteModule: ToyModule {
     public let info = ModuleInfo(
@@ -40,7 +41,20 @@ public final class CommandPaletteModule: ToyModule {
             self.model.reloadShelf()
             self.model.refresh()
         }
+        addMenuAliasOnce()
         settingsChanged()
+    }
+
+    /// Settings saved before menu commands existed get their alias once; a user who deletes it keeps it deleted.
+    private func addMenuAliasOnce() {
+        guard !settings.value.menuAliasAdded else { return }
+        settings.update { s in
+            let alias = CommandPaletteSettings.menuAlias
+            if !s.aliases.contains(where: { $0.target == alias.target || $0.alias.lowercased() == alias.alias }) {
+                s.aliases.append(alias)
+            }
+            s.menuAliasAdded = true
+        }
     }
 
     public func stop() {
@@ -59,6 +73,7 @@ public final class CommandPaletteModule: ToyModule {
         let s = settings.value
         HotkeyCenter.shared.unregister(prefix: "\(info.id).")
         HotkeyCenter.shared.register("\(info.id).activate", s.activation) { [weak self] in self?.activationPressed() }
+        HotkeyCenter.shared.register("\(info.id).menus", s.menuActivation) { [weak self] in self?.openMenuCommands() }
         for (i, hk) in s.hotkeys.enumerated() {
             guard let shortcut = hk.shortcut else { continue }
             let target = hk.target
@@ -80,6 +95,38 @@ public final class CommandPaletteModule: ToyModule {
     }
 
     // MARK: Opening
+
+    var menus: MenuCommandsProvider? { engine.provider("menus") as? MenuCommandsProvider }
+
+    /// Opens the palette on the menu commands of the app in front (pressed again: closes it).
+    func openMenuCommands() {
+        if window.isVisible {
+            if model.currentPage?.id == MenuCommandsProvider.pageID { window.dismissLauncher(restoreFocus: true); return }
+        }
+        guard let menus, settings.value.toggle(for: menus).enabled else {
+            HUD.show("Menu Commands are turned off in Command Palette settings", symbol: "menubar.rectangle")
+            return
+        }
+        guard AXIsProcessTrusted() else {
+            HUD.show("Accessibility permission needed", symbol: "exclamationmark.shield")
+            PermissionCenter.shared.request(.accessibility)
+            return
+        }
+        menus.captureTarget()
+        guard let target = menus.target else {
+            HUD.show("No app in front", symbol: "menubar.rectangle")
+            return
+        }
+        if menus.isExcluded(NSRunningApplication(processIdentifier: target.pid)) {
+            HUD.show("Menu commands are turned off for \(target.name)", symbol: "menubar.rectangle")
+            return
+        }
+        if window.isVisible {
+            model.push(menus.page)
+        } else {
+            open(page: menus.page)
+        }
+    }
 
     /// Shows the palette at Home (or where it was, depending on settings).
     func open(query: String? = nil, page: ListPage? = nil, filter: String? = nil) {
@@ -423,12 +470,15 @@ public final class CommandPaletteModule: ToyModule {
                 guard let self, let page = self.engine.page(for: "clipboard:page") else { return }
                 self.open(page: page)
             },
+            QuickAction(id: "cmdpal.menus", title: "Menu Commands", symbol: "menubar.rectangle", tint: .indigo,
+                        shortcut: settings.value.menuActivation) { [weak self] in self?.openMenuCommands() },
         ]
     }
 
     public var shortcutBindings: [ShortcutBinding] {
         let s = settings.value
         var list = [ShortcutBinding("Open Command Palette", s.activation),
+                    ShortcutBinding("Search the menu commands of the front app", s.menuActivation),
                     ShortcutBinding("Run pinned command 1–9", keys: ["⌥", "1…9"]),
                     ShortcutBinding("Select pinned command 1–9", keys: ["⌥", "⇧", "1…9"]),
                     ShortcutBinding("More actions", keys: ["⌘", "K"])]
@@ -437,7 +487,7 @@ public final class CommandPaletteModule: ToyModule {
     }
 
     /// `mactoys://cmdpal/show?query=…&page=clipboard:page&filter=apps`, `toggle`, `hide`,
-    /// `run?id=<command id>`, `settings`.
+    /// `run?id=<command id>`, `menus` (menu commands of the front app), `settings`.
     public func handle(_ command: AppCommand) -> Bool {
         switch command.action {
         case "show", "open":
@@ -455,6 +505,10 @@ public final class CommandPaletteModule: ToyModule {
         case "run":
             guard isEnabled, let id = command.parameters["id"], !id.isEmpty else { return false }
             return runLink(id)
+        case "menus":
+            guard isEnabled else { return false }
+            openMenuCommands()
+            return true
         case "settings":
             ModuleRegistry.shared.showSettings?(info.id)
             return true
