@@ -67,6 +67,8 @@ enum MonitorKind: String, Codable, Sendable {
     case appleNative
     /// DDC/CI over IOAVService.
     case ddc
+    /// A virtual display MacToys created: software dimming, modes and picture in picture only.
+    case virtual
     /// No supported channel (DisplayLink, AirPlay, Sidecar, Intel Macs…).
     case unsupported
 }
@@ -104,6 +106,7 @@ struct MonitorSnapshot: Sendable, Identifiable {
         case .builtIn: String(localized: "Built-in", comment: "How a display is connected")
         case .appleNative: String(localized: "Apple display", comment: "How a display is connected")
         case .ddc: transport   // protocol and port names
+        case .virtual: String(localized: "Virtual", comment: "How a display is connected: a virtual display MacToys created")
         case .unsupported: String(localized: "Not supported", comment: "How a display is connected: MacToys can't control it")
         }
     }
@@ -132,17 +135,18 @@ final class DisplayEngine: @unchecked Sendable {
         let assignment = Self.match(displays: displays.filter { !$0.isBuiltIn }, services: avServices)
         var result: [MonitorSnapshot] = []
         var newEndpoints: [String: Endpoint] = [:]
-        var seenIDs: [String: Int] = [:]
         let timing = maxCompatibility ? DDCChannel.Timing.patient : DDCChannel.Timing()
 
+        let ids = Self.stableIDs(displays)
         for (index, d) in displays.enumerated() {
-            var id = d.baseID
-            seenIDs[id, default: 0] += 1
-            if let n = seenIDs[id], n > 1 { id += "#\(n)" }
+            let id = ids[index]
             var snapshot = MonitorSnapshot(id: id, number: index + 1, name: d.name, displayID: d.id, kind: .unsupported,
                                            transport: "Not supported", capabilities: nil, readings: [:], options: [:],
                                            rotation: Int(CGDisplayRotation(d.id)))
-            if d.isBuiltIn || DisplayServices.canChangeBrightness(d.id) {
+            if VirtualDisplayAPI.isVirtual(vendor: d.vendor, model: d.model) {
+                snapshot.kind = .virtual
+                snapshot.transport = "Virtual"
+            } else if d.isBuiltIn || DisplayServices.canChangeBrightness(d.id) {
                 snapshot.kind = d.isBuiltIn ? .builtIn : .appleNative
                 snapshot.transport = d.isBuiltIn ? "Built-in" : "Apple display"
                 if let b = DisplayServices.brightness(d.id) {
@@ -189,6 +193,16 @@ final class DisplayEngine: @unchecked Sendable {
                 snapshot.options[feature] = values.sorted()
                 snapshot.readings[feature]?.current = current
             }
+        }
+    }
+
+    /// Monitor ids in display order: `vendor-model-serial`, `#2`, `#3` … for identical twins.
+    static func stableIDs(_ displays: [OnlineDisplay]) -> [String] {
+        var seen: [String: Int] = [:]
+        return displays.map { d in
+            seen[d.baseID, default: 0] += 1
+            let n = seen[d.baseID] ?? 1
+            return n > 1 ? "\(d.baseID)#\(n)" : d.baseID
         }
     }
 
