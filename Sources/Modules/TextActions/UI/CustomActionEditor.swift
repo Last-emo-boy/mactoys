@@ -14,17 +14,20 @@ struct CustomActionEditor: View {
     @State private var trial: Trial?
     @State private var running = false
     @State private var shortcutNames: [String] = []
+    private let height: CGFloat?
 
     enum Trial: Equatable {
         case success(String)
         case failure(String)
     }
 
-    init(action: CustomAction, isNew: Bool, trial: Trial? = nil, onSave: @escaping (CustomAction) -> Void,
-         onDelete: (() -> Void)?) {
+    /// `trial` and a flexible `height` are for preview scenes.
+    init(action: CustomAction, isNew: Bool, trial: Trial? = nil, height: CGFloat? = 680,
+         onSave: @escaping (CustomAction) -> Void, onDelete: (() -> Void)?) {
         _action = State(initialValue: action)
         _trial = State(initialValue: trial)
         self.isNew = isNew
+        self.height = height
         self.onSave = onSave
         self.onDelete = onDelete
     }
@@ -52,7 +55,7 @@ struct CustomActionEditor: View {
             Divider()
             footer
         }
-        .frame(width: 560, height: 680)
+        .frame(width: 560, height: height)
         .task(id: action.kind) {
             if action.kind == .shortcut && shortcutNames.isEmpty { shortcutNames = await ScriptRunner.shortcutNames() }
         }
@@ -79,13 +82,14 @@ struct CustomActionEditor: View {
     }
 
     private var typeSection: some View {
-        Section {
+        Section("Type") {
             Picker(selection: $action.kind) {
                 ForEach(CustomAction.Kind.allCases, id: \.self) { Text(verbatim: $0.shortTitle).tag($0) }
             } label: {
-                RowLabel("Type")
+                Text("Type")
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
             .onChange(of: action.kind) { old, new in
                 if action.symbol == old.symbol { action.symbol = new.symbol }
                 trial = nil

@@ -177,12 +177,11 @@ struct ResultCardView: View {
         let s = scale
         let actions = buttonList
         if !actions.isEmpty {
-            HStack(spacing: 6 * s) {
+            WrappingRow(spacing: 6 * s) {
                 ForEach(Array(actions.enumerated()), id: \.offset) { index, button in
                     CardButton(title: button.title, symbol: button.symbol, prominent: index == 0, scale: s,
                                confirmed: copied && button.isCopy) { onAction(button.action) }
                 }
-                Spacer(minLength: 0)
             }
         }
     }
@@ -220,6 +219,41 @@ struct ResultCardView: View {
                                    symbol: "globe", action: .openLanguageSettings))
         }
         return list
+    }
+}
+
+/// Views in a row that wraps onto more rows when they don't fit, so longer translations of
+/// the button titles stay inside the card.
+struct WrappingRow: Layout {
+    var spacing: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        arrange(subviews, width: proposal.width ?? .infinity).size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let origins = arrange(subviews, width: bounds.width).origins
+        for (view, origin) in zip(subviews, origins) {
+            view.place(at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y), proposal: .unspecified)
+        }
+    }
+
+    private func arrange(_ subviews: Subviews, width: CGFloat) -> (origins: [CGPoint], size: CGSize) {
+        var origins: [CGPoint] = []
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0, widest: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > width {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            origins.append(CGPoint(x: x, y: y))
+            widest = max(widest, x + size.width)
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+        }
+        return (origins, CGSize(width: widest, height: y + rowHeight))
     }
 }
 

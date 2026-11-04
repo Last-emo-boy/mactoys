@@ -143,11 +143,14 @@ enum LanguageGuess {
         return x == y
     }
 
-    /// "Japanese", "Chinese, Simplified" in the UI language.
-    static func name(_ language: Locale.Language) -> String {
-        Locale.current.localizedString(forIdentifier: language.maximalIdentifier)
-            ?? Locale.current.localizedString(forLanguageCode: language.languageCode?.identifier ?? "")
-            ?? language.minimalIdentifier
+    /// "Japanese", "Chinese, Simplified" in the UI language. The script only matters for
+    /// Chinese; regions and the usual script are left out ("English", not "English (Latin,
+    /// United States)").
+    static func name(_ language: Locale.Language, locale: Locale = .current) -> String {
+        guard let code = language.languageCode?.identifier else { return language.minimalIdentifier }
+        let script = code == "zh" ? Locale.Language(identifier: language.maximalIdentifier).script?.identifier : nil
+        let identifier = script.map { "\(code)-\($0)" } ?? code
+        return locale.localizedString(forIdentifier: identifier) ?? identifier
     }
 }
 

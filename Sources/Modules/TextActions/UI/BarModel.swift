@@ -79,23 +79,45 @@ final class BarModel {
     var below = false
     /// Reserve room for the caption (off in the settings preview).
     var showsCaption = true
+    /// Preview scenes draw the pointer over the hovered button.
+    var drawsPointer = false
 
     @ObservationIgnored var onActivate: ((BarItem) -> Void)?
     @ObservationIgnored var onCardAction: ((CardAction) -> Void)?
     /// Button frames in the panel's top-left coordinates, for hover tracking.
     @ObservationIgnored var itemFrames: [Int: CGRect] = [:]
+    /// Button centers across the bar, so the caption can sit over the one it names.
+    var captionAnchors: [Int: CGFloat] = [:]
 
     var current: [BarItem] { BarItems.page(page, of: items, visibleCount: visibleCount) }
 
-    /// The item named by the caption: the keyboard selection, else the hovered one.
-    var captionItem: BarItem? {
+    /// The button the caption names: the confirmed one, else the keyboard selection, else the
+    /// hovered one.
+    var captionIndex: Int? {
         let list = current
+        if doneCaption != nil, let doneID { return list.firstIndex { $0.id == doneID } }
         guard let i = keyboardMode ? (highlighted ?? hovered) : hovered, list.indices.contains(i) else { return nil }
-        return list[i]
+        return i
     }
 
     /// Whether a caption band is laid out next to the capsule.
     var hasCaptionBand: Bool { showsCaption && (style == .icons || current.contains { $0.face != nil }) }
+
+    /// The caption's text: the confirmation, else the name of a button whose title isn't on it.
+    var captionText: String? {
+        if let doneCaption { return doneCaption }
+        guard let i = captionIndex, needsCaption(current[i]) else { return nil }
+        return current[i].title
+    }
+
+    /// Every caption this page can show; the band is as wide as the longest.
+    var captionCandidates: [String] {
+        current.filter(needsCaption).map(\.title) + (doneCaption.map { [$0] } ?? [])
+    }
+
+    private func needsCaption(_ item: BarItem) -> Bool {
+        style == .icons || item.face != nil || item.kind == .more || item.kind == .back
+    }
 
     func pointerMoved(to point: CGPoint) {
         let hit = itemFrames.first { $0.value.insetBy(dx: -1, dy: -3).contains(point) }?.key
@@ -121,11 +143,13 @@ final class BarModel {
         card = nil
         cardCopied = false
         itemFrames = [:]
+        captionAnchors = [:]
     }
 
     func setPage(_ page: BarPage) {
         self.page = page
         itemFrames = [:]
+        captionAnchors = [:]
         hovered = nil
         highlighted = keyboardMode ? (page == .main ? 0 : min(1, current.count - 1)) : nil
     }

@@ -47,9 +47,14 @@ struct MockText<Overlay: View>: View {
                             .background(segment.selected ? Color(nsColor: .selectedTextBackgroundColor) : .clear)
                             .overlay(alignment: below ? .bottom : .top) {
                                 if segment.anchor {
-                                    overlay
-                                        .fixedSize()
-                                        .alignmentGuide(below ? .bottom : .top) { d in below ? d[.top] - 8 : d[.bottom] + 8 }
+                                    // A zero-size point on the run's edge; the overlay hangs off it.
+                                    Color.clear
+                                        .frame(width: 0, height: 0)
+                                        .overlay(alignment: below ? .top : .bottom) {
+                                            overlay
+                                                .fixedSize()
+                                                .padding(below ? .top : .bottom, 8)
+                                        }
                                 }
                             }
                             .zIndex(segment.anchor ? 1 : 0)
@@ -99,6 +104,7 @@ struct MockWindow<Content: View>: View {
     }
 
     var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 ForEach([Color(red: 1, green: 0.37, blue: 0.34), Color(red: 1, green: 0.74, blue: 0.18),
@@ -115,22 +121,42 @@ struct MockWindow<Content: View>: View {
             }
             .padding(.horizontal, 16)
             .frame(height: 44)
-            .background(Color(nsColor: .windowBackgroundColor))
-            Divider()
+            .background(UnevenRoundedRectangle(topLeadingRadius: 12, topTrailingRadius: 12, style: .continuous)
+                .fill(Color(nsColor: .windowBackgroundColor)))
+            Rectangle().fill(Color.primary.opacity(0.1)).frame(height: 1)
+            // Not clipped: the bar and cards may reach past the window, as they do on screen.
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(Color(nsColor: .textBackgroundColor))
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.primary.opacity(0.12)))
-        .shadow(color: .black.opacity(0.35), radius: 30, y: 14)
+        // The shadow belongs to the window shape alone: on the whole stack it would also fall
+        // from every line of text and from the bar.
+        .background(shape.fill(Color(nsColor: .textBackgroundColor)).shadow(color: .black.opacity(0.35), radius: 30, y: 14))
+        .overlay(shape.strokeBorder(Color.primary.opacity(0.12)))
+    }
+}
+
+/// The design boards' wallpaper.
+private let wallpaper = LinearGradient(colors: [Color(red: 0.09, green: 0.13, blue: 0.36), Color(red: 0.24, green: 0.17, blue: 0.56),
+                                                Color(red: 0.6, green: 0.25, blue: 0.53), Color(red: 0.88, green: 0.54, blue: 0.42)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+
+/// A preview scene on the wallpaper, filling the whole snapshot (under its toolbar too).
+private struct SceneStage<Content: View>: View {
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        ZStack {
+            wallpaper
+            content
+        }
+        .ignoresSafeArea()
     }
 }
 
 /// A static bar model for previews.
 @MainActor
 func previewBar(_ items: [BarItem], settings: TextActionsSettings, page: BarPage = .main, hovered: Int? = nil,
-                keyboard: Int? = nil, below: Bool = false) -> BarModel {
+                keyboard: Int? = nil, below: Bool = false, pointer: Bool = false) -> BarModel {
     let model = BarModel()
     model.reset(items: items, settings: settings, keyboard: keyboard != nil)
     model.page = page
@@ -138,6 +164,7 @@ func previewBar(_ items: [BarItem], settings: TextActionsSettings, page: BarPage
     model.highlighted = keyboard
     model.isShown = true
     model.below = below
+    model.drawsPointer = pointer
     return model
 }
 
@@ -184,9 +211,7 @@ private struct HeroStage: View {
         model.visibleCount = min(settings.visibleCount, cap)
         return ZStack {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(LinearGradient(colors: [Color(red: 0.09, green: 0.13, blue: 0.36), Color(red: 0.24, green: 0.17, blue: 0.56),
-                                              Color(red: 0.6, green: 0.25, blue: 0.53), Color(red: 0.88, green: 0.54, blue: 0.42)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(wallpaper)
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 6) {
                     ForEach(0..<3, id: \.self) { _ in Circle().fill(Color.primary.opacity(0.15)).frame(width: 8, height: 8) }
@@ -204,9 +229,9 @@ private struct HeroStage: View {
             .padding(.horizontal, 22)
             .padding(.vertical, 14)
             .frame(maxWidth: 600, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color(nsColor: .textBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color(nsColor: .textBackgroundColor))
+                .shadow(color: .black.opacity(0.25), radius: 12, y: 6))
             .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(Color.primary.opacity(0.1)))
-            .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
             .padding(.horizontal, 24)
         }
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -223,9 +248,9 @@ enum TextActionsPreviews {
     static func scenes(settings base: TextActionsSettings) -> [PreviewScene] {
         var s = TextActionsSettings()
         s.visibleCount = 7
-        let sortLines = CustomAction(name: "Sort Lines", symbol: "arrow.up.arrow.down", kind: .shell, script: "sort", output: .replace)
-        let github = CustomAction(name: "Search GitHub", symbol: "chevron.left.forwardslash.chevron.right", kind: .url,
-                                  template: "https://github.com/search?q={text}")
+        // Two of the examples offered under New Action, as a user would have added them.
+        let examples = CustomActionExamples.all
+        let github = examples[0], sortLines = examples[1]
         s.add(github)
         s.add(sortLines)
         var labels = s
@@ -235,36 +260,44 @@ enum TextActionsPreviews {
                                    .builtIn(.changeCase), .builtIn(.count), .builtIn(.speak), .custom(github), .custom(sortLines)]
 
         return [
-            PreviewScene("bar", size: size) {
-                AnyView(notes(selection: "Liquid Glass", pointer: true) {
-                    ActionBarView(model: previewBar(editable, settings: s, hovered: 4))
+            PreviewScene("bar", size: size, wallpaper: false) {
+                AnyView(SceneStage {
+                    notes(selection: "Liquid Glass") {
+                        ActionBarView(model: previewBar(editable, settings: s, hovered: 4, pointer: true))
+                    }
                 })
             },
-            PreviewScene("bar-labels", size: size) {
+            PreviewScene("bar-labels", size: size, wallpaper: false) {
                 let items: [BarItem] = [.builtIn(.copy), .builtIn(.openLink), .builtIn(.search), .builtIn(.markdownLink),
                                         .builtIn(.count), .builtIn(.speak)]
-                return AnyView(mail {
-                    ActionBarView(model: previewBar(items, settings: labels, keyboard: 1))
+                return AnyView(SceneStage {
+                    mail {
+                        ActionBarView(model: previewBar(items, settings: labels, keyboard: 1, below: true))
+                    }
                 })
             },
-            PreviewScene("overflow", size: size) {
-                AnyView(notes(selection: "Liquid Glass", pointer: true) {
-                    ActionBarView(model: previewBar(editable, settings: s, page: .overflow, hovered: 3))
+            PreviewScene("overflow", size: size, wallpaper: false) {
+                AnyView(SceneStage {
+                    notes(selection: "Liquid Glass") {
+                        ActionBarView(model: previewBar(editable, settings: s, page: .overflow, hovered: 3, pointer: true))
+                    }
                 })
             },
-            PreviewScene("case", size: size) {
-                AnyView(notes(selection: "Liquid Glass", pointer: false) {
-                    ActionBarView(model: previewBar(editable, settings: s, page: .cases, hovered: 3))
+            PreviewScene("case", size: size, wallpaper: false) {
+                AnyView(SceneStage {
+                    notes(selection: "Liquid Glass") {
+                        ActionBarView(model: previewBar(editable, settings: s, page: .cases, keyboard: 3))
+                    }
                 })
             },
-            PreviewScene("count", size: size) {
-                AnyView(countScene())
+            PreviewScene("count", size: size, wallpaper: false) {
+                AnyView(SceneStage { countScene() })
             },
-            PreviewScene("calculation", size: size) {
-                AnyView(calculationScene())
+            PreviewScene("calculation", size: size, wallpaper: false) {
+                AnyView(SceneStage { calculationScene() })
             },
-            PreviewScene("translation", size: size) {
-                AnyView(translationScene())
+            PreviewScene("translation", size: size, wallpaper: false) {
+                AnyView(SceneStage { translationScene() })
             },
             PreviewScene("editor", size: CGSize(width: 560, height: 680), wallpaper: false) {
                 let action = CustomAction(name: "Word Frequency", symbol: "list.bullet", kind: .shell,
@@ -272,8 +305,9 @@ enum TextActionsPreviews {
                                           output: .show)
                 return AnyView(CustomActionEditor(action: action, isNew: false,
                                                   trial: .success("   3 the\n   2 glass\n   1 light\n   1 soft\n   1 texture"),
-                                                  onSave: { _ in }, onDelete: {})
-                    .background(Color(nsColor: .windowBackgroundColor)))
+                                                  height: nil, onSave: { _ in }, onDelete: {})
+                    .background(Color(nsColor: .windowBackgroundColor))
+                    .ignoresSafeArea())
             },
         ]
     }
@@ -281,7 +315,7 @@ enum TextActionsPreviews {
     // MARK: Scenes
 
     /// A note being edited, one phrase selected, the bar (or a card) above it.
-    private static func notes<Overlay: View>(selection: String, pointer: Bool, @ViewBuilder overlay: () -> Overlay) -> some View {
+    private static func notes<Overlay: View>(selection: String, @ViewBuilder overlay: () -> Overlay) -> some View {
         MockWindow(title: "Notes", symbol: "note.text", tint: .yellow) {
             VStack(alignment: .leading, spacing: 18) {
                 Text(verbatim: "Launch plan")
@@ -291,25 +325,20 @@ enum TextActionsPreviews {
                     .foregroundStyle(.secondary)
                     .padding(.top, -12)
                 MockText([
-                    [.plain("The new release ships on Thursday. The demo opens on the")],
-                    [.selected(selection, anchor: true), .plain(" walkthrough and should stay under two minutes,")],
-                    [.plain("so trim the settings tour and keep the translation example.")],
-                    [.plain("Send the final cut to the press team by noon on Wednesday.")],
+                    [.plain("The demo now opens with the "), .selected(selection, anchor: true), .plain(" walkthrough. Keep it")],
+                    [.plain("under two minutes: trim the settings tour, keep the translation")],
+                    [.plain("example, and send the final cut to the press team by noon.")],
+                    [.plain("The release itself ships on Thursday.")],
                 ], overlay: overlay)
-                .padding(.top, 70)
-                .overlay(alignment: .topLeading) {
-                    if pointer {
-                        PointerArrow().offset(x: 72, y: 132)
-                    }
-                }
+                .padding(.top, 64)
             }
             .padding(.horizontal, 36)
             .padding(.vertical, 28)
         }
-        .frame(width: 720, height: 460)
+        .frame(width: 720, height: 440)
     }
 
-    /// A message with a link selected.
+    /// A message with a link selected, the bar below it.
     private static func mail<Overlay: View>(@ViewBuilder overlay: () -> Overlay) -> some View {
         MockWindow(title: "Mail", symbol: "envelope", tint: .blue) {
             VStack(alignment: .leading, spacing: 14) {
@@ -325,12 +354,13 @@ enum TextActionsPreviews {
                 MockText([
                     [.plain("Hi Jonas,")],
                     [.plain(" ")],
-                    [.plain("The 4K master is up for review: "), .selected("https://review.example.com/launch-film", anchor: true)],
                     [.plain("Comments by Thursday would be perfect — the press kit goes out Friday.")],
+                    [.plain("The 4K master is up for review: "), .selected("https://review.example.com/launch-film", anchor: true)],
+                    [.plain(" ")],
                     [.plain(" ")],
                     [.plain("Thanks, Mara")],
-                ], overlay: overlay)
-                .padding(.top, 64)
+                ], below: true, overlay: overlay)
+                .padding(.top, 20)
             }
             .padding(.horizontal, 32)
             .padding(.vertical, 24)
@@ -399,6 +429,8 @@ enum TextActionsPreviews {
             VStack(alignment: .leading, spacing: 14) {
                 Text(verbatim: "デザインの新しい方向性")
                     .font(.system(size: 24, weight: .bold))
+                Text(verbatim: "今年のアップデートで、画面の見た目が大きく変わりました。")
+                    .font(.system(size: 16))
                 MockText([
                     [.selected("新しいデザインは、ガラスのような質感と、下にある")],
                     [.selected("コンテンツに寄り添う柔らかな光が特徴です。", anchor: true)],
@@ -406,10 +438,6 @@ enum TextActionsPreviews {
                     ResultCardView(card: card, scale: 1) { _ in }
                         .environment(\.colorScheme, .dark)
                 }
-                .zIndex(1)
-                Text(verbatim: "操作に合わせて形を変え、必要なときだけ前面に現れます。")
-                    .font(.system(size: 16))
-                    .padding(.top, 2)
             }
             .padding(.horizontal, 36)
             .padding(.vertical, 28)

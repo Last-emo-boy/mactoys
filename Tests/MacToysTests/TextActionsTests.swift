@@ -343,6 +343,15 @@ import Testing
         #expect(ScriptIO.appleScriptSource("display dialog {text}", text: "Hi \"you\"") == #"display dialog "Hi \"you\"""#)
     }
 
+    @Test func languageNamesStayShort() {
+        let en = Locale(identifier: "en_US")
+        #expect(LanguageGuess.name(Locale.Language(identifier: "en-US"), locale: en) == "English")
+        #expect(LanguageGuess.name(Locale.Language(identifier: "ja"), locale: en) == "Japanese")
+        #expect(LanguageGuess.name(Locale.Language(identifier: "pt-BR"), locale: en) == "Portuguese")
+        #expect(LanguageGuess.name(Locale.Language(identifier: "zh-Hans"), locale: en) == "Chinese, Simplified")
+        #expect(LanguageGuess.name(Locale.Language(identifier: "zh-TW"), locale: en) == "Chinese, Traditional")
+    }
+
     // MARK: Custom actions file
 
     @Test func customActionsRoundTrip() throws {

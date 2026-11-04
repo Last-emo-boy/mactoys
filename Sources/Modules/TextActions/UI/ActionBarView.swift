@@ -32,16 +32,21 @@ struct BarRootView: View {
     }
 }
 
-/// The capsule of action buttons, with a caption naming the pointed-at action.
+/// The capsule of action buttons, with a caption over the pointed-at action.
 struct ActionBarView: View {
+    static let space = "textactions.stack"
     let model: BarModel
 
     var body: some View {
         let s = model.scale
         VStack(spacing: BarMetrics.captionSpacing * s) {
-            if model.hasCaptionBand && !model.below { caption }
+            if model.hasCaptionBand && !model.below { captionRoom }
             capsule
-            if model.hasCaptionBand && model.below { caption }
+            if model.hasCaptionBand && model.below { captionRoom }
+        }
+        .coordinateSpace(.named(Self.space))
+        .overlay(alignment: model.below ? .bottom : .top) {
+            if model.hasCaptionBand { BarCaption(model: model) }
         }
     }
 
@@ -56,29 +61,64 @@ struct ActionBarView: View {
             }
         }
         .padding(4 * s)
-        .background { BarGlass(shape: Capsule()) }
+        // Circular ends: the edge of a continuous capsule is drawn with a straight sliver
+        // standing off each end.
+        .background { BarGlass(shape: Capsule(style: .circular)) }
     }
 
-    private var captionText: String? {
-        if let done = model.doneCaption { return done }
-        guard let item = model.captionItem else { return nil }
-        return model.style == .icons || item.face != nil || item.kind == .more || item.kind == .back ? item.title : nil
+    /// Room for the caption, as wide as the longest one this page can show so the panel is
+    /// measured with space for it.
+    private var captionRoom: some View {
+        ZStack {
+            ForEach(Array(model.captionCandidates.enumerated()), id: \.offset) { _, text in
+                CaptionPill(text: text, scale: model.scale)
+            }
+        }
+        .hidden()
+        .frame(height: BarMetrics.captionHeight * model.scale)
+        .accessibilityHidden(true)
     }
+}
 
-    private var caption: some View {
-        let s = model.scale
-        let text = captionText
-        return Text(verbatim: text ?? " ")
-            .font(.system(size: 11.5 * s, weight: .semibold))
+/// The caption pill, slid over the button it names and kept inside the bar's width.
+private struct BarCaption: View {
+    let model: BarModel
+
+    var body: some View {
+        let text = model.captionText
+        let index = model.captionIndex
+        GeometryReader { geo in
+            let width = geo.size.width
+            let mid = index.flatMap { model.captionAnchors[$0] } ?? width / 2
+            ZStack(alignment: .leading) {
+                Color.clear
+                CaptionPill(text: text ?? " ", scale: model.scale)
+                    .alignmentGuide(.leading) { d in -min(max(mid - d.width / 2, 0), max(0, width - d.width)) }
+            }
+        }
+        .frame(height: BarMetrics.captionHeight * model.scale)
+        .opacity(text == nil ? 0 : 1)
+        .animation(.easeOut(duration: 0.12), value: text)
+        .animation(.snappy(duration: 0.2), value: index)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct CaptionPill: View {
+    let text: String
+    let scale: CGFloat
+
+    var body: some View {
+        Text(verbatim: text)
+            .font(.system(size: 11.5 * scale, weight: .semibold))
             .foregroundStyle(.white)
             .lineLimit(1)
-            .padding(.horizontal, 9 * s)
-            .frame(height: BarMetrics.captionHeight * s)
-            .background(Capsule().fill(Color.black.opacity(0.66)))
-            .overlay(Capsule().strokeBorder(.white.opacity(0.1), lineWidth: 0.5))
-            .opacity(text == nil ? 0 : 1)
-            .animation(.easeOut(duration: 0.12), value: text)
-            .accessibilityHidden(true)
+            .fixedSize()
+            .padding(.horizontal, 9 * scale)
+            .frame(height: BarMetrics.captionHeight * scale)
+            .background(Capsule(style: .circular).fill(Color.black.opacity(0.66)))
+            .overlay(Capsule(style: .circular).strokeBorder(.white.opacity(0.1), lineWidth: 0.5))
     }
 }
 
@@ -109,11 +149,21 @@ struct BarButton: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(BarButtonStyle(selected: model.keyboardMode && model.highlighted == index, hovered: model.hovered == index))
+        .overlay(alignment: .center) {
+            if model.drawsPointer && model.hovered == index {
+                PointerArrow().offset(x: 9 * s, y: 12 * s).allowsHitTesting(false)
+            }
+        }
         .accessibilityLabel(Text(verbatim: item.title))
         .onGeometryChange(for: CGRect.self) { proxy in
             proxy.frame(in: .named(BarRootView.space))
         } action: { frame in
             model.itemFrames[index] = frame
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.frame(in: .named(ActionBarView.space)).midX
+        } action: { mid in
+            model.captionAnchors[index] = mid
         }
     }
 
@@ -208,7 +258,8 @@ struct BarGlass<S: InsettableShape>: View {
             if reduceTransparency {
                 shape.fill(Color(red: 0.13, green: 0.13, blue: 0.15))
             } else {
-                shape.fill(Color(red: 0.11, green: 0.11, blue: 0.13).opacity(0.55))
+                // Denser than other overlays' glass: the bar sits on documents, often white ones.
+                shape.fill(Color(red: 0.1, green: 0.1, blue: 0.12).opacity(0.82))
                     .glassEffect(.regular, in: shape)
             }
         }
