@@ -48,7 +48,7 @@ struct ShelfSurface: View {
             if reduceTransparency {
                 shape.fill(Color(nsColor: .windowBackgroundColor))
             } else {
-                shape.fill(scheme == .dark ? Color(white: 0.12).opacity(0.62) : Color.white.opacity(0.6))
+                shape.fill(scheme == .dark ? Color(white: 0.12).opacity(0.66) : Color.white.opacity(0.68))
                     .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
             }
         }
@@ -137,8 +137,9 @@ private struct CollapsedShelf: View {
 struct ShelfPile: View {
     let model: ShelfModel
     let side: CGFloat
+    var showsCount = true
 
-    private static let fan: [(angle: Double, x: CGFloat, y: CGFloat)] = [(0, 0, 0), (-8, -0.13, 0.03), (7, 0.13, 0.05)]
+    private static let fan: [(angle: Double, x: CGFloat, y: CGFloat)] = [(0, 0, 0), (-9, -0.17, 0.04), (8, 0.17, 0.06)]
 
     var body: some View {
         let pile = model.shelf.pileItems
@@ -151,20 +152,31 @@ struct ShelfPile: View {
             }
         }
         .frame(width: side, height: side)
-        .overlay(alignment: .topTrailing) {
-            if model.items.count > 1 {
-                Text(verbatim: model.items.count.formatted())
-                    .font(.system(size: 11, weight: .bold).monospacedDigit())
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 6)
-                    .frame(minWidth: 21, minHeight: 21)
-                    .background(Capsule().fill(Tint.teal.color))
-                    .overlay(Capsule().strokeBorder(.white.opacity(0.9), lineWidth: 1.5))
-                    .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
-                    .offset(x: side * 0.2, y: -side * 0.1)
-                    .accessibilityLabel(Text("\(model.items.count) items", comment: "Shelf title: number of items on it"))
+        .overlay(alignment: .bottomTrailing) {
+            if showsCount, model.items.count > 1 {
+                CountBadge(count: model.items.count)
+                    .offset(x: side * 0.24, y: side * 0.1)
             }
         }
+    }
+}
+
+/// The number of items, as a white-rimmed tinted capsule.
+private struct CountBadge: View {
+    let count: Int
+
+    var body: some View {
+        Text(verbatim: count.formatted())
+            .font(.system(size: 11, weight: .bold).monospacedDigit())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .frame(minWidth: 20, minHeight: 20)
+            .background(Capsule().fill(Tint.teal.color))
+            .padding(1.5)
+            .background(Capsule().fill(.white))
+            .compositingGroup()
+            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+            .accessibilityLabel(Text("\(count) items", comment: "Shelf title: number of items on it"))
     }
 }
 
@@ -181,7 +193,7 @@ private struct EmptyDropWell: View {
                 .foregroundStyle(active ? Color.accentColor : Tint.teal.color)
                 .symbolEffect(.bounce, value: active)
         }
-        .frame(width: 104, height: 86)
+        .frame(width: 96, height: 80)
         .background(shape.fill(active ? Color.accentColor.opacity(0.1) : Color.primary.opacity(0.035)))
         .overlay(shape.strokeBorder(active ? Color.accentColor : Color.secondary.opacity(0.45),
                                     style: StrokeStyle(lineWidth: 1.5, dash: active ? [] : [5, 4])))
@@ -261,7 +273,7 @@ private struct ExpandedHeader: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            ShelfPile(model: model, side: 26)
+            ShelfPile(model: model, side: 26, showsCount: false)
                 .frame(width: 34, height: 34)
                 .overlay { ShelfInteraction(target: .all, handler: model.handler) }
                 .help(Text("Drag to take every item"))
@@ -288,27 +300,41 @@ private struct ExpandedHeader: View {
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            HStack(spacing: 2) {
-                let next: ShelfLayout = model.layout == .grid ? .list : .grid
-                HeaderButton(symbol: next.symbol, help: next == .grid ? Text("Show as Grid") : Text("Show as List")) {
-                    model.handler?.setLayout(next)
+            ZStack(alignment: .trailing) {
+                buttons
+                    .opacity(model.isDropTarget ? 0 : 1)
+                    .allowsHitTesting(!model.isDropTarget)
+                if model.isDropTarget {
+                    DropLabel(count: model.dropCount)
+                        .transition(.opacity.combined(with: .scale(scale: 0.92, anchor: .trailing)))
                 }
-                HeaderButton(symbol: model.shelf.pinned ? "pin.fill" : "pin", active: model.shelf.pinned,
-                             help: model.shelf.pinned ? Text("Unpin Shelf") : Text("Pin Shelf")) {
-                    model.handler?.togglePin()
-                }
-                HeaderButton(symbol: "ellipsis.circle", help: Text("Shelf Actions")) {
-                    model.handler?.showShelfMenu(below: menuFrame)
-                }
-                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { menuFrame = $0 }
-                HeaderButton(symbol: "rectangle.compress.vertical", help: Text("Collapse to a Pile")) {
-                    model.handler?.toggleExpanded()
-                }
-                HeaderButton(symbol: "xmark", help: Text("Close Shelf")) { model.handler?.closeShelf() }
             }
         }
         .padding(.leading, 12)
         .padding(.trailing, 8)
+    }
+
+    /// Layout, pin, actions, collapse and close; a drop label takes their place while something
+    /// is dragged over the shelf.
+    private var buttons: some View {
+        HStack(spacing: 2) {
+            let next: ShelfLayout = model.layout == .grid ? .list : .grid
+            HeaderButton(symbol: next.symbol, help: next == .grid ? Text("Show as Grid") : Text("Show as List")) {
+                model.handler?.setLayout(next)
+            }
+            HeaderButton(symbol: model.shelf.pinned ? "pin.fill" : "pin", active: model.shelf.pinned,
+                         help: model.shelf.pinned ? Text("Unpin Shelf") : Text("Pin Shelf")) {
+                model.handler?.togglePin()
+            }
+            HeaderButton(symbol: "ellipsis.circle", help: Text("Shelf Actions")) {
+                model.handler?.showShelfMenu(below: menuFrame)
+            }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { menuFrame = $0 }
+            HeaderButton(symbol: "arrow.down.right.and.arrow.up.left", help: Text("Collapse to a Pile")) {
+                model.handler?.toggleExpanded()
+            }
+            HeaderButton(symbol: "xmark", help: Text("Close Shelf")) { model.handler?.closeShelf() }
+        }
     }
 }
 
@@ -400,8 +426,8 @@ private struct ShelfTile: View {
                     .font(.system(size: 11, weight: selected ? .medium : .regular))
                     .foregroundStyle(selected ? Color.white : Color.primary)
                     .lineLimit(2)
-                    .truncationMode(.middle)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
                     .background(RoundedRectangle(cornerRadius: 4, style: .continuous).fill(selected ? Color.accentColor : .clear))
@@ -497,32 +523,39 @@ private struct DropHighlight: View {
     var body: some View {
         if model.isDropTarget {
             let shape = RoundedRectangle(cornerRadius: cornerRadius - 3, style: .continuous)
-            ZStack(alignment: .bottom) {
+            ZStack {
                 shape.fill(Color.accentColor.opacity(0.08))
                 shape.strokeBorder(Color.accentColor, lineWidth: 2.5)
-                if model.shelf.expanded {
-                    Label {
-                        if model.dropCount > 0 {
-                            Text("Add \(model.dropCount) items", comment: "Drop label on a shelf: number of items being dropped")
-                        } else {
-                            Text("Drop to Add", comment: "Drop label on a shelf")
-                        }
-                    } icon: {
-                        Image(systemName: "plus.circle.fill")
-                    }
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Capsule().fill(Color.accentColor))
-                    .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
-                    .padding(.bottom, 14)
-                }
             }
             .padding(3)
             .allowsHitTesting(false)
             .transition(.opacity)
         }
+    }
+}
+
+/// "Add 3 items" in the expanded header while something is dragged over the shelf.
+private struct DropLabel: View {
+    let count: Int
+
+    var body: some View {
+        Label {
+            if count > 0 {
+                Text("Add \(count) items", comment: "Drop label on a shelf: number of items being dropped")
+            } else {
+                Text("Drop to Add", comment: "Drop label on a shelf")
+            }
+        } icon: {
+            Image(systemName: "plus.circle.fill")
+        }
+        .font(.system(size: 12, weight: .semibold))
+        .lineLimit(1)
+        .foregroundStyle(.white)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Capsule().fill(Color.accentColor))
+        .shadow(color: .black.opacity(0.15), radius: 3, y: 1)
+        .padding(.trailing, 4)
     }
 }
 
@@ -609,6 +642,7 @@ private struct TextClippingCard: View {
         .overlay(shape.strokeBorder(.black.opacity(0.08), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.2), radius: max(1, side * 0.04), y: max(0.5, side * 0.02))
     }
+
 }
 
 /// A web link: a tinted card with a globe and the site's name.
@@ -622,7 +656,7 @@ private struct LinkCard: View {
             Image(systemName: "globe")
                 .font(.system(size: side * (side >= 48 ? 0.34 : 0.48), weight: .medium))
             if side >= 48 {
-                Text(verbatim: host.replacingOccurrences(of: "www.", with: ""))
+                Text(verbatim: Self.siteName(host))
                     .font(.system(size: max(6, side * 0.1), weight: .semibold))
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -634,5 +668,14 @@ private struct LinkCard: View {
         .background(shape.fill(LinearGradient(colors: [Tint.cyan.color, Tint.blue.color], startPoint: .top, endPoint: .bottom)))
         .overlay(shape.strokeBorder(.white.opacity(0.25), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.2), radius: max(1, side * 0.04), y: max(0.5, side * 0.02))
+    }
+
+    /// "developer.apple.com" → "apple.com": the part people recognize, short enough for a card.
+    static func siteName(_ host: String) -> String {
+        let parts = host.split(separator: ".")
+        guard parts.count > 2 else { return host }
+        let lastTwo = parts.suffix(2).joined(separator: ".")
+        // Keep three labels for country domains like "bbc.co.uk".
+        return parts[parts.count - 2].count <= 3 && parts.last?.count == 2 ? parts.suffix(3).joined(separator: ".") : lastTwo
     }
 }

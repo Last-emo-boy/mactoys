@@ -185,11 +185,9 @@ private struct ShelfHero: View {
                     HStack(spacing: 8) {
                         Button("New Shelf") { manager.newShelf() }
                             .buttonStyle(.borderedProminent)
-                            .disabled(!manager.isRunning)
                         if let shortcut = settings.newShelfShortcut { Keycaps(shortcut) }
                         if !manager.recent.isEmpty {
                             Button("Reopen Last Shelf") { manager.reopen() }
-                                .disabled(!manager.isRunning)
                         }
                     }
                     .padding(.top, 4)
@@ -221,13 +219,17 @@ struct ShelfHeroIllustration: View {
             let windowOnRight = placement == .leftEdge
             let window = CGRect(x: windowOnRight ? w - 120 : 14, y: 22, width: 106, height: 84)
             let shelfCenter: CGPoint = switch placement {
-            case .pointer: CGPoint(x: windowOnRight ? 64 : w - 66, y: h * 0.56)
+            case .pointer: CGPoint(x: windowOnRight ? 64 : w - 62, y: h * 0.64)
             case .rightEdge: CGPoint(x: w - shelfSize.width / 2 - 8, y: 20 + shelfSize.height / 2 + 6)
             case .leftEdge: CGPoint(x: shelfSize.width / 2 + 8, y: 20 + shelfSize.height / 2 + 6)
             }
+            let shelfTop = shelfCenter.y - shelfSize.height / 2
+            // The pointer rests on the shelf's top right corner, its files hanging past the edge so
+            // the pile stays readable (or, for edge placement, beside the window); the shake trail
+            // sits above it, clear of both.
             let pointer: CGPoint = placement == .pointer
-                ? CGPoint(x: shelfCenter.x + 6, y: shelfCenter.y + 2)
-                : CGPoint(x: windowOnRight ? window.minX - 30 : window.maxX + 34, y: h * 0.66)
+                ? CGPoint(x: shelfCenter.x + shelfSize.width / 2 - 5, y: shelfTop - 1)
+                : CGPoint(x: windowOnRight ? window.minX - 34 : window.maxX + 34, y: h * 0.72)
 
             ZStack(alignment: .topLeading) {
                 MiniWallpaper()
@@ -236,11 +238,14 @@ struct ShelfHeroIllustration: View {
                     .frame(width: window.width, height: window.height)
                     .offset(x: window.minX, y: window.minY)
                 if shake {
-                    ShakeTrail(sensitivity: sensitivity, endingAt: pointer, leftward: windowOnRight)
+                    ShakeTrail(sensitivity: sensitivity, endingAt: pointer)
                 } else if let shortcut {
+                    // Above a shelf at the pointer, below one at a screen edge.
                     Keycaps(shortcut, dark: true)
                         .scaleEffect(0.8)
-                        .offset(x: pointer.x - 30, y: pointer.y + 22)
+                        .fixedSize()
+                        .position(x: placement == .pointer ? shelfCenter.x - 14 : shelfCenter.x,
+                                  y: placement == .pointer ? shelfTop - 16 : shelfTop + shelfSize.height + 16)
                 }
                 MiniShelf()
                     .frame(width: shelfSize.width, height: shelfSize.height)
@@ -303,29 +308,31 @@ private struct MiniFinderWindow: View {
     }
 }
 
-/// The zigzag the pointer just drew: wider and longer for low sensitivity.
+/// The zigzag the pointer just drew on its way down to where it is: wider and longer for low
+/// sensitivity.
 private struct ShakeTrail: View {
     let sensitivity: ShakeSensitivity
     let endingAt: CGPoint
-    let leftward: Bool
 
     var body: some View {
         let (amplitude, sweeps): (CGFloat, Int) = switch sensitivity {
-        case .low: (17, 5)
-        case .medium: (12, 4)
+        case .low: (18, 5)
+        case .medium: (13, 4)
         case .high: (8, 3)
         }
+        let rise: CGFloat = 30
         Path { p in
-            var point = CGPoint(x: endingAt.x + (leftward ? 1 : -1) * CGFloat(sweeps) * 7, y: endingAt.y + 16)
-            p.move(to: point)
-            for i in 0..<sweeps {
-                point = CGPoint(x: point.x + (leftward ? -7 : 7), y: point.y - 16 / CGFloat(sweeps))
-                p.addLine(to: CGPoint(x: point.x + (i.isMultiple(of: 2) ? amplitude : -amplitude), y: point.y))
+            let top = CGPoint(x: endingAt.x, y: endingAt.y - rise)
+            p.move(to: CGPoint(x: top.x - amplitude, y: top.y))
+            for i in 1...sweeps {
+                let y = top.y + rise * CGFloat(i) / CGFloat(sweeps + 1)
+                p.addLine(to: CGPoint(x: top.x + (i.isMultiple(of: 2) ? -amplitude : amplitude), y: y))
             }
             p.addLine(to: endingAt)
         }
-        .stroke(LinearGradient(colors: [.white.opacity(0.1), .white.opacity(0.95)], startPoint: .bottom, endPoint: .top),
-                style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+        .stroke(LinearGradient(colors: [.white.opacity(0.15), .white], startPoint: .top, endPoint: .bottom),
+                style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
+        .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
     }
 }
 

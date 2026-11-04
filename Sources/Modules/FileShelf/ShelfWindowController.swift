@@ -472,16 +472,18 @@ final class ShelfWindowController: NSObject, NSWindowDelegate, NSDraggingSource,
 
     // MARK: Drop in
 
+    /// Called for every pointer move over the shelf during a drag: only real changes reach the view.
     func dragUpdated(_ info: NSDraggingInfo) -> NSDragOperation {
         let op = dropOperation(info)
-        model.isDropTarget = !op.isEmpty
-        model.dropCount = op.isEmpty ? 0 : info.numberOfValidItemsForDrop
+        let count = op.isEmpty ? 0 : info.numberOfValidItemsForDrop
+        if model.isDropTarget == op.isEmpty { model.isDropTarget = !op.isEmpty }
+        if model.dropCount != count { model.dropCount = count }
         return op
     }
 
     func dragEnded() {
-        model.isDropTarget = false
-        model.dropCount = 0
+        if model.isDropTarget { model.isDropTarget = false }
+        if model.dropCount != 0 { model.dropCount = 0 }
     }
 
     private func dropOperation(_ info: NSDraggingInfo) -> NSDragOperation {

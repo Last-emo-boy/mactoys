@@ -9,7 +9,7 @@ enum ShelfScenes {
     static var all: [PreviewScene] {
         [
             PreviewScene("pile", size: CGSize(width: 380, height: 300)) {
-                let model = sampleModel(Array(samples.prefix(5)))
+                let model = sampleModel([samples[3], samples[4], samples[6], samples[2], samples[1]])
                 return AnyView(stage { shelf(model) })
             },
             PreviewScene("grid", size: CGSize(width: 520, height: 600)) {
@@ -29,7 +29,7 @@ enum ShelfScenes {
                 model.dropCount = 2
                 return AnyView(stage {
                     shelf(model)
-                        .overlay(alignment: .topLeading) { DragGhost().offset(x: 150, y: 150) }
+                        .overlay(alignment: .topTrailing) { DragGhost().offset(x: 44, y: 70) }
                 })
             },
             PreviewScene("two-shelves", size: CGSize(width: 780, height: 520)) {
