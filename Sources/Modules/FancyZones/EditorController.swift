@@ -31,7 +31,8 @@ final class EditorController {
             ?? screens.first?.axFrame ?? home.frame
         let model = EditorModel(displays: displays, selectedKey: home.key, library: engine.library.value,
                                 pickerScreen: pickerScreen, defaultHorizontal: s.defaultHorizontalLayout,
-                                defaultVertical: s.defaultVerticalLayout)
+                                defaultVertical: s.defaultVerticalLayout, snapToGrid: s.editorSnapToGrid,
+                                gridDivisions: s.gridDivisions)
         model.onApply = { [weak self] layout, display in
             guard let self else { return }
             self.engine.apply(layout, to: display, announce: false)
@@ -41,6 +42,9 @@ final class EditorController {
             self.engine.library.value = library.normalized()
         }
         model.onClose = { [weak self] in self?.close() }
+        model.onSnapChange = { [weak self] on, divisions in
+            self?.engine.settings.update { $0.editorSnapToGrid = on; $0.editorGridDivisions = divisions }
+        }
         self.model = model
 
         previousApp = NSWorkspace.shared.frontmostApplication

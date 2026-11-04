@@ -46,12 +46,13 @@ final class ZoneOverlay {
     private var nameGeneration = 0
     private(set) var isShowingDrag = false
 
-    /// Shows `layers` (zones per display). With `onlyScreen`, other screens are hidden.
-    func show(_ layers: [ZoneLayer], style: ZoneStyle, onlyScreen: CGRect? = nil) {
+    /// Shows `layers` (zones per display). With `onlyScreen`, other screens are hidden; screens
+    /// in `excluding` (Auto Tiling's) never show zones.
+    func show(_ layers: [ZoneLayer], style: ZoneStyle, onlyScreen: CGRect? = nil, excluding: [CGRect] = []) {
         flashWork?.cancel()
         flashGeneration += 1
         isShowingDrag = true
-        present(layers, style: style, onlyScreen: onlyScreen)
+        present(layers, style: style, onlyScreen: onlyScreen, excluding: excluding)
     }
 
     func hide() {
@@ -144,21 +145,36 @@ final class ZoneOverlay {
     }
 
     private func present(_ layers: [ZoneLayer], style: ZoneStyle, onlyScreen: CGRect?,
-                         onlyIntersecting: CGRect? = nil) {
+                         onlyIntersecting: CGRect? = nil, excluding: [CGRect] = []) {
         syncPanels(style: style)
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         for p in panels {
             let visible = (onlyScreen.map { $0 == p.axFrame } ?? true)
                 && (onlyIntersecting.map { $0.intersects(p.axFrame) } ?? true)
+                && !excluding.contains(p.axFrame)
             let layer = layers
                 .filter { $0.display.frame.intersects(p.axFrame) }
                 .max { $0.display.frame.intersection(p.axFrame).area < $1.display.frame.intersection(p.axFrame).area }
             guard visible, let layer else { p.panel.orderOut(nil); continue }
             let local = layer.zones.map { $0.offsetBy(dx: -p.axFrame.minX, dy: -p.axFrame.minY) }
-            if p.model.zones != local { p.model.zones = local }
-            if p.model.highlighted != layer.highlighted { p.model.highlighted = layer.highlighted }
-            if p.model.style != style { p.model.style = style }
-            p.panel.alphaValue = 1
-            if !p.panel.isVisible { p.panel.orderFrontRegardless() }
+            let shown = p.panel.isVisible
+            // On screen, zones glide to their new place (layout cycling, edge snap regions) and the
+            // highlight cross-fades; a panel coming up shows its content at once and fades in.
+            withAnimation(shown && !reduceMotion ? .snappy(duration: 0.18) : shown ? .linear(duration: 0.1) : nil) {
+                if p.model.zones != local { p.model.zones = local }
+                if p.model.highlighted != layer.highlighted { p.model.highlighted = layer.highlighted }
+                if p.model.style != style { p.model.style = style }
+            }
+            if shown {
+                p.panel.alphaValue = 1
+            } else {
+                p.panel.alphaValue = 0
+                p.panel.orderFrontRegardless()
+                NSAnimationContext.runAnimationGroup { ctx in
+                    ctx.duration = 0.12
+                    p.panel.animator().alphaValue = 1
+                }
+            }
         }
     }
 

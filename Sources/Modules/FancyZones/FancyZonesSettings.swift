@@ -48,13 +48,21 @@ public struct FancyZonesSettings: Codable, Equatable, Sendable {
     // Activation
     @Clearable public var editorShortcut: Shortcut? = Shortcut(kVK_ANSI_Grave, [.control, .option])
     public var editorDisplay: EditorDisplay = .mouse
+    /// Before the activation key choice: hold ⇧ (true) or zones always on (false). Read through
+    /// `activation`, which keeps it in step.
     public var holdShiftToActivate = true
+    /// The chosen activation key; nil in settings saved before the choice existed (see `activation`).
+    public var activationKey: ActivationKey?
     public var nonPrimaryButtonToggles = false
     public var middleButtonSpansZones = false
     public var mouseWheelSwitchesLayouts = true
     public var showZonesOnAllDisplays = true
     public var spanAcrossDisplays = false
     public var overlapAlgorithm: OverlapAlgorithm = .smallest
+
+    // Edge snap
+    /// Dragging a window to a free display edge tiles it (half, quarter or full display) while zones are hidden.
+    public var edgeSnap = false
 
     // Zone appearance
     public var zoneColors: ZoneColors = .custom
@@ -104,6 +112,12 @@ public struct FancyZonesSettings: Codable, Equatable, Sendable {
     @Clearable public var extendUp: Shortcut? = Shortcut(kVK_UpArrow, [.control, .option, .shift])
     @Clearable public var extendDown: Shortcut? = Shortcut(kVK_DownArrow, [.control, .option, .shift])
 
+    // Layout editor
+    /// Canvas zones snap to a grid while they are drawn, moved and resized.
+    public var editorSnapToGrid = true
+    /// Grid step as a fraction of the display: 1/`editorGridDivisions` of its width and height.
+    public var editorGridDivisions = 12
+
     // Layouts
     public var quickLayoutSwitch = true
     public var flashZonesOnLayoutSwitch = true
@@ -114,6 +128,12 @@ public struct FancyZonesSettings: Codable, Equatable, Sendable {
     public var excludedApps: [String] = []
 
     public init() {}
+
+    /// Grid steps offered in settings and the editor toolbar (divisions of the display).
+    public static let gridDivisionChoices = [6, 8, 12, 16, 24]
+
+    /// The grid divisions in effect, kept to a sensible range whatever the file says.
+    public var gridDivisions: Int { max(2, min(48, editorGridDivisions)) }
 
     public func moveShortcut(_ d: ZoneDirection) -> Shortcut? {
         switch d {

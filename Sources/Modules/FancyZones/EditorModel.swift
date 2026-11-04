@@ -26,24 +26,38 @@ final class EditorModel {
     var newIsCanvas = false
     var pendingDelete: String?
     var shiftDown = false
+    /// ⌘ held: canvas zones move, resize and draw without snapping.
+    var commandDown = false
     /// Grid editor: zones selected for merging, and where the merge button shows (work-area coordinates).
     var gridSelection: Set<Int> = []
     var mergePoint: CGPoint?
     /// Canvas editor: the selected zone.
     var canvasSelection: Int?
+    /// Canvas editor: the zone being drawn (work-area coordinates), the guides of edges that line
+    /// up with other edges, and whether a zone is being drawn, moved or resized (the grid shows).
+    var drawingZone: CGRect?
+    var guides: [SnapGuide] = []
+    var interacting = false
+    /// Canvas editor: snap to a grid of 1/`gridDivisions` of the display (settings, also in the toolbar).
+    var snapToGrid: Bool
+    var gridDivisions: Int
 
     @ObservationIgnored var onApply: (ZoneLayout, ZoneDisplay) -> Void = { _, _ in }
     @ObservationIgnored var onSave: (LayoutLibrary) -> Void = { _ in }
     @ObservationIgnored var onClose: () -> Void = {}
+    /// The grid toggle or step changed in the editor: (snap to grid, divisions).
+    @ObservationIgnored var onSnapChange: (Bool, Int) -> Void = { _, _ in }
 
     init(displays: [ZoneDisplay], selectedKey: String, library: LayoutLibrary, pickerScreen: CGRect,
-         defaultHorizontal: String, defaultVertical: String) {
+         defaultHorizontal: String, defaultVertical: String, snapToGrid: Bool = true, gridDivisions: Int = 12) {
         self.displays = displays
         self.selectedKey = selectedKey
         self.library = library
         self.pickerScreen = pickerScreen
         self.defaultHorizontal = defaultHorizontal
         self.defaultVertical = defaultVertical
+        self.snapToGrid = snapToGrid
+        self.gridDivisions = max(2, min(48, gridDivisions))
     }
 
     var selectedDisplay: ZoneDisplay {
@@ -51,7 +65,7 @@ final class EditorModel {
     }
 
     func layout(for display: ZoneDisplay) -> ZoneLayout {
-        library.layout(forDisplay: display.key, vertical: display.isVertical,
+        library.layout(forDisplay: display.key, legacyKey: display.legacyKey, vertical: display.isVertical,
                        defaultHorizontal: defaultHorizontal, defaultVertical: defaultVertical)
     }
 
@@ -77,7 +91,7 @@ final class EditorModel {
     /// Applies a layout to the selected display.
     func choose(_ layout: ZoneLayout) {
         pendingDelete = nil
-        library.assignments[selectedKey] = layout.id
+        library.assign(layout.id, toDisplay: selectedKey, legacyKey: selectedDisplay.legacyKey)
         onApply(layout, selectedDisplay)
     }
 
@@ -129,6 +143,15 @@ final class EditorModel {
         startEditing()
     }
 
+    /// Adds the custom layout of `preset` (or finds the untouched one made earlier) and applies
+    /// it to the selected display; it stays selected in the picker, ready to edit.
+    func createFromPreset(_ preset: LayoutPreset) {
+        let layout = library.adopt(preset)
+        onSave(library)
+        mode = .picker
+        choose(layout)
+    }
+
     /// Opens the grid or canvas editor for a custom layout.
     func edit(_ layout: ZoneLayout) {
         if layout.isTemplate {
@@ -155,6 +178,7 @@ final class EditorModel {
         gridSelection = []
         mergePoint = nil
         canvasSelection = nil
+        endCanvasInteraction()
         pendingDelete = nil
         mode = .editing
     }
@@ -227,6 +251,71 @@ final class EditorModel {
         draft?.canvas?.zones[i] = CanvasZone(CanvasEditing.clamp(rect, to: area))
     }
 
+    /// Snapping for the canvas zones other than `excluding`; none while ⌘ is held.
+    func snapper(in area: CGSize, excluding: Int? = nil) -> CanvasSnapper {
+        guard !commandDown else { return .free }
+        let zones = draft?.canvas?.zones.map(\.rect) ?? []
+        return CanvasSnapper(area: area, zones: zones, excluding: excluding, gridDivisions: snapToGrid ? gridDivisions : nil)
+    }
+
+    /// Whether the grid lines show: while drawing, moving or resizing with the grid on.
+    var showsGrid: Bool { interacting && snapToGrid && !commandDown }
+
+    /// Moves zone `i` from where the drag started by `translation`, snapping.
+    func moveCanvasZone(_ i: Int, from start: CGRect, by translation: CGSize, in area: CGSize) {
+        let proposed = CanvasEditing.clamp(start.offsetBy(dx: translation.width, dy: translation.height), to: area)
+        let snapped = snapper(in: area, excluding: i).move(proposed)
+        setCanvasZone(i, snapped.rect, in: area)
+        guides = snapped.guides
+        interacting = true
+    }
+
+    /// Resizes zone `i` by dragging its `edges` handle by `translation`, snapping the moving edges.
+    func resizeCanvasZone(_ i: Int, from start: CGRect, edges: ResizeEdges, by translation: CGSize, in area: CGSize) {
+        let proposed = CanvasEditing.resize(start, edges: edges, delta: translation, in: area)
+        let snapped = snapper(in: area, excluding: i).resize(proposed, edges: edges)
+        setCanvasZone(i, snapped.rect, in: area)
+        guides = snapped.guides
+        interacting = true
+    }
+
+    /// Draws a new zone from `start` to `end` across empty space (shown until `finishDrawing`).
+    func drawZone(from start: CGPoint, to end: CGPoint, in area: CGSize) {
+        guard draft?.canvas != nil else { return }
+        let snapped = snapper(in: area).draw(from: start, to: end, in: area)
+        drawingZone = snapped.rect
+        guides = snapped.guides
+        interacting = true
+        canvasSelection = nil
+    }
+
+    /// Adds the drawn zone when it is big enough to hold a window, and selects it.
+    func finishDrawing(in area: CGSize) {
+        defer { endCanvasInteraction() }
+        guard let r = drawingZone, draft?.canvas != nil,
+              r.width >= CanvasEditing.minimumSize, r.height >= CanvasEditing.minimumSize else { return }
+        draft?.canvas?.zones.append(CanvasZone(CanvasEditing.clamp(r, to: area)))
+        canvasSelection = (draft?.canvas?.zones.count ?? 1) - 1
+    }
+
+    /// A drag ended (or was abandoned): clears the drawing, guides and grid.
+    func endCanvasInteraction() {
+        drawingZone = nil
+        guides = []
+        interacting = false
+    }
+
+    func setSnapToGrid(_ on: Bool) {
+        snapToGrid = on
+        onSnapChange(snapToGrid, gridDivisions)
+    }
+
+    func setGridDivisions(_ n: Int) {
+        gridDivisions = max(2, min(48, n))
+        snapToGrid = true
+        onSnapChange(snapToGrid, gridDivisions)
+    }
+
     // MARK: Keys
 
     /// Editor keyboard: esc, return/⌫ (merge, delete zone), arrows (move/resize canvas zones),
@@ -234,6 +323,7 @@ final class EditorModel {
     func handleKey(_ e: NSEvent, textEditing: Bool) -> Bool {
         if e.type == .flagsChanged {
             shiftDown = e.modifierFlags.contains(.shift)
+            commandDown = e.modifierFlags.contains(.command)
             return false
         }
         let code = Int(e.keyCode)

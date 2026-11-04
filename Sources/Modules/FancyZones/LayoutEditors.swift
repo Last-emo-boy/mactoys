@@ -8,6 +8,8 @@ struct EditorToolbar: View {
     @Bindable var model: EditorModel
     let hint: LocalizedStringKey
     var addZone: (() -> Void)?
+    /// The canvas editor's snap-to-grid menu.
+    var showsSnapMenu = false
 
     var body: some View {
         GlassPanel(cornerRadius: 16) {
@@ -22,12 +24,14 @@ struct EditorToolbar: View {
                 Text(hint)
                     .font(.system(size: 12))
                     .foregroundStyle(Color.white.opacity(0.6))
-                    .lineLimit(1)
-                    .fixedSize()
+                    .lineLimit(2)
+                    .frame(maxWidth: 330, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
                 if let addZone {
                     Button(action: addZone) { Label("Add zone", systemImage: "plus") }
                         .buttonStyle(GlassButtonStyle())
                 }
+                if showsSnapMenu { snapMenu }
                 Divider().frame(height: 18)
                 Button("Cancel") { model.draft = nil; model.mode = .picker }
                     .buttonStyle(GlassButtonStyle())
@@ -41,6 +45,38 @@ struct EditorToolbar: View {
         }
         .fixedSize()
         .shadow(color: .black.opacity(0.3), radius: 18, y: 6)
+    }
+
+    /// "Grid 1/12": snap to grid on or off, and the grid step.
+    private var snapMenu: some View {
+        Menu {
+            Toggle(isOn: Binding(get: { model.snapToGrid }, set: { model.setSnapToGrid($0) })) {
+                Text("Snap to grid", comment: "Layout editor menu: canvas zones snap to a grid")
+            }
+            Picker(selection: Binding(get: { model.gridDivisions }, set: { model.setGridDivisions($0) })) {
+                ForEach(FancyZonesSettings.gridDivisionChoices, id: \.self) { n in
+                    Text(verbatim: "1/\(n)").tag(n)
+                }
+            } label: {
+                Text("Grid step", comment: "Layout editor menu: grid line spacing as a fraction of the display")
+            }
+            .pickerStyle(.inline)
+        } label: {
+            Label {
+                if model.snapToGrid {
+                    Text(verbatim: "1/\(model.gridDivisions)").monospacedDigit()
+                } else {
+                    Text("Off", comment: "Layout editor toolbar: snapping to the grid is off")
+                }
+            } icon: {
+                Image(systemName: model.snapToGrid ? "square.grid.3x3.fill" : "square.grid.3x3")
+            }
+        }
+        .menuStyle(.button)
+        .buttonStyle(GlassButtonStyle())
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help(Text("Snap zones to a grid while you draw, move and resize them. Hold ⌘ to place freely."))
     }
 }
 
@@ -225,13 +261,16 @@ struct GridEditorView: View {
 
 // MARK: - Canvas editor
 
-/// Custom canvas editing: drag zones to move them, drag the handles to resize, × to delete.
+/// Custom canvas editing: drag across empty space to draw a zone, drag zones to move them, drag
+/// the handles to resize, × to delete. Edges snap to the grid, to other zones' edges and to the
+/// display edges (⌘ places freely), with guide lines for the edges that line up.
 /// Arrow keys move the selected zone (⌥ by 1 pt), ⇧ arrows resize it, ⇥ selects the next one.
 struct CanvasEditorView: View {
     @Bindable var model: EditorModel
     let area: CGRect
     let toolbar: CGPoint?
     @State private var dragStart: CGRect?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let space = "canvas-editor"
 
@@ -241,19 +280,48 @@ struct CanvasEditorView: View {
         ZStack(alignment: .topLeading) {
             Color.white.opacity(0.001)
                 .contentShape(Rectangle())
-                .onTapGesture { model.canvasSelection = nil }
+                .gesture(drawGesture(size: size))
+            if model.showsGrid {
+                SnapGridLines(size: size, divisions: model.gridDivisions)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
             ForEach(zones.indices, id: \.self) { i in
                 zoneView(i, zones[i].rect, size: size)
             }
+            if let r = model.drawingZone {
+                DrawingZoneView(rect: r)
+                    .allowsHitTesting(false)
+            }
+            SnapGuidesView(guides: model.guides, size: size)
+                .allowsHitTesting(false)
             if let toolbar {
-                EditorToolbar(model: model, hint: "Drag to move · handles resize · arrows nudge",
-                              addZone: { model.addCanvasZone(in: size) })
+                EditorToolbar(model: model, hint: "Drag across empty space to draw a zone · drag zones to move · ⌘ turns snapping off",
+                              addZone: { model.addCanvasZone(in: size) }, showsSnapMenu: true)
                     .position(toolbar)
             }
         }
         .frame(width: size.width, height: size.height)
         .coordinateSpace(.named(Self.space))
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: model.showsGrid)
         .position(x: area.midX, y: area.midY)
+    }
+
+    /// Draws a zone; a click without movement clears the selection.
+    private func drawGesture(size: CGSize) -> some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.space))
+            .onChanged { v in
+                guard model.drawingZone != nil || hypot(v.translation.width, v.translation.height) > 4 else { return }
+                model.drawZone(from: v.startLocation, to: v.location, in: size)
+            }
+            .onEnded { _ in
+                if model.drawingZone != nil {
+                    model.finishDrawing(in: size)
+                } else {
+                    model.canvasSelection = nil
+                    model.endCanvasInteraction()
+                }
+            }
     }
 
     private func zoneView(_ i: Int, _ r: CGRect, size: CGSize) -> some View {
@@ -283,9 +351,9 @@ struct CanvasEditorView: View {
                 .onChanged { v in
                     if dragStart == nil { dragStart = r; model.canvasSelection = i }
                     guard let start = dragStart else { return }
-                    model.setCanvasZone(i, start.offsetBy(dx: v.translation.width, dy: v.translation.height), in: size)
+                    model.moveCanvasZone(i, from: start, by: v.translation, in: size)
                 }
-                .onEnded { _ in dragStart = nil })
+                .onEnded { _ in dragStart = nil; model.endCanvasInteraction() })
             .onTapGesture { model.canvasSelection = i }
     }
 
@@ -304,9 +372,9 @@ struct CanvasEditorView: View {
                 .onChanged { v in
                     if dragStart == nil { dragStart = r }
                     guard let start = dragStart else { return }
-                    model.setCanvasZone(i, CanvasEditing.resize(start, edges: edges, delta: v.translation, in: size), in: size)
+                    model.resizeCanvasZone(i, from: start, edges: edges, by: v.translation, in: size)
                 }
-                .onEnded { _ in dragStart = nil })
+                .onEnded { _ in dragStart = nil; model.endCanvasInteraction() })
     }
 
     private static func position(_ e: ResizeEdges) -> FrameResizePosition {
@@ -320,5 +388,76 @@ struct CanvasEditorView: View {
         case .left: .leading
         default: .trailing
         }
+    }
+}
+
+/// The snap grid, faint, while a zone is drawn, moved or resized.
+struct SnapGridLines: View {
+    let size: CGSize
+    let divisions: Int
+
+    var body: some View {
+        let n = max(1, divisions)
+        Path { path in
+            for k in 1..<n {
+                let x = (size.width * CGFloat(k) / CGFloat(n)).rounded() + 0.5
+                let y = (size.height * CGFloat(k) / CGFloat(n)).rounded() + 0.5
+                path.move(to: CGPoint(x: x, y: 0)); path.addLine(to: CGPoint(x: x, y: size.height))
+                path.move(to: CGPoint(x: 0, y: y)); path.addLine(to: CGPoint(x: size.width, y: y))
+            }
+        }
+        .stroke(Color.white.opacity(0.09), lineWidth: 1)
+        .frame(width: size.width, height: size.height)
+    }
+}
+
+/// Guide lines through the edges that line up with another zone or the display edge.
+struct SnapGuidesView: View {
+    let guides: [SnapGuide]
+    let size: CGSize
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(guides, id: \.self) { g in
+                Path { path in
+                    // Kept a point inside the area so guides on the display edge stay visible.
+                    if g.vertical {
+                        let x = min(max(g.position, 1), size.width - 1)
+                        path.move(to: CGPoint(x: x, y: 0)); path.addLine(to: CGPoint(x: x, y: size.height))
+                    } else {
+                        let y = min(max(g.position, 1), size.height - 1)
+                        path.move(to: CGPoint(x: 0, y: y)); path.addLine(to: CGPoint(x: size.width, y: y))
+                    }
+                }
+                .stroke(Self.color, style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                .shadow(color: .black.opacity(0.45), radius: 1.5)
+            }
+        }
+        .frame(width: size.width, height: size.height, alignment: .topLeading)
+    }
+
+    /// Warm, so guides read against blue zones and any wallpaper.
+    static let color = Color(red: 1, green: 0.8, blue: 0.2)
+}
+
+/// The zone being drawn: a dashed outline with its size.
+struct DrawingZoneView: View {
+    let rect: CGRect
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
+        shape
+            .fill(Color.accentColor.opacity(0.28))
+            .overlay(shape.strokeBorder(Color.white.opacity(0.95), style: StrokeStyle(lineWidth: 2, dash: [8, 5])))
+            .overlay {
+                Text(verbatim: "\(Int(rect.width.rounded())) × \(Int(rect.height.rounded()))")
+                    .font(.system(size: 13, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10).padding(.vertical, 5)
+                    .background(Capsule().fill(Color.black.opacity(0.45)))
+                    .opacity(rect.width > 90 && rect.height > 44 ? 1 : 0)
+            }
+            .frame(width: max(0, rect.width), height: max(0, rect.height))
+            .position(x: rect.midX, y: rect.midY)
     }
 }

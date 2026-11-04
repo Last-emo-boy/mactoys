@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import MacToysCore
 
 /// Detects window drags and snaps the window into the zone under the pointer.
@@ -8,6 +9,11 @@ import MacToysCore
 /// scalars; a 60 Hz timer running while the button is down does the Accessibility reads, hit
 /// testing and drawing. On release the tap computes the target zones (pure geometry) and queues
 /// the window move, so no Accessibility call ever runs inside the tap.
+///
+/// Zones show while the activation key is held (or always, without one). While they are hidden,
+/// edge snap (when on) previews and snaps to a half, quarter or all of the display at its free
+/// edges. Esc during the drag hides either and lets the window drop where it is. Displays Auto
+/// Tiling arranges get neither.
 @MainActor
 final class DragSnapper {
     private unowned let engine: ZoneEngine
@@ -26,13 +32,18 @@ final class DragSnapper {
     private var wheelAccumulator: Double = 0
     private var swallowRightUp = false
     private var swallowOtherUp = false
+    private var swallowEscapeUp = false
+    /// Esc was pressed during this drag: nothing shows or snaps until the button is released.
+    private var cancelled = false
     private var lastEvent: TimeInterval = 0
     // Settings snapshot taken when a drag starts, read by the tap handler.
     private var cfgNonPrimary = false
     private var cfgMiddleSpans = false
-    private var cfgHoldShift = true
+    private var cfgActivation = ActivationKey.shift
     private var wheelEnabled = false
     private var zonesShown = false
+    /// The edge-snap preview on screen: screen index and region.
+    private var edgeShown: (screen: Int, region: EdgeSnapRegion)?
 
     // Drag session, owned by the timer.
     private var pump: Timer?
@@ -47,6 +58,11 @@ final class DragSnapper {
     private var highlighted: [Int] = []
     private var renderedIndex: Int?
     private var spanAnchor: [Int]?
+    // Edge snap and Auto Tiling, fixed for the drag.
+    private var edgeEnabled = false
+    private var screens: [ScreenSlot] = []
+    private var screenNeighbors: [[CGRect]] = []
+    private var gate = AutoTilingGate.open
 
     init(engine: ZoneEngine) {
         self.engine = engine
@@ -57,7 +73,7 @@ final class DragSnapper {
     func start() {
         InputTap.shared.add(Self.tapID, priority: 40,
                             events: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .rightMouseUp,
-                                     .otherMouseDown, .otherMouseUp, .flagsChanged, .scrollWheel]) { [weak self] type, event in
+                                     .otherMouseDown, .otherMouseUp, .flagsChanged, .scrollWheel, .keyDown, .keyUp]) { [weak self] type, event in
             self?.handle(type, event) ?? .pass
         }
     }
@@ -107,6 +123,18 @@ final class DragSnapper {
         case .flagsChanged:
             if phase != .idle { flags = event.flags }
             return .pass
+        case .keyDown:
+            // Esc cancels a drag that shows zones or an edge preview; every other key, and Esc
+            // at any other time, goes on to the apps.
+            guard phase == .dragging, zonesShown || edgeShown != nil || cancelled,
+                  event.getIntegerValueField(.keyboardEventKeycode) == Int64(kVK_Escape) else { return .pass }
+            cancelled = true
+            swallowEscapeUp = true
+            return .consume
+        case .keyUp:
+            guard swallowEscapeUp, event.getIntegerValueField(.keyboardEventKeycode) == Int64(kVK_Escape) else { return .pass }
+            swallowEscapeUp = false
+            return .consume
         case .rightMouseDown, .otherMouseDown:
             guard phase == .dragging else { return .pass }
             if type == .otherMouseDown && cfgMiddleSpans && event.getIntegerValueField(.mouseEventButtonNumber) == 2 {
@@ -151,7 +179,7 @@ final class DragSnapper {
         let s = engine.settings.value
         cfgNonPrimary = s.nonPrimaryButtonToggles
         cfgMiddleSpans = s.middleButtonSpansZones
-        cfgHoldShift = s.holdShiftToActivate
+        cfgActivation = s.activation
         let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
@@ -200,10 +228,14 @@ final class DragSnapper {
         layouts = displays.map { engine.layout(for: $0) }
         displayZones = zip(layouts, displays).map { $0.zones(in: $1.workArea) }
         wheelEnabled = s.mouseWheelSwitchesLayouts && engine.library.value.wheelCycle.count >= 2
+        screens = ScreenSlot.current
+        screenNeighbors = screens.map { s in screens.map(\.frame).filter { $0 != s.frame } }
+        gate = engine.autoTilingGate(screens: screens)
+        edgeEnabled = s.edgeSnap
         if let record = engine.liveRecord(for: w, frame: startFrame) {
             originalSize = record.originalSize
             engine.forget(w)
-            if s.restoreSizeOnUnsnap, record.originalSize != frame.size, frame.width > 0 {
+            if s.restoreSizeOnUnsnap, record.originalSize != frame.size, frame.width > 0, !gate.blocks(pressLocation) {
                 // Keep the pointer at the same relative spot of the narrower title bar.
                 let ratio = (location.x - frame.minX) / frame.width
                 w.setSize(record.originalSize)
@@ -216,11 +248,10 @@ final class DragSnapper {
         update()
     }
 
-    /// Whether zones are active: ⇧ held (or not, when activation doesn't need it), flipped by
-    /// the non-primary-button toggle.
+    /// Whether zones are active: the activation key held (or, without one, ⇧ not held), flipped
+    /// by the non-primary-button toggle; never after Esc or over a display Auto Tiling arranges.
     private var zonesActive: Bool {
-        let toggledShift = flags.contains(.maskShift) != mouseToggled
-        return cfgHoldShift ? toggledShift : !toggledShift
+        !cancelled && cfgActivation.zonesActive(flags: flags, toggled: mouseToggled) && !gate.blocks(location)
     }
 
     private func displayIndex(at p: CGPoint) -> Int? {
@@ -245,14 +276,24 @@ final class DragSnapper {
         return (index, hits)
     }
 
+    /// The edge-snap region under the pointer while zones are inactive. Pure geometry.
+    private func currentEdge() -> (screen: Int, region: EdgeSnapRegion)? {
+        guard edgeEnabled, !cancelled, !gate.blocks(location), !zonesActive,
+              let i = screens.firstIndex(where: { $0.frame.contains(location) }),
+              let region = EdgeSnap.region(at: location, display: screens[i].frame, others: screenNeighbors[i]) else { return nil }
+        return (i, region)
+    }
+
     /// Recomputes activation and highlight; redraws only when something changed.
     private func update() {
         guard !displays.isEmpty else { return }
         guard zonesActive else {
             if zonesShown { engine.overlay.hide(); zonesShown = false; highlighted = []; renderedIndex = nil }
             spanAnchor = nil
+            updateEdgePreview()
             return
         }
+        edgeShown = nil      // zones replace the edge preview on the same panels
         if wheelSteps != 0, let index = displayIndex(at: location) {
             let steps = wheelSteps
             wheelSteps = 0
@@ -273,17 +314,39 @@ final class DragSnapper {
             ZoneLayer(display: displays[i], zones: displayZones[i], highlighted: i == index ? Set(highlighted) : [])
         }
         let screen = NSScreen.screens.map(\.axFrame).first { $0.containsInclusive(location) }
-        engine.overlay.show(layers, style: engine.style, onlyScreen: showAll ? nil : screen)
+        engine.overlay.show(layers, style: engine.style, onlyScreen: showAll ? nil : screen, excluding: gate.managed)
         zonesShown = true
+    }
+
+    /// Shows, moves or hides the edge-snap preview: the target drawn like a highlighted zone.
+    private func updateEdgePreview() {
+        let next = currentEdge()
+        guard next?.screen != edgeShown?.screen || next?.region != edgeShown?.region else { return }
+        edgeShown = next
+        guard let next else { engine.overlay.hide(); return }
+        let slot = screens[next.screen]
+        let display = ZoneDisplay(key: "edge-snap", name: "", number: 0, frame: slot.frame, workArea: slot.workArea,
+                                  isBuiltIn: false)
+        var style = engine.style
+        style.showNumbers = false
+        engine.overlay.show([ZoneLayer(display: display, zones: [next.region.rect(in: slot.workArea)], highlighted: [0])],
+                            style: style, onlyScreen: slot.frame)
     }
 
     /// Mouse released: snap to the zones under the pointer when zones are active. Runs inside the
     /// tap, so the window move itself is queued for right after.
     private func release() {
-        if phase == .dragging, let w = window, let target = currentTarget(), !target.zones.isEmpty {
-            let display = displays[target.display], zones = target.zones, original = originalSize
-            let engine = self.engine
-            DispatchQueue.main.async { engine.snap(w, to: zones, on: display, originalSize: original) }
+        if phase == .dragging, let w = window {
+            let engine = self.engine, original = originalSize
+            if let target = currentTarget(), !target.zones.isEmpty {
+                let display = displays[target.display], zones = target.zones
+                DispatchQueue.main.async { engine.snap(w, to: zones, on: display, originalSize: original) }
+            } else if let edge = currentEdge(), let index = displayIndex(at: location) {
+                let work = screens[edge.screen].workArea, key = displays[index].key
+                DispatchQueue.main.async {
+                    engine.snap(w, edge: edge.region, work: work, displayKey: key, originalSize: original)
+                }
+            }
         }
         endSession()
     }
@@ -304,9 +367,11 @@ final class DragSnapper {
     private func endSession() {
         pump?.invalidate()
         pump = nil
-        if zonesShown { engine.overlay.hide() }
+        if zonesShown || edgeShown != nil { engine.overlay.hide() }
         phase = .idle
         zonesShown = false
+        edgeShown = nil
+        cancelled = false
         mouseToggled = false
         spanToggled = false
         wheelSteps = 0
@@ -321,5 +386,9 @@ final class DragSnapper {
         renderedIndex = nil
         highlighted = []
         spanAnchor = nil
+        edgeEnabled = false
+        screens = []
+        screenNeighbors = []
+        gate = .open
     }
 }

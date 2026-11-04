@@ -11,26 +11,38 @@ struct LayoutPickerCard: View {
     private let grid = Array(repeating: GridItem(.fixed(LayoutPickerCard.cardWidth), spacing: 14, alignment: .top),
                              count: LayoutPickerCard.columns)
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         GlassPanel(cornerRadius: 22) {
-            VStack(alignment: .leading, spacing: 12) {
-                header
-                sectionTitle(Text("Templates", comment: "Layout editor section: built-in layouts"))
-                LazyVGrid(columns: grid, alignment: .leading, spacing: 14) {
-                    ForEach(model.library.templates) { card($0) }
+            Group {
+                if model.mode == .creating {
+                    createPage.transition(.opacity)
+                } else {
+                    pickerPage.transition(.opacity)
                 }
-                sectionTitle(Text("Custom", comment: "Layout editor section: layouts the user made"))
-                customSection
-                Divider().overlay(Color.white.opacity(0.08))
-                footer
             }
             .padding(22)
             .frame(width: CGFloat(Self.columns) * Self.cardWidth + CGFloat(Self.columns - 1) * 14 + 44)
             .foregroundStyle(.white)
             .background(Color.black.opacity(0.62))
-            .overlay { if model.mode == .creating { createSheet } }
         }
         .shadow(color: .black.opacity(0.35), radius: 30, y: 12)
+        .animation(reduceMotion ? nil : .smooth(duration: 0.22), value: model.mode == .creating)
+    }
+
+    private var pickerPage: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            header
+            sectionTitle(Text("Templates", comment: "Layout editor section: built-in layouts"))
+            LazyVGrid(columns: grid, alignment: .leading, spacing: 14) {
+                ForEach(model.library.templates) { card($0) }
+            }
+            sectionTitle(Text("Custom", comment: "Layout editor section: layouts the user made"))
+            customSection
+            Divider().overlay(Color.white.opacity(0.08))
+            footer
+        }
     }
 
     // MARK: Header
@@ -265,50 +277,117 @@ struct LayoutPickerCard: View {
 
     // MARK: Create
 
-    private var createSheet: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.black.opacity(0.45))
-                .onTapGesture { model.mode = .picker }
-            VStack(alignment: .leading, spacing: 14) {
-                Text("Create new layout").font(.system(size: 16, weight: .semibold))
-                TextField("Name", text: $model.newName)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 300)
-                    .onSubmit { model.create() }
-                Picker(selection: $model.newIsCanvas) {
-                    Label {
-                        Text("Grid", comment: "FancyZones layout template or custom layout type: zones on a grid")
-                    } icon: {
-                        Image(systemName: "rectangle.split.3x3")
-                    }
-                    .tag(false)
-                    Label {
-                        Text("Canvas", comment: "FancyZones custom layout type: free-form zones")
-                    } icon: {
-                        Image(systemName: "rectangle.on.rectangle")
-                    }
-                    .tag(true)
-                } label: {
-                    Text("Type", comment: "Kind of a new layout: grid or canvas")
+    /// A new layout: blank (grid or canvas, with a name), or from a preset.
+    private var createPage: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                Button { model.mode = .picker } label: {
+                    Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold))
+                        .frame(width: 26, height: 26)
+                        .background(Circle().fill(Color.white.opacity(0.1)))
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                (model.newIsCanvas
-                     ? Text("Free-form zones you move and resize, which may overlap. Scales to other displays.")
-                     : Text("Split and merge zones on a grid that keeps its proportions on any display."))
-                    .font(.system(size: 11.5)).foregroundStyle(Color.white.opacity(0.6))
-                    .frame(width: 300, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                HStack {
-                    Spacer()
-                    Button("Cancel") { model.mode = .picker }.buttonStyle(GlassButtonStyle())
-                    Button("Create") { model.create() }.buttonStyle(GlassButtonStyle(prominent: true))
-                }
+                .buttonStyle(.plain)
+                .help(Text("Back to layouts"))
+                Text("Create new layout").font(.system(size: 20, weight: .bold))
+                Spacer()
+                displayBadge
             }
-            .padding(20)
-            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color(white: 0.16)))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.white.opacity(0.12)))
-            .fixedSize()
+            blankLayoutRow
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Start from a preset", comment: "Layout editor: heading of the preset gallery")
+                    .font(.system(size: 15, weight: .semibold))
+                Text("Adds a layout you can edit like any other and applies it to \(model.selectedDisplay.name).",
+                     comment: "Layout editor preset gallery: the display's name")
+                    .font(.system(size: 11.5)).foregroundStyle(Color.white.opacity(0.58))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.top, 2)
+            sectionTitle(Text("Workflows", comment: "Layout editor: presets for kinds of work"))
+            LazyVGrid(columns: grid, alignment: .leading, spacing: 16) {
+                ForEach(LayoutPreset.workflows) { presetCard($0) }
+            }
+            sectionTitle(Text("Ultrawide displays", comment: "Layout editor: presets for 21:9 and 32:9 displays"))
+            LazyVGrid(columns: grid, alignment: .leading, spacing: 16) {
+                ForEach(LayoutPreset.ultrawide) { presetCard($0) }
+            }
+        }
+    }
+
+    /// The display a new layout goes on.
+    private var displayBadge: some View {
+        let d = model.selectedDisplay
+        return HStack(spacing: 6) {
+            Image(systemName: d.key == ZoneDisplay.allDisplaysKey ? "rectangle.on.rectangle" : "display")
+            Text(verbatim: model.displays.count > 1 ? "\(d.number)  \(d.name)" : d.name)
+        }
+        .font(.system(size: 12, weight: .medium))
+        .padding(.horizontal, 10).padding(.vertical, 5)
+        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color.white.opacity(0.08)))
+        .foregroundStyle(Color.white.opacity(0.85))
+    }
+
+    /// Name, grid or canvas, and Create.
+    private var blankLayoutRow: some View {
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: model.newIsCanvas ? "rectangle.on.rectangle" : "rectangle.split.3x3")
+                .font(.system(size: 20, weight: .regular))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 30)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Blank layout", comment: "Layout editor: create a layout without a preset")
+                    .font(.system(size: 13, weight: .semibold))
+                (model.newIsCanvas
+                     ? Text("Free-form zones you draw, move and resize, which may overlap. Scales to other displays.")
+                     : Text("Split and merge zones on a grid that keeps its proportions on any display."))
+                    .font(.system(size: 11.5)).foregroundStyle(Color.white.opacity(0.58))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            TextField("Name", text: $model.newName)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 180)
+                .onSubmit { model.create() }
+            kindSwitch
+            Button("Create") { model.create() }.buttonStyle(GlassButtonStyle(prominent: true))
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.05)))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.white.opacity(0.08)))
+    }
+
+    /// Grid or canvas, drawn on the glass like the other editor controls.
+    private var kindSwitch: some View {
+        HStack(spacing: 2) {
+            kindButton(canvas: false, symbol: "rectangle.split.3x3",
+                       Text("Grid", comment: "FancyZones layout template or custom layout type: zones on a grid"))
+            kindButton(canvas: true, symbol: "rectangle.on.rectangle",
+                       Text("Canvas", comment: "FancyZones custom layout type: free-form zones"))
+        }
+        .padding(2)
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.08)))
+        .fixedSize()
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("Type", comment: "Kind of a new layout: grid or canvas"))
+    }
+
+    private func kindButton(canvas: Bool, symbol: String, _ title: Text) -> some View {
+        let on = model.newIsCanvas == canvas
+        return Button { model.newIsCanvas = canvas } label: {
+            Label { title } icon: { Image(systemName: symbol) }
+                .font(.system(size: 12, weight: on ? .semibold : .medium))
+                .foregroundStyle(on ? Color.white : Color.white.opacity(0.7))
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(on ? Color.white.opacity(0.18) : Color.clear))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(on ? .isSelected : [])
+    }
+
+    private func presetCard(_ preset: LayoutPreset) -> some View {
+        PresetCard(preset: preset, reference: model.selectedDisplay.workArea.size, width: Self.cardWidth) {
+            model.createFromPreset(preset)
         }
     }
 }

@@ -19,6 +19,8 @@ struct SnapRecord {
     /// Keyboard extension: the zones the extension started from and the zone it reached.
     var extendAnchor: [Int]?
     var extendCursor: Int?
+    /// Set when the window was snapped to a display edge (then `zones` is empty and `layoutID` too).
+    var edge: EdgeSnapRegion?
 }
 
 /// The last zone an app's window was snapped to (for "move newly created windows to their last known zone").
@@ -38,6 +40,8 @@ final class ZoneEngine {
     let overlay = ZoneOverlay()
     /// Called after a display's layout changed (so an ongoing drag can redraw).
     var onLayoutChange: ((ZoneDisplay) -> Void)?
+    /// Auto Tiling's hook (whether it arranges a display), read each time; tests swap it.
+    var autoTilingManages: () -> ((CGDirectDisplayID) -> Bool)? = { Services.autoTilingManagesDisplay }
 
     private(set) var records: [WindowRef: SnapRecord] = [:]
     private var sequence = 0
@@ -58,7 +62,7 @@ final class ZoneEngine {
 
     func layout(for display: ZoneDisplay) -> ZoneLayout {
         let s = settings.value
-        return library.value.layout(forDisplay: display.key, vertical: display.isVertical,
+        return library.value.layout(forDisplay: display.key, legacyKey: display.legacyKey, vertical: display.isVertical,
                                     defaultHorizontal: s.defaultHorizontalLayout, defaultVertical: s.defaultVerticalLayout)
     }
 
@@ -66,7 +70,7 @@ final class ZoneEngine {
         layout(for: display).zones(in: display.workArea)
     }
 
-    func display(key: String) -> ZoneDisplay? { displays.first { $0.key == key } }
+    func display(key: String) -> ZoneDisplay? { displays.first { $0.matches(key) } }
 
     func displayUnderPointer() -> ZoneDisplay? {
         ZoneDisplay.containing(ScreenGeometry.toAX(NSEvent.mouseLocation), in: displays)
@@ -90,14 +94,25 @@ final class ZoneEngine {
     /// Assigns `layout` to `display`; windows snapped there follow when the option is on.
     /// With `announce`, the zones flash and the layout name shows (per the settings).
     func apply(_ layout: ZoneLayout, to display: ZoneDisplay, announce: Bool) {
-        library.update { $0.assignments[display.key] = layout.id }
+        library.update { $0.assign(layout.id, toDisplay: display.key, legacyKey: display.legacyKey) }
         if settings.value.keepWindowsOnLayoutChange { refit(display) }
         onLayoutChange?(display)
-        guard announce else { return }
+        // Auto Tiling's displays show no zones.
+        guard announce, !autoTilingGate().blocks(display.workArea) else { return }
         if settings.value.flashZonesOnLayoutSwitch {
             overlay.flash(ZoneLayer(display: display, zones: layout.zones(in: display.workArea)), style: style)
         }
         overlay.showLayoutName(layout.displayName, on: display, settings: settings.value)
+    }
+
+    /// Adds the custom layout of `preset` (reusing an untouched earlier one) and applies it to `display`.
+    @discardableResult
+    func applyPreset(_ preset: LayoutPreset, to display: ZoneDisplay, announce: Bool) -> ZoneLayout {
+        var lib = library.value
+        let layout = lib.adopt(preset)
+        library.value = lib
+        apply(layout, to: display, announce: announce)
+        return layout
     }
 
     /// Applies the layout with quick key `n` to the active display.
@@ -153,17 +168,10 @@ final class ZoneEngine {
         let all = layout.zones(in: display.workArea)
         let indices = Array(Set(zones.filter { all.indices.contains($0) })).sorted()
         let target = ZoneGeometry.union(of: indices, in: all)
-        guard !target.isNull else { return }
+        guard !target.isNull, !autoTilingGate().blocks(target) else { return }
         let current = w.frame
         let original = originalSize ?? records[w]?.originalSize ?? current?.size ?? target.size
-        AXUIElementSetMessagingTimeout(w.element, 0.5)
-        if w.isResizable {
-            w.setFrame(target)
-        } else if let size = current?.size {
-            // Fixed-size windows are centered in the zone instead.
-            w.setPosition(CGPoint(x: max(target.minX, target.midX - size.width / 2),
-                                  y: max(target.minY, target.midY - size.height / 2)))
-        }
+        move(w, to: target, current: current)
         sequence += 1
         records[w] = SnapRecord(displayKey: display.key, layoutID: layout.id, zones: indices,
                                 frame: w.frame ?? target, originalSize: original, sequence: sequence,
@@ -173,13 +181,36 @@ final class ZoneEngine {
         }
     }
 
+    /// Snaps a window to a display edge region (edge snap): `work` is that screen's work area.
+    func snap(_ w: WindowRef, edge region: EdgeSnapRegion, work: CGRect, displayKey: String, originalSize: CGSize? = nil) {
+        let target = region.rect(in: work)
+        guard !target.isNull, !autoTilingGate().blocks(target) else { return }
+        let current = w.frame
+        let original = originalSize ?? records[w]?.originalSize ?? current?.size ?? target.size
+        move(w, to: target, current: current)
+        sequence += 1
+        records[w] = SnapRecord(displayKey: displayKey, layoutID: "", zones: [], frame: w.frame ?? target,
+                                originalSize: original, sequence: sequence, edge: region)
+    }
+
+    /// Fills `target`; fixed-size windows are centered in it instead.
+    private func move(_ w: WindowRef, to target: CGRect, current: CGRect?) {
+        AXUIElementSetMessagingTimeout(w.element, 0.5)
+        if w.isResizable {
+            w.setFrame(target)
+        } else if let size = current?.size {
+            w.setPosition(CGPoint(x: max(target.minX, target.midX - size.width / 2),
+                                  y: max(target.minY, target.midY - size.height / 2)))
+        }
+    }
+
     /// Re-snaps windows on `display` to the same zone numbers of its current layout; windows
     /// whose zone no longer exists are released. With `requireLive`, windows that left their
     /// zone since are released too; after a display change macOS itself may have moved them.
     func refit(_ display: ZoneDisplay, requireLive: Bool = true) {
         let layout = layout(for: display)
         let count = layout.count
-        for (w, r) in records where r.displayKey == display.key {
+        for (w, r) in records where r.displayKey == display.key && r.edge == nil {
             guard r.zones.allSatisfy({ $0 < count }), w.position != nil else { records[w] = nil; continue }
             if requireLive && liveRecord(for: w) == nil { continue }
             snap(w, to: r.zones, on: display, originalSize: r.originalSize)
@@ -190,6 +221,13 @@ final class ZoneEngine {
     func refitAll() {
         purgeStaleRecords()
         for d in displays { refit(d, requireLive: false) }
+        // Edge-snapped windows take the same half or quarter of the screen they are on now.
+        let screens = ScreenSlot.current
+        for (w, r) in records {
+            guard let region = r.edge, let frame = w.frame,
+                  let screen = screens.first(where: { $0.frame.contains(frame.center) }) else { continue }
+            snap(w, edge: region, work: screen.workArea, displayKey: r.displayKey, originalSize: r.originalSize)
+        }
     }
 
     func purgeStaleRecords() {
@@ -199,7 +237,7 @@ final class ZoneEngine {
     /// Windows snapped to the same zones of the same display as `w`, in snap order.
     func windowsSharingZone(with w: WindowRef) -> [WindowRef] {
         guard let r = liveRecord(for: w) else { return [] }
-        return records.filter { $0.value.displayKey == r.displayKey && $0.value.zones == r.zones }
+        return records.filter { $0.value.displayKey == r.displayKey && $0.value.zones == r.zones && $0.value.edge == r.edge }
             .filter { liveRecord(for: $0.key) != nil && !$0.key.isMinimized }
             .sorted { $0.value.sequence < $1.value.sequence }
             .map(\.key)
