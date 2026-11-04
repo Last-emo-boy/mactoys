@@ -1,6 +1,7 @@
 import AdvancedPaste
 import AppKit
 import Awake
+import ChargeLimit
 import CommandNotFound
 import FancyZones
 import FileLocksmith
@@ -53,6 +54,8 @@ enum ModuleCommands {
         },
         // Hidden: started by Privacy Screen while something is locked (not listed in help).
         PrivacyGuard.subcommand: { PrivacyGuard.run($0) },
+        // Hidden: the Charge Limit root helper, run by launchd from its installed copy (not listed in help).
+        ChargeHelper.subcommand: { ChargeHelper.run($0) },
         "palette": { args in
             CLI.open(AppCommand(module: "cmdpal", action: "show",
                                 parameters: args.isEmpty ? [:] : ["query": args.joined(separator: " ")]))
