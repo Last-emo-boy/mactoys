@@ -48,6 +48,9 @@ final class CaptureHistory {
     @ObservationIgnored private var thumbnails: [UUID: NSImage] = [:]
     @ObservationIgnored private let log = Log.for("screenshot")
     @ObservationIgnored private var indexURL: URL { directory.appendingPathComponent("index.json") }
+    /// Every disk write and removal runs here, in order: an edit saved right after a capture can't be
+    /// overwritten by the capture's own write, and a deleted capture's folder goes after it was written.
+    private nonisolated static let io = DispatchQueue(label: "com.w33d.mactoys.screenshot.history", qos: .utility)
 
     init(directory: URL) {
         self.directory = directory
@@ -79,7 +82,7 @@ final class CaptureHistory {
         let original = image
         let finished = rendered
         let doc = document
-        Task.detached(priority: .utility) {
+        Self.io.async { [weak self] in
             var bytes: Int64 = 0
             do {
                 try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -97,11 +100,13 @@ final class CaptureHistory {
                 Log.for("screenshot").error("Saving to history failed: \(error.localizedDescription, privacy: .public)")
             }
             let total = bytes
-            await MainActor.run { [weak self] in
-                guard let self, let i = self.entries.firstIndex(where: { $0.id == entry.id }) else { return }
-                self.entries[i].bytes = total
-                self.prune(limitMB: limitMB, maxAgeDays: maxAgeDays)
-                self.saveIndex()
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self, let i = self.entries.firstIndex(where: { $0.id == entry.id }) else { return }
+                    self.entries[i].bytes = total
+                    self.prune(limitMB: limitMB, maxAgeDays: maxAgeDays)
+                    self.saveIndex()
+                }
             }
         }
     }
@@ -112,7 +117,7 @@ final class CaptureHistory {
         thumbnails[id] = Self.thumbnail(rendered).map { NSImage(cgImage: $0, size: .zero) }
         let markupURL = markupURL(id), thumbURL = thumbURL(id)
         let finished = rendered
-        Task.detached(priority: .utility) {
+        Self.io.async {
             do {
                 try JSONEncoder().encode(document).write(to: markupURL, options: .atomic)
                 if let thumb = Self.thumbnail(finished) {
@@ -182,7 +187,7 @@ final class CaptureHistory {
 
     private func remove(folders ids: [UUID]) {
         let urls = ids.map(folder)
-        Task.detached(priority: .utility) {
+        Self.io.async {
             for url in urls where FileManager.default.fileExists(atPath: url.path) {
                 do { try FileManager.default.removeItem(at: url) } catch {
                     Log.for("screenshot").error("Removing a history item failed: \(error.localizedDescription, privacy: .public)")
@@ -194,7 +199,7 @@ final class CaptureHistory {
     private func saveIndex() {
         let snapshot = entries
         let url = indexURL
-        Task.detached(priority: .utility) {
+        Self.io.async {
             do {
                 try JSONEncoder().encode(snapshot).write(to: url, options: .atomic)
             } catch {

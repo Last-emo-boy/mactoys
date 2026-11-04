@@ -509,7 +509,8 @@ public final class ScreenshotModule: ToyModule {
 
     func pin(_ item: CaptureItem) {
         let screen = NSScreen.underMouse ?? NSScreen.main
-        var window: PinWindow?
+        // Weak: the pin's own view holds these actions.
+        weak var window: PinWindow?
         let actions = PinActions(
             copy: { [weak self] in self?.copy(item); HUD.show("Copied", symbol: "doc.on.doc") },
             save: { [weak self] in self?.saveAs(item) },
