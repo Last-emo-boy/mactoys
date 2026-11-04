@@ -73,7 +73,7 @@ public struct Dimension: Codable, Hashable, Sendable {
 
         public var title: String {
             switch self {
-            case .fraction: String(localized: "% of screen", comment: "Window Controls resize unit: percent of the screen")
+            case .fraction: String(localized: "windowcontrols.unit.percent", defaultValue: "% of screen", comment: "Window Controls resize unit: percent of the screen")
             case .points: String(localized: "Points", comment: "Window Controls resize unit: exact size in points")
             case .unchanged: String(localized: "Unchanged", comment: "Window Controls resize unit: keep this side as it is")
             }

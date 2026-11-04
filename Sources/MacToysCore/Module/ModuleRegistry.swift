@@ -10,6 +10,9 @@ public struct GeneralSettings: Codable, Equatable, Sendable {
     public var appearance: Appearance = .system
     public var hasCompletedWelcome = false
     public var showWhatsNew = true
+    /// Quick action ids shown as tiles / switches in the menu bar flyout, in order; nil uses `QuickAccessLayout`'s defaults.
+    public var menuBarTiles: [String]?
+    public var menuBarSwitches: [String]?
 
     public init() {}
 }

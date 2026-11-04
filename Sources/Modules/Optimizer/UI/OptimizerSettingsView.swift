@@ -425,12 +425,12 @@ struct OptimizerSettingsView: View {
 
     private var imagesSection: some View {
         Section {
-            SliderRow("JPEG, HEIC and AVIF quality", subtitle: "80 % looks the same as the original for nearly every photo.",
+            SliderRow("JPEG, HEIC and AVIF quality", subtitle: "80% looks the same as the original for nearly every photo.",
                       value: Binding(get: { Double(s.value.image.quality) }, set: { s.value.image.quality = Int($0.rounded()) }),
                       in: 40...100, step: 1, format: { ($0 / 100).formatted(.percent.precision(.fractionLength(0))) })
             Toggle(isOn: $s.value.image.reduceColors) {
                 RowLabel("Reduce PNG colors",
-                         subtitle: "Screenshots with a palette of up to 256 colors look the same and are usually 60–80 % smaller. Skipped when the colors would visibly change.")
+                         subtitle: "Screenshots with a palette of up to 256 colors look the same and are usually 60–80% smaller. Skipped when the colors would visibly change.")
             }
             Picker(selection: $s.value.image.maxColors) {
                 ForEach([256, 128, 64, 32], id: \.self) { n in
@@ -522,7 +522,7 @@ struct OptimizerSettingsView: View {
                 RowLabel("Remove audio")
             }
             Toggle(isOn: $s.value.video.convertGIFs) {
-                RowLabel("Turn GIFs into MP4 videos", subtitle: "Usually 80–95 % smaller. The video is saved next to the GIF.")
+                RowLabel("Turn GIFs into MP4 videos", subtitle: "Usually 80–95% smaller. The video is saved next to the GIF.")
             }
         } header: {
             Text("Videos")

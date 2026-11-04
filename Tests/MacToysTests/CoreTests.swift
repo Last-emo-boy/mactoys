@@ -49,6 +49,19 @@ import Testing
         #expect(LiveCapture.OwnWindows.all.excludes(layer: 0))
     }
 
+    @Test func flyoutShowsChosenOrDefaultActions() {
+        let available = ["a", "b", "c", "d", "e"]
+        // Defaults keep their order, skip what's unavailable and are topped up to the limit.
+        let d = QuickAccessLayout.split(available: available, chosen: nil, defaults: ["d", "x", "b"], limit: 3)
+        #expect(d.shown == ["d", "b", "a"])
+        #expect(d.more == ["c", "e"])
+        // A user's list is used as chosen, even when empty.
+        #expect(QuickAccessLayout.split(available: available, chosen: ["e", "zz"], defaults: [], limit: 3).shown == ["e"])
+        #expect(QuickAccessLayout.split(available: available, chosen: [], defaults: ["a"], limit: 3).shown.isEmpty)
+        #expect(QuickAccessLayout.toggling("c", on: true, shown: ["a"]) == ["a", "c"])
+        #expect(QuickAccessLayout.toggling("a", on: false, shown: ["a", "c"]) == ["c"])
+    }
+
     @Test func shortcutDisplay() {
         let s = Shortcut(8, [.control, .option])
         #expect(s.modifiers.symbols == ["⌃", "⌥"])

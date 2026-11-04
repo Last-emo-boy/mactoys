@@ -283,7 +283,7 @@ public enum WatchAction: Codable, Equatable, Hashable, Sendable {
     var title: String {
         switch self {
         case .optimize: String(localized: "Optimize", comment: "Optimizer: watch folder action")
-        case .downscale: String(localized: "Optimize and downscale to 50 %", comment: "Optimizer: watch folder action")
+        case .downscale: String(localized: "Optimize and downscale to 50%", comment: "Optimizer: watch folder action")
         case .convert(let f): String(localized: "Convert images to \(f.title)", comment: "Optimizer: watch folder action; the value is a format such as JPEG")
         }
     }

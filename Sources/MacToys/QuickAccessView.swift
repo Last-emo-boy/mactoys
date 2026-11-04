@@ -5,12 +5,13 @@ import SwiftUI
 /// Menu bar flyout (`design/exports/05-menubar-flyouts-huds.png`, right).
 struct QuickAccessView: View {
     @State private var registry = ModuleRegistry.shared
+    @State private var showsMore = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        let actions = registry.quickActions
-        let tiles = Array(actions.filter { $0.isOn == nil }.prefix(9))
-        let switches = actions.filter { $0.isOn != nil }
+        let layout = FlyoutLayout(actions: registry.quickActions, general: registry.general.value)
+        let tiles = layout.tiles
+        let switches = layout.switches
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
                 AppMark(size: 26)
@@ -30,11 +31,28 @@ struct QuickAccessView: View {
                     }
                 }
             }
-            if !switches.isEmpty {
+            if !switches.isEmpty || !layout.moreSwitches.isEmpty {
                 VStack(spacing: 0) {
                     ForEach(Array(switches.enumerated()), id: \.element.id) { i, a in
                         if i > 0 { Divider().opacity(0.5) }
                         SwitchRow(action: a)
+                    }
+                    if !layout.moreSwitches.isEmpty {
+                        if !switches.isEmpty { Divider().opacity(0.5) }
+                        moreRow(count: layout.moreSwitches.count)
+                        if showsMore {
+                            Divider().opacity(0.5)
+                            ScrollView {
+                                VStack(spacing: 0) {
+                                    ForEach(Array(layout.moreSwitches.enumerated()), id: \.element.id) { i, a in
+                                        if i > 0 { Divider().opacity(0.5) }
+                                        SwitchRow(action: a)
+                                    }
+                                }
+                            }
+                            .frame(maxHeight: 300)
+                            .transition(.opacity)
+                        }
                     }
                 }
                 .background(RoundedRectangle(cornerRadius: 12).fill(.quaternary.opacity(0.5)))
@@ -43,6 +61,8 @@ struct QuickAccessView: View {
                 Text("\(registry.enabledCount) of \(registry.modules.count) utilities on")
                     .font(.system(size: 11.5)).foregroundStyle(.secondary)
                 Spacer()
+                Button(String(localized: "Customize…", comment: "Menu bar flyout: choose its tiles and switches")) { open("general") }
+                    .buttonStyle(.link).font(.system(size: 12))
                 Button("Open Settings…") { open(nil) }.buttonStyle(.link).font(.system(size: 12, weight: .semibold))
             }
         }
@@ -67,6 +87,28 @@ struct QuickAccessView: View {
         }
         .buttonStyle(.plain)
         .help(a.shortcut.map { "\(a.title) — \($0)" } ?? a.title)
+    }
+
+    private func moreRow(count: Int) -> some View {
+        Button {
+            withAnimation(.snappy(duration: 0.2)) { showsMore.toggle() }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "switch.2").frame(width: 18).foregroundStyle(.secondary)
+                Text("More Switches", comment: "Menu bar flyout: show the switches not listed above").fontWeight(.medium)
+                Text(verbatim: count.formatted()).font(.system(size: 11, weight: .semibold)).monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 6).padding(.vertical, 1)
+                    .background(Capsule().fill(.quaternary))
+                Spacer()
+                Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold)).foregroundStyle(.tertiary)
+                    .rotationEffect(.degrees(showsMore ? 90 : 0))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func iconButton(_ symbol: String, action: @escaping () -> Void) -> some View {
@@ -104,5 +146,27 @@ private struct SwitchRow: View {
         .id(tick)
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
+    }
+}
+
+/// The flyout's tiles and switches from the enabled utilities' quick actions (see `QuickAccessLayout`).
+struct FlyoutLayout {
+    let tiles: [QuickAction]
+    let switches: [QuickAction]
+    let moreTiles: [QuickAction]
+    let moreSwitches: [QuickAction]
+
+    init(actions: [QuickAction], general: GeneralSettings) {
+        let tileActions = actions.filter { $0.isOn == nil }
+        let switchActions = actions.filter { $0.isOn != nil }
+        let byID = Dictionary(actions.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let t = QuickAccessLayout.split(available: tileActions.map(\.id), chosen: general.menuBarTiles,
+                                        defaults: QuickAccessLayout.defaultTiles, limit: QuickAccessLayout.tileCount)
+        let s = QuickAccessLayout.split(available: switchActions.map(\.id), chosen: general.menuBarSwitches,
+                                        defaults: QuickAccessLayout.defaultSwitches, limit: QuickAccessLayout.switchCount)
+        tiles = t.shown.compactMap { byID[$0] }
+        moreTiles = t.more.compactMap { byID[$0] }
+        switches = s.shown.compactMap { byID[$0] }
+        moreSwitches = s.more.compactMap { byID[$0] }
     }
 }

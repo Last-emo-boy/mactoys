@@ -32,6 +32,17 @@ struct GeneralView: View {
                 }
             }
 
+            Section {
+                FlyoutPicker(title: Text("Tiles", comment: "Menu bar flyout: the grid of buttons at the top"),
+                             kind: .tiles, general: general)
+                FlyoutPicker(title: Text("Switches", comment: "Menu bar flyout: the on/off rows below the tiles"),
+                             kind: .switches, general: general)
+            } header: {
+                Text("Menu bar flyout")
+            } footer: {
+                Text("Switches you don't pick stay one click away under More Switches.")
+            }
+
             Section("Language") {
                 LanguagePicker { Relaunch.now() }
             }
@@ -146,5 +157,45 @@ enum CLIInstaller {
                                    prompt: String(localized: "MacToys wants to remove the mactoys command-line tool."))
         }
         catch { NSAlert(error: error).runModal() }
+    }
+}
+
+/// Chooses which quick actions the menu bar flyout shows (`GeneralSettings.menuBarTiles` / `menuBarSwitches`).
+private struct FlyoutPicker: View {
+    enum Kind { case tiles, switches }
+    let title: Text
+    let kind: Kind
+    @Bindable var general: Persisted<GeneralSettings>
+    @State private var registry = ModuleRegistry.shared
+
+    var body: some View {
+        let layout = FlyoutLayout(actions: registry.quickActions, general: general.value)
+        let shown = kind == .tiles ? layout.tiles : layout.switches
+        let more = kind == .tiles ? layout.moreTiles : layout.moreSwitches
+        DisclosureGroup {
+            ForEach(shown + more) { action in
+                Toggle(isOn: Binding(get: { shown.contains { $0.id == action.id } },
+                                     set: { set(action.id, on: $0, shown: shown) })) {
+                    Label {
+                        Text(verbatim: action.title)
+                    } icon: {
+                        ModuleIcon(symbol: action.symbol, tint: action.tint, size: 20)
+                    }
+                }
+            }
+            Button(String(localized: "Use Defaults", comment: "Menu bar flyout: go back to the standard tiles or switches")) {
+                if kind == .tiles { general.value.menuBarTiles = nil } else { general.value.menuBarSwitches = nil }
+            }
+        } label: {
+            LabeledContent {
+                Text("\(shown.count) of \(shown.count + more.count)", comment: "How many tiles or switches the flyout shows, of how many there are")
+                    .monospacedDigit()
+            } label: { title }
+        }
+    }
+
+    private func set(_ id: String, on: Bool, shown: [QuickAction]) {
+        let list = QuickAccessLayout.toggling(id, on: on, shown: shown.map(\.id))
+        if kind == .tiles { general.value.menuBarTiles = list } else { general.value.menuBarSwitches = list }
     }
 }

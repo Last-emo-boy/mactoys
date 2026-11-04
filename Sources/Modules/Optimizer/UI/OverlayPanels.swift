@@ -249,7 +249,7 @@ struct DropZoneView: View {
             mainZone
             HStack(spacing: 10) {
                 smallZone(.downscale, symbol: "arrow.down.right.and.arrow.up.left",
-                          title: Text("Downscale 50 %", comment: "Optimizer drop zone target"))
+                          title: Text("Downscale 50%", comment: "Optimizer drop zone target"))
                 smallZone(.convert, symbol: "arrow.triangle.2.circlepath",
                           title: Text("Convert to \(model.convertFormat.title)", comment: "Optimizer drop zone target; the value is a format such as JPEG"))
             }
