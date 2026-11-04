@@ -94,9 +94,6 @@ public final class PrivacyScreenModule: ToyModule {
         observe(DistributedNotificationCenter.default(), SettingsStore.externalChangeNotification) { me, _ in
             me.settings.reload()
         }
-        observe(ws, NSWorkspace.accessibilityDisplayOptionsDidChangeNotification) { me, _ in
-            me.lockController.settingsChanged()
-        }
         if let front = NSWorkspace.shared.frontmostApplication,
            front.processIdentifier != ProcessInfo.processInfo.processIdentifier {
             lastOtherApp = front

@@ -11,11 +11,11 @@ final class ShieldPanel: NSPanel {
     let root: BlurRootView
     private let effect = NSVisualEffectView()
     private var glow: AmbientGlowView?
-    private let host: NSHostingView<LockShieldView>
+    private let host: PassthroughHostingView<LockShieldView>
 
     init(frame: CGRect, model: ShieldModel) {
         root = BlurRootView(frame: CGRect(origin: .zero, size: frame.size))
-        host = NSHostingView(rootView: LockShieldView(model: model))
+        host = PassthroughHostingView(rootView: LockShieldView(model: model))
         super.init(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView],
                    backing: .buffered, defer: false)
         isOpaque = false
@@ -38,6 +38,7 @@ final class ShieldPanel: NSPanel {
         effect.appearance = NSAppearance(named: .darkAqua)
         root.addSubview(effect)
         host.sizingOptions = []
+        host.safeAreaRegions = []   // the camera housing must not push the clock down
         host.frame = root.bounds
         host.autoresizingMask = [.width, .height]
         root.addSubview(host)
@@ -110,6 +111,7 @@ final class IslandPanel: NSPanel {
     func setIsland(_ view: UnlockIslandView) {
         let host = NSHostingView(rootView: view)
         host.sizingOptions = []
+        host.safeAreaRegions = []   // the island draws its own notch part
         host.frame = CGRect(origin: .zero, size: frame.size)
         host.autoresizingMask = [.width, .height]
         contentView = host
@@ -222,8 +224,18 @@ final class LockController {
         let s = settings.value
         shield.style = s.lockStyle
         shield.showClock = s.showClock
-        for entry in shields.values {
+        let solid = solid
+        for (id, entry) in shields {
             entry.top.apply(style: s.lockStyle, solid: solid, animateGlow: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+            // Reduce Transparency can change while locked: the extra frost layers follow it.
+            if solid, !entry.under.isEmpty {
+                entry.under.forEach { $0.close() }
+                shields[id] = (entry.top, [])
+            } else if !solid, entry.under.isEmpty {
+                let under = Self.underPanels(frame: entry.top.frame)
+                under.forEach { $0.order(.below, relativeTo: entry.top.windowNumber) }
+                shields[id] = (entry.top, under)
+            }
         }
     }
 
@@ -271,13 +283,7 @@ final class LockController {
             let top = ShieldPanel(frame: screen.frame, model: shield)
             top.apply(style: style, solid: solid, animateGlow: !reduceMotion)
             top.root.onMouseDown = { [weak self] in self?.reclaimKeyboard() }
-            // Two more frost layers under the top one make the desktop unrecognizable.
-            let under: [BlurPanel] = solid ? [] : (0..<2).map { _ in
-                let p = BlurPanel(frame: screen.frame, level: LockLevels.shield, interactive: false)
-                p.configure(washOpacity: 0, dark: true)
-                p.sharingType = .readOnly
-                return p
-            }
+            let under = solid ? [] : Self.underPanels(frame: screen.frame)
             under.forEach { $0.orderFrontRegardless() }
             top.orderFrontRegardless()
             shields[id] = (top, under)
@@ -289,6 +295,16 @@ final class LockController {
         }
         island?.orderFrontRegardless()
         if let id = islandScreen, !seen.contains(id) { placeIsland() }
+    }
+
+    /// Two more frost layers under the top one make the desktop unrecognizable.
+    private static func underPanels(frame: CGRect) -> [BlurPanel] {
+        (0..<2).map { _ in
+            let p = BlurPanel(frame: frame, level: LockLevels.shield, interactive: false)
+            p.configure(washOpacity: 0, dark: true)
+            p.sharingType = .readOnly
+            return p
+        }
     }
 
     private func removeShields() {
@@ -563,8 +579,8 @@ final class LockController {
 
     private func showSummary(_ attempts: [FailedAttempt]) {
         hideSummary()
-        let screen = NSScreen.underMouse ?? NSScreen.main ?? NSScreen.screens[0]
-        let size = CGSize(width: 420, height: CGFloat(170 + min(attempts.count, 6) * 33))
+        guard let screen = NSScreen.underMouse ?? NSScreen.main ?? NSScreen.screens.first else { return }
+        let size = CGSize(width: 440, height: CGFloat(170 + min(attempts.count, 6) * 33))
         let frame = CGRect(x: screen.visibleFrame.midX - size.width / 2, y: screen.visibleFrame.maxY - size.height - 12,
                            width: size.width, height: size.height)
         let panel = OverlayPanel(frame: frame, interactive: true, acceptsKey: false, level: .statusBar)

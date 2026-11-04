@@ -1,6 +1,41 @@
 import AppKit
 import Carbon.HIToolbox
 import MacToysCore
+import SwiftUI
+
+/// "Esc or click to clear", shown briefly at the bottom of the display under the pointer.
+struct BlurHint: View {
+    var fades = true
+    @State private var visible = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "eye.slash.fill")
+                .font(.system(size: 13, weight: .semibold))
+            Text("Screen blurred", comment: "Blur Screen hint, first part")
+                .font(.system(size: 13, weight: .semibold))
+            Text("Esc or click to clear", comment: "Blur Screen hint: how to remove the blur")
+                .font(.system(size: 13))
+                .foregroundStyle(.white.opacity(0.7))
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 11)
+        .background(Capsule().fill(Color(red: 0.11, green: 0.11, blue: 0.13).opacity(0.72)))
+        .glassEffect(.regular, in: .capsule)
+        .environment(\.colorScheme, .dark)
+        .opacity(visible ? 1 : 0)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, 96)
+        .task {
+            guard fades else { return }
+            try? await Task.sleep(for: .seconds(2.5))
+            withAnimation(reduceMotion ? nil : .smooth(duration: 0.6)) { visible = false }
+        }
+        .accessibilityHidden(true)
+    }
+}
 
 /// Blur Screen: frosts every display at once, no password. Esc, the shortcut or a click clears it.
 /// Keys typed while it is up go nowhere, so nobody types blind into the app behind it.
@@ -32,7 +67,11 @@ final class ScreenBlurController {
             previousApp = front
         }
         NSApp.activate()
-        set.stackUnderMouse?.top?.makeKeyAndOrderFront(nil)
+        if let top = set.stackUnderMouse?.top {
+            top.makeKeyAndOrderFront(nil)
+            top.makeFirstResponder(top.root)
+            top.setOverlay(BlurHint())
+        }
         screenObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {

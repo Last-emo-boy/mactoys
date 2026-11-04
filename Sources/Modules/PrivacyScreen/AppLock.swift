@@ -14,7 +14,7 @@ private final class AppCover {
         under = BlurPanel(frame: CGRect(x: 0, y: 0, width: 10, height: 10), level: BlurLevels.window, interactive: false)
         under.configure(washOpacity: 0, dark: true)
         top = BlurPanel(frame: CGRect(x: 0, y: 0, width: 10, height: 10), level: BlurLevels.window, interactive: true)
-        top.configure(washOpacity: 0.3, dark: true)
+        top.configure(washOpacity: 0.42, dark: true)
         top.root.onMouseDown = onClick
     }
 
@@ -74,15 +74,17 @@ struct AppLockBadge: View {
                     .overlay(Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1))
                     .offset(x: 6, y: 6)
             }
-            Text("“\(name)” is locked", comment: "App Lock cover; the placeholder is the app's name")
+            Text("“\(name)” is locked", comment: "App Lock cover and unlock island title; the placeholder is the app's name")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
             Text("Click to unlock with Touch ID or your password.")
                 .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(.white.opacity(0.78))
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .shadow(color: .black.opacity(0.35), radius: 8, y: 2)
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .environment(\.colorScheme, .dark)
@@ -113,7 +115,8 @@ final class AppLockController {
     private var island: IslandPanel?
     private var islandFor: pid_t?
     private var lastOtherApp: NSRunningApplication?
-    private var backoff = UnlockBackoff()
+    /// Per locked app, until it is unlocked or quits: closing the island must not reset the wait.
+    private var backoffs: [pid_t: UnlockBackoff] = [:]
     private let biometric = BiometricPrompt()
     private var biometricsLockedOut = false
     private var observers: [NSObjectProtocol] = []
@@ -149,6 +152,7 @@ final class AppLockController {
     /// Removes every lock without authentication (Privacy Screen stops; the caller has locked the Mac).
     func tearDown() {
         locked.removeAll()
+        backoffs.removeAll()
         stopTracking()
         onChange?()
     }
@@ -193,6 +197,7 @@ final class AppLockController {
 
     private func terminated(_ pid: pid_t?) {
         guard let pid, locked.removeValue(forKey: pid) != nil else { return }
+        backoffs[pid] = nil
         if islandFor == pid { hideIsland(restore: false) }
         if locked.isEmpty { stopTracking() }
         poller.poke()
@@ -237,18 +242,20 @@ final class AppLockController {
 
     private func showIsland(for pid: pid_t) {
         guard let app = locked[pid] else { return }
+        let verifying = islandFor == pid && unlock.phase == .verifying
         if islandFor != pid {
             biometric.cancel()
-            backoff.reset()
             biometricsLockedOut = false
         }
         islandFor = pid
-        unlock.title = String(localized: "“\(app.name)” is locked", comment: "Unlock island title for App Lock; the placeholder is the app's name")
+        unlock.title = String(localized: "“\(app.name)” is locked", comment: "App Lock cover and unlock island title; the placeholder is the app's name")
         unlock.appIcon = app.icon
         unlock.password = ""
         unlock.note = nil
-        if case .waiting = unlock.phase, backoff.canTryPassword(at: Date()) { unlock.phase = .ready }
-        if unlock.phase == .verifying { unlock.phase = .ready }
+        if !verifying {
+            let now = Date()
+            if let next = backoffs[pid]?.nextAttempt, next > now { unlock.phase = .waiting(until: next) } else { unlock.phase = .ready }
+        }
         unlock.offersBiometrics = allowsTouchID() && BiometricPrompt.isAvailable
         unlock.onSubmit = { [weak self] in self?.submitPassword() }
         unlock.onCancel = { [weak self] in self?.hideIsland(restore: true) }
@@ -311,8 +318,8 @@ final class AppLockController {
         guard waitTimer == nil else { return }
         let t = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
-                guard let self else { return }
-                if case .waiting = self.unlock.phase, self.backoff.canTryPassword(at: Date()) {
+                guard let self, let pid = self.islandFor else { return }
+                if case .waiting = self.unlock.phase, self.backoffs[pid, default: UnlockBackoff()].canTryPassword(at: Date()) {
                     self.unlock.phase = .ready
                     self.unlock.focusCount += 1
                 }
@@ -325,8 +332,8 @@ final class AppLockController {
     private func submitPassword() {
         guard let pid = islandFor, unlock.phase == .ready else { return }
         let now = Date()
-        guard backoff.canTryPassword(at: now) else {
-            unlock.phase = .waiting(until: backoff.nextAttempt ?? now)
+        guard backoffs[pid, default: UnlockBackoff()].canTryPassword(at: now) else {
+            unlock.phase = .waiting(until: backoffs[pid]?.nextAttempt ?? now)
             return
         }
         let password = unlock.password
@@ -336,17 +343,19 @@ final class AppLockController {
         unlock.note = nil
         Task { @MainActor [weak self] in
             let ok = await PasswordCheck.verify(password)
-            guard let self, self.islandFor == pid else { return }
+            guard let self, self.locked[pid] != nil else { return }
             if ok {
                 self.unlockApp(pid)
-            } else {
-                let at = Date()
-                self.backoff.recordFailure(.password, at: at)
-                self.unlock.note = .wrongPassword
-                self.unlock.shakeCount += 1
-                if let next = self.backoff.nextAttempt, next > at { self.unlock.phase = .waiting(until: next) } else { self.unlock.phase = .ready }
-                self.unlock.focusCount += 1
+                return
             }
+            // Counted even if the island was closed meanwhile.
+            let at = Date()
+            self.backoffs[pid, default: UnlockBackoff()].recordFailure(.password, at: at)
+            guard self.islandFor == pid else { return }
+            self.unlock.note = .wrongPassword
+            self.unlock.shakeCount += 1
+            if let next = self.backoffs[pid]?.nextAttempt, next > at { self.unlock.phase = .waiting(until: next) } else { self.unlock.phase = .ready }
+            self.unlock.focusCount += 1
         }
     }
 
@@ -359,7 +368,7 @@ final class AppLockController {
             case .success:
                 self.unlockApp(pid)
             case .failed:
-                self.backoff.recordFailure(.touchID, at: Date())
+                self.backoffs[pid, default: UnlockBackoff()].recordFailure(.touchID, at: Date())
                 self.unlock.note = .touchIDFailed
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { self.armBiometrics() }
             case .lockedOut:
@@ -376,8 +385,8 @@ final class AppLockController {
     private func unlockApp(_ pid: pid_t) {
         guard let app = locked.removeValue(forKey: pid) else { return }
         log.info("app unlocked")
-        hideIsland(restore: false)
-        backoff.reset()
+        if islandFor == pid { hideIsland(restore: false) }
+        backoffs[pid] = nil
         if locked.isEmpty { stopTracking() } else { poller.poke() }
         Announce.say(String(localized: "\(app.name) is unlocked", comment: "VoiceOver announcement; the placeholder is an app name"))
         if let running = NSRunningApplication(processIdentifier: pid) {

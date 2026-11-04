@@ -165,9 +165,11 @@ struct AwayMessageView: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 18)
         .padding(.vertical, 10)
-        .background(Capsule().fill(.white.opacity(highContrast ? 0.26 : 0.12)))
+        .background(Capsule().fill(.white.opacity(highContrast ? 0.26 : 0.1)))
         .glassEffect(.regular, in: .capsule)
-        .overlay(Capsule().strokeBorder(.white.opacity(highContrast ? 0.55 : 0.18), lineWidth: 1))
+        .overlay {
+            if highContrast { Capsule().strokeBorder(.white.opacity(0.6), lineWidth: 1) }
+        }
         .frame(maxWidth: 520)
         .accessibilityLabel(Text("Away message: \(message)", comment: "VoiceOver; the placeholder is the user's away note"))
     }
@@ -523,12 +525,11 @@ struct FailedAttemptsView: View {
     private static let shown = 6
 
     var body: some View {
-        GlassPanel(cornerRadius: 22) {
-            VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: "exclamationmark.lock.fill")
                         .font(.system(size: 22, weight: .semibold))
-                        .symbolRenderingMode(.hierarchical)
+                        .symbolRenderingMode(.monochrome)
                         .foregroundStyle(.orange)
                         .frame(width: 30)
                     VStack(alignment: .leading, spacing: 3) {
@@ -575,14 +576,26 @@ struct FailedAttemptsView: View {
                     Button {
                         onDone()
                     } label: {
-                        Text("OK", comment: "Button: dismiss the failed attempts list").frame(minWidth: 52)
+                        Text("OK", comment: "Button: dismiss the failed attempts list")
+                            .font(.system(size: 13, weight: .semibold))
+                            .frame(minWidth: 64)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(.white.opacity(0.16)))
+                            .contentShape(Capsule())
                     }
+                    .buttonStyle(.plain)
                     .keyboardShortcut(.defaultAction)
-                    .controlSize(.large)
                 }
-            }
-            .padding(18)
         }
+        .padding(18)
+        .foregroundStyle(.white)
+        // Opaque on purpose: it lands on whatever the desktop shows and must read at a glance.
+        .background(RoundedRectangle(cornerRadius: 22, style: .continuous)
+            .fill(LinearGradient(colors: [Color(red: 0.15, green: 0.15, blue: 0.17), Color(red: 0.1, green: 0.1, blue: 0.12)],
+                                 startPoint: .top, endPoint: .bottom)))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(.white.opacity(0.13), lineWidth: 1))
+        .shadow(color: .black.opacity(0.3), radius: 14, y: 6)
+        .environment(\.colorScheme, .dark)
         .frame(width: 380)
     }
 }

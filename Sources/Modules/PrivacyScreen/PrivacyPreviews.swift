@@ -162,7 +162,8 @@ struct MockMenuBar: View {
             Image(systemName: "wifi").font(.system(size: 13, weight: .medium))
             Image(systemName: "battery.75percent").font(.system(size: 13))
             Image(systemName: "magnifyingglass").font(.system(size: 13, weight: .medium))
-            Text(verbatim: "Wed Nov 4  3:41 PM").font(.system(size: 13))
+            Text(PrivacyPreviews.sampleDate, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute())
+                .font(.system(size: 13))
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 18)
@@ -523,38 +524,45 @@ enum PrivacyPreviews {
         return m
     }
 
-    static let size = CGSize(width: 1280, height: 800)
+    nonisolated static let size = CGSize(width: 1280, height: 800)
 
     static var scenes: [PreviewScene] {
         [
-            PreviewScene("lock-frosted", size: size, wallpaper: false) {
-                AnyView(LockScreenComposite(style: .frosted, awayMessage: "Back at 3:30 — grabbing coffee", unlock: unlockModel()))
+            scene("lock-frosted") {
+                LockScreenComposite(style: .frosted, awayMessage: "Back at 3:30 — grabbing coffee", unlock: unlockModel())
             },
-            PreviewScene("lock-ambient", size: size, wallpaper: false) {
-                AnyView(LockScreenComposite(style: .ambient, unlock: unlockModel()))
+            scene("lock-ambient") {
+                LockScreenComposite(style: .ambient, unlock: unlockModel())
             },
-            PreviewScene("lock-solid", size: size, wallpaper: false) {
-                AnyView(LockScreenComposite(style: .solid, awayMessage: "In a meeting until 4", unlock: unlockModel { $0.offersBiometrics = false },
-                                            notch: false))
+            scene("lock-solid") {
+                LockScreenComposite(style: .solid, awayMessage: "In a meeting until 4", unlock: unlockModel { $0.offersBiometrics = false },
+                                    notch: false)
             },
-            PreviewScene("lock-wrong-password", size: size, wallpaper: false) {
-                AnyView(LockScreenComposite(style: .frosted, unlock: unlockModel {
+            scene("lock-wrong-password") {
+                LockScreenComposite(style: .frosted, unlock: unlockModel {
                     $0.note = .wrongPassword
                     $0.phase = .waiting(until: Date().addingTimeInterval(8))
-                }))
+                })
             },
-            PreviewScene("island", size: CGSize(width: 720, height: 240), wallpaper: false) {
-                AnyView(LockScreenComposite(style: .frosted, unlock: unlockModel { $0.password = "hunter22" })
+            scene("island", size: CGSize(width: 720, height: 220)) {
+                LockScreenComposite(style: .frosted, unlock: unlockModel { $0.password = "hunter22" })
                     .offset(x: -280)
-                    .frame(width: 720, height: 240, alignment: .topLeading)
-                    .clipped())
+                    .frame(width: 720, height: 220, alignment: .topLeading)
+                    .clipped()
             },
-            PreviewScene("unlocked-attempts", size: size, wallpaper: false) { AnyView(AttemptsScene()) },
-            PreviewScene("blur-screen", size: size, wallpaper: false) { AnyView(BlurScreenScene()) },
-            PreviewScene("focus-blur", size: size, wallpaper: false) { AnyView(FocusBlurScene()) },
-            PreviewScene("private-apps", size: size, wallpaper: false) { AnyView(PrivateAppsScene()) },
-            PreviewScene("app-lock", size: size, wallpaper: false) { AnyView(AppLockScene()) },
+            scene("unlocked-attempts") { AttemptsScene() },
+            scene("blur-screen") { BlurScreenScene() },
+            scene("focus-blur") { FocusBlurScene() },
+            scene("private-apps") { PrivateAppsScene() },
+            scene("app-lock") { AppLockScene() },
         ]
+    }
+
+    /// A full-bleed scene: the scene draws its own desktop, so no wallpaper behind it.
+    private static func scene<V: View>(_ name: String, size: CGSize = size, _ view: @escaping @MainActor () -> V) -> PreviewScene {
+        PreviewScene(name, size: size, wallpaper: false) {
+            AnyView(view().frame(width: size.width, height: size.height, alignment: .topLeading))
+        }
     }
 
     static func attempts() -> [FailedAttempt] {
@@ -592,7 +600,11 @@ private struct BlurScreenScene: View {
             PreviewImages.blurred($0, radius: PreviewImages.radius(for: strength), wash: BlurRecipe.make(strength: strength).wash,
                                   dark: dark, key: "screen")
         }
-        return PreviewImage(image: blurred, size: desktop.size)
+        return ZStack {
+            PreviewImage(image: blurred, size: desktop.size)
+            BlurHint(fades: false)
+        }
+        .frame(width: desktop.size.width, height: desktop.size.height)
     }
 }
 
@@ -671,9 +683,12 @@ private struct AppLockScene: View {
     var body: some View {
         var desktop = MockDesktop.standard
         desktop.frontApp = .messages
+        if let i = desktop.windows.firstIndex(where: { $0.app == .messages }) {
+            desktop.windows.insert(desktop.windows.remove(at: i), at: 0)
+        }
         let dark = colorScheme == .dark
         let base = PreviewImages.desktop(desktop, dark: dark, key: "applock")
-        let blurred = base.flatMap { PreviewImages.blurred($0, radius: 46, wash: 0.3, dark: true, key: "applock") }
+        let blurred = base.flatMap { PreviewImages.blurred($0, radius: 46, wash: 0.62, dark: true, key: "applock") }
         let regions = desktop.scene.visibleRegions(overlayLevel: BlurLevels.window.rawValue, skipFrontmost: false) {
             $0 == MockApp.messages.rawValue
         }
@@ -685,7 +700,7 @@ private struct AppLockScene: View {
         }
         let image = base.flatMap { b in blurred.flatMap { PreviewImages.composite(base: b, overlay: $0, region: path) } }
         let unlock = PrivacyPreviews.unlockModel {
-            $0.title = String(localized: "“\(MockApp.messages.name)” is locked", comment: "Unlock island title for App Lock; the placeholder is the app's name")
+            $0.title = String(localized: "“\(MockApp.messages.name)” is locked", comment: "App Lock cover and unlock island title; the placeholder is the app's name")
             $0.appIcon = MockApp.messages.icon
             $0.canCancel = true
         }

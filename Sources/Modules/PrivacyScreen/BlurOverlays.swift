@@ -14,6 +14,11 @@ enum BlurLevels {
     static let appLockIsland = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
 }
 
+/// SwiftUI content that never takes clicks: they go to the panel underneath it.
+final class PassthroughHostingView<Content: View>: NSHostingView<Content> {
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+}
+
 /// Content view that catches clicks and keys for interactive blur panels.
 final class BlurRootView: NSView {
     var onMouseDown: (() -> Void)?
@@ -118,8 +123,9 @@ final class BlurPanel: NSPanel {
     func setOverlay<V: View>(_ view: V?) {
         root.subviews.filter { $0 !== effect && $0 !== wash }.forEach { $0.removeFromSuperview() }
         guard let view else { return }
-        let host = NSHostingView(rootView: view)
+        let host = PassthroughHostingView(rootView: view)
         host.sizingOptions = []
+        host.safeAreaRegions = []
         host.frame = root.bounds
         host.autoresizingMask = [.width, .height]
         root.addSubview(host)

@@ -233,15 +233,8 @@ private struct BlurStrengthStrip: View {
         VStack(alignment: .leading, spacing: 6) {
             ZStack {
                 RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color(nsColor: .textBackgroundColor))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: "Booked the table for 7 at Nopa").font(.system(size: 12, weight: .semibold))
-                    Text(verbatim: "Lab results — please review").font(.system(size: 11))
-                    Text(verbatim: "Revenue target $4.2M").font(.system(size: 11))
-                }
-                .padding(10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .blur(radius: 1 + 6 * strength)
-                .opacity(1 - 0.35 * strength)
+                BlurredSample(radius: 1 + 6 * strength)
+                    .opacity(1 - 0.35 * strength)
             }
             .frame(height: 64)
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -249,6 +242,39 @@ private struct BlurStrengthStrip: View {
             title.font(.system(size: 11)).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// The sample text blurred with CoreImage. An offscreen render (snapshots, the product film) skips
+/// SwiftUI's `.blur`, so this way the app and its pictures show the same thing.
+private struct BlurredSample: View {
+    let radius: Double
+    @Environment(\.colorScheme) private var scheme
+    private static var plain: [Bool: CGImage] = [:]
+
+    var body: some View {
+        let dark = scheme == .dark
+        // Half-point steps keep the cache small while the slider moves.
+        if let base = Self.base(dark: dark),
+           let image = PreviewImages.blurred(base, radius: (radius * 2).rounded() / 2, wash: 0, dark: dark, key: "strength-strip") {
+            Image(decorative: image, scale: PreviewImages.scale)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private static func base(dark: Bool) -> CGImage? {
+        if let hit = plain[dark] { return hit }
+        let lines = VStack(alignment: .leading, spacing: 4) {
+            Text(verbatim: "Booked the table for 7 at Nopa").font(.system(size: 12, weight: .semibold))
+            Text(verbatim: "Lab results — please review").font(.system(size: 11))
+            Text(verbatim: "Revenue target $4.2M").font(.system(size: 11))
+        }
+        .foregroundStyle(dark ? Color.white : Color.black)
+        .padding(10)
+        let renderer = ImageRenderer(content: lines)
+        renderer.scale = PreviewImages.scale
+        plain[dark] = renderer.cgImage
+        return plain[dark]
     }
 }
 
@@ -306,7 +332,7 @@ private struct PrivacyHero: View {
     }
 }
 
-/// One mode: icon, name, shortcut; on/off modes light up.
+/// One mode: icon, name and shortcut; on/off modes light up.
 private struct ModeChip: View {
     let title: Text
     let symbol: String
@@ -317,24 +343,28 @@ private struct ModeChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 9) {
+            HStack(spacing: 10) {
                 Image(systemName: symbol)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(isOn == true ? .white : Tint.purple.color)
-                    .frame(width: 26, height: 26)
+                    .frame(width: 28, height: 28)
                     .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
                         .fill(isOn == true ? Tint.purple.color : Tint.purple.color.opacity(0.13)))
                 VStack(alignment: .leading, spacing: 1) {
-                    title.font(.system(size: 12.5, weight: .medium)).lineLimit(1)
-                    if let detail {
-                        detail.font(.system(size: 10.5)).foregroundStyle(.secondary).lineLimit(1)
-                    } else if let isOn {
-                        (isOn ? Text("On", comment: "Mode state") : Text("Off", comment: "Mode state"))
-                            .font(.system(size: 10.5)).foregroundStyle(.secondary)
-                    }
+                    title
+                        .font(.system(size: 12.5, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    secondLine
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
-                Spacer(minLength: 4)
-                if let shortcut { Keycaps(shortcut) }
+                Spacer(minLength: 0)
+                if isOn == true {
+                    Circle().fill(Tint.purple.color).frame(width: 7, height: 7)
+                        .accessibilityHidden(true)
+                }
             }
             .padding(.horizontal, 9)
             .padding(.vertical, 7)
@@ -346,6 +376,18 @@ private struct ModeChip: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isOn == true ? .isSelected : [])
+    }
+
+    /// The shortcut, then the state or detail.
+    private var secondLine: Text {
+        let keys = shortcut.map { Text(verbatim: $0.description).monospacedDigit() }
+        let state: Text? = detail ?? isOn.map { $0 ? Text("On", comment: "Mode state") : Text("Off", comment: "Mode state") }
+        switch (keys, state) {
+        case let (k?, s?): return Text("\(k) · \(s)", comment: "Mode chip: a keyboard shortcut, then the mode's state")
+        case let (k?, nil): return k
+        case let (nil, s?): return s
+        default: return Text(verbatim: " ")
+        }
     }
 }
 
