@@ -18,10 +18,12 @@ public enum TileGeometry {
     public static func area(visibleFrame: CGRect, reserve: EdgeReserve?, gap: CGFloat) -> CGRect {
         var r = visibleFrame
         if let reserve {
-            r.origin.x += reserve.left
-            r.origin.y += reserve.top
-            r.size.width -= reserve.left + reserve.right
-            r.size.height -= reserve.top + reserve.bottom
+            let top = max(0, reserve.top), bottom = max(0, reserve.bottom)
+            let left = max(0, reserve.left), right = max(0, reserve.right)
+            r.origin.x += left
+            r.origin.y += top
+            r.size.width = max(0, r.size.width - left - right)
+            r.size.height = max(0, r.size.height - top - bottom)
         }
         r = r.insetBy(dx: gap, dy: gap)
         let minX = r.minX.rounded(.up), minY = r.minY.rounded(.up)

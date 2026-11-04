@@ -687,3 +687,63 @@ private func layoutIssues(_ frames: [CGRect], area: CGRect, gap: CGFloat) -> [St
         #expect(s.gapPoints == 48)
     }
 }
+
+@Suite struct AutoTilingOverlayGeometryTests {
+    @Test func stackPipsAreCenteredWithTheFrontOneLonger() throws {
+        let pips = StackPipMetrics.frames(centerX: 500, centerY: 20, count: 3, front: 1, gap: 8)
+        try #require(pips.count == 3)
+        #expect(pips.map(\.height) == [6, 6, 6])
+        #expect(pips.map(\.width) == [6, 18, 6])
+        #expect(abs((pips[0].minX + pips[2].maxX) / 2 - 500) < 0.001)
+        #expect(pips.allSatisfy { $0.midY == 20 })
+        for (a, b) in zip(pips, pips.dropFirst()) { #expect(b.minX - a.maxX == 4.5) }
+    }
+
+    @Test func stackPipsNeedAStackAndAGap() {
+        #expect(StackPipMetrics.frames(centerX: 0, centerY: 0, count: 1, front: 0, gap: 8).isEmpty)
+        #expect(StackPipMetrics.frames(centerX: 0, centerY: 0, count: 40, front: 0, gap: 8).count == StackPipMetrics.maxCount)
+        // A front index past the shown pips marks the last one.
+        let capped = StackPipMetrics.frames(centerX: 0, centerY: 0, count: 9, front: 8, gap: 8)
+        #expect(capped.last?.width == 18)
+        #expect(!StackPipMetrics.isDrawn(gap: 2))
+        #expect(StackPipMetrics.isDrawn(gap: 4))
+    }
+
+    @Test func stackPipsFitInsideTheGap() {
+        for gap in stride(from: CGFloat(4), through: 24, by: 1) {
+            let h = StackPipMetrics.height(gap: gap)
+            #expect(h <= gap - 1, "pips \(h) tall don't fit a \(gap) pt gap")
+            // The pip band stays between the window's top edge and the tile above it.
+            #expect(StackPipMetrics.offset(gap: gap) - h / 2 >= 0.5)
+            #expect(StackPipMetrics.offset(gap: gap) + h / 2 <= gap)
+        }
+    }
+
+    @Test @MainActor func quickActionPillSize() {
+        #expect(QuickActionPillView.size(buttons: 3) == CGSize(width: 108, height: 34))
+        #expect(QuickActionPillView.size(buttons: 2) == CGSize(width: 74, height: 34))
+    }
+
+    @Test func swapLabelStaysCenteredWhenTheWindowIsElsewhere() {
+        let tile = CGRect(x: 0, y: 0, width: 800, height: 600)
+        #expect(SwapTargetView.labelCenter(in: tile, avoiding: nil) == CGPoint(x: 400, y: 300))
+        let corner = CGRect(x: 0, y: 0, width: 200, height: 150)
+        #expect(SwapTargetView.labelCenter(in: tile, avoiding: corner) == CGPoint(x: 400, y: 300))
+    }
+
+    @Test func swapLabelMovesToTheLargestFreeBand() {
+        let tile = CGRect(x: 0, y: 0, width: 800, height: 600)
+        // The dragged window covers the top half: the label goes to the bottom band.
+        let top = CGRect(x: 100, y: 40, width: 600, height: 300)
+        #expect(SwapTargetView.labelCenter(in: tile, avoiding: top) == CGPoint(x: 400, y: 470))
+        // A tall window on the left: the right band is the roomiest.
+        let left = CGRect(x: 40, y: 20, width: 380, height: 560)
+        #expect(SwapTargetView.labelCenter(in: tile, avoiding: left) == CGPoint(x: 610, y: 300))
+    }
+
+    @Test func swapLabelFallsBackToTheCenterWhenNoBandFits() {
+        let tile = CGRect(x: 0, y: 0, width: 300, height: 200)
+        let cover = CGRect(x: 10, y: 10, width: 280, height: 180)
+        #expect(SwapTargetView.labelCenter(in: tile, avoiding: cover) == CGPoint(x: 150, y: 100))
+    }
+}
