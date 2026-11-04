@@ -38,8 +38,9 @@ PSEUDO = "eo"
 # Every language MacToys ships. Add one here and translate it; nothing else needs to change.
 LANGUAGES = ["en", "zh-Hans", "zh-Hant", "ja", "ko", "de", "fr", "es", "pt-BR", "it", "ru"]
 
-# printf-style specifiers as Foundation formats them (positional, flags, width, length).
-SPEC = re.compile(r"%(?:\d+\$)?[-+ 0#']*\d*(?:\.\d+)?(?:hh|h|ll|l|q|L|z|t|j)?[@dDiuUxXoOfFeEgGcCsSpaA%]")
+# printf-style specifiers as Foundation formats them (positional, flags, width, length). No space flag:
+# Swift never emits one, and with it "80 % less" or "100 % leaves" would read as "% l…" specifiers.
+SPEC = re.compile(r"%(?:\d+\$)?[-+0#']*\d*(?:\.\d+)?(?:hh|h|ll|l|q|L|z|t|j)?[@dDiuUxXoOfFeEgGcCsSpaA%]")
 
 
 def load(path):
@@ -58,7 +59,7 @@ def specs(text):
     out = []
     for i, m in enumerate(s for s in SPEC.findall(text) if s != "%%"):
         pos = re.match(r"%(\d+)\$", m)
-        conv = re.sub(r"^%(?:\d+\$)?[-+ 0#']*\d*(?:\.\d+)?", "", m)
+        conv = re.sub(r"^%(?:\d+\$)?[-+0#']*\d*(?:\.\d+)?", "", m)
         conv = {"d": "lld", "ld": "lld", "i": "lld", "qd": "lld", "lu": "llu"}.get(conv, conv)
         out.append((int(pos.group(1)) if pos else i + 1, conv))
     return sorted(out)

@@ -5,70 +5,70 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys steuert den Finder (Auswahl für Peek, PowerRename und New+, Papierkorb entleeren), System Events (Dunkelmodus für Lichtschalter, Stummschalten) und das Anmeldefenster (Neustart, Ausschalten und Abmelden aus der Befehlspalette)."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacToys controls Finder (selection for Peek, PowerRename and New+, Empty Trash), System Events (Dark Mode for Light Switch, mute) and the login window (restart, shut down and log out from Command Palette)."
+            "value": "MacToys controls Finder (selection for Peek, PowerRename and New+, Empty Trash), System Events (Dark Mode, mute, and hiding the Dock and menu bar from Light Switch and Quick Switches) and the login window (restart, shut down and log out from Command Palette)."
           }
-        },
-        "es": {
+        }
+      }
+    },
+    "NSAudioCaptureUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacToys controla el Finder (selección para Peek, PowerRename y New+, vaciar la Papelera), System Events (modo oscuro para Cambio de aspecto, silencio) y la ventana de inicio de sesión (reiniciar, apagar y cerrar sesión desde la Paleta de comandos)."
+            "value": "App Volume changes the volume of each app by passing its sound through MacToys on this Mac."
           }
-        },
-        "fr": {
+        }
+      }
+    },
+    "NSBluetoothAlwaysUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacToys contrôle le Finder (sélection pour Peek, PowerRename et New+, vider la corbeille), System Events (mode sombre pour Bascule d’apparence, silence) et la fenêtre de connexion (redémarrer, éteindre et fermer la session depuis la Palette de commandes)."
+            "value": "Quick Switches connects and disconnects your paired Bluetooth devices, like AirPods."
           }
-        },
-        "it": {
+        }
+      }
+    },
+    "NSCalendarsFullAccessUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacToys controlla il Finder (selezione per Peek, PowerRename e New+, svuotare il Cestino), System Events (modalità scura per Cambio aspetto, silenzioso) e la finestra di login (riavvia, spegni e logout dal Riquadro comandi)."
+            "value": "Menu Bar Calendar shows your events and reminds you of upcoming meetings."
           }
-        },
-        "ja": {
+        }
+      }
+    },
+    "NSCalendarsUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacToysは、Finder（Peek、PowerRename、New+での選択項目の取得、ゴミ箱を空にする）、System Events（ライトスイッチのダークモード、消音）、ログインウインドウ（コマンドパレットからの再起動、システム終了、ログアウト）を操作します。"
+            "value": "Menu Bar Calendar shows your events and reminds you of upcoming meetings."
           }
-        },
-        "ko": {
+        }
+      }
+    },
+    "NSCameraUsageDescription": {
+      "comment": "Permission prompt shown by macOS",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacToys는 Finder(Peek, PowerRename, New+의 선택 항목 읽기, 휴지통 비우기), System Events(화면 모드 전환의 다크 모드, 음소거) 및 로그인 윈도우(명령 팔레트에서 재시동, 시스템 종료, 로그아웃)를 제어합니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O MacToys controla o Finder (seleção para Peek, PowerRename e New+, esvaziar o Lixo), o System Events (Modo Escuro para o Alternador de Aparência, silenciar) e a janela de início de sessão (reiniciar, desligar e encerrar sessão pela Paleta de Comandos)."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys управляет Finder (выбранные объекты для Peek, PowerRename и New+, очистка Корзины), System Events (темный режим для Переключателя темы, выключение звука) и окном входа (перезагрузка, выключение и выход из системы из Палитры команд)."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys 会控制访达（为 Peek、PowerRename 和 New+ 读取所选项目，以及清倒废纸篓）、System Events（为明暗切换更改深色模式、静音）和登录窗口（在命令面板中重新启动、关机和退出登录）。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys 會控制 Finder（為 Peek、PowerRename 和 New+ 讀取所選項目，以及清空垃圾桶）、System Events（為外觀切換更改深色模式、靜音）和登入視窗（在指令面板中重新開機、關機和登出）。"
+            "value": "Camera Mirror shows your camera so you can check how you look before a call."
           }
         }
       }

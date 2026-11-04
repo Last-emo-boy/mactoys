@@ -68,7 +68,8 @@ struct HomeView: View {
     }
 
     private var quickLaunch: some View {
-        let actions = Array(registry.quickActions.filter { $0.isOn == nil }.prefix(7))
+        // The tiles picked for the menu bar flyout, so both places offer the same actions.
+        let actions = Array(FlyoutLayout(actions: registry.quickActions, general: registry.general.value).tiles.prefix(7))
         return VStack(alignment: .leading, spacing: 10) {
             Text("Quick launch").font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary)
             if actions.isEmpty {
