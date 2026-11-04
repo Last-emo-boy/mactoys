@@ -5,12 +5,14 @@ import PackageDescription
 /// One SwiftPM target per utility. Each compiles on its own against MacToysCore,
 /// so a module can be built and tested in isolation: `swift build --target FancyZones`.
 let toyModules = [
-    "AdvancedPaste", "AlwaysOnTop", "AutoTiling", "Awake", "ColorPicker", "CommandNotFound", "CommandPalette",
-    "CropAndLock", "EnvironmentVariables", "FancyZones", "FinderAddons", "FileLocksmith",
-    "GrabAndMove", "HostsEditor", "ImageResizer", "KeyboardManager", "LightSwitch",
-    "MouseUtilities", "MouseWithoutBorders", "NewPlus", "Peek", "PowerDisplay", "PowerRename", "PrivacyScreen",
-    "QuickAccent", "PlistPreview", "ScreenRuler", "ShortcutGuide", "TextExtractor",
-    "WindowHopper", "Workspaces", "ZoomIt",
+    "AdvancedPaste", "AlwaysOnTop", "AppVolume", "AutoTiling", "Awake", "CameraMirror", "ChargeLimit",
+    "ClipboardHistory", "ColorPicker", "CommandNotFound", "CommandPalette", "CropAndLock",
+    "EnvironmentVariables", "FancyZones", "FileLocksmith", "FileShelf", "FinderAddons", "FocusDimmer",
+    "GrabAndMove", "HostsEditor", "ImageResizer", "KeyboardManager", "KeystrokeOverlay", "LightSwitch",
+    "MenuBarCalendar", "MenuBarManager", "MouseUtilities", "MouseWithoutBorders", "NewPlus",
+    "Optimizer", "Peek", "PlistPreview", "PowerDisplay", "PowerRename", "PrivacyScreen", "QuickAccent",
+    "QuickSwitches", "ScreenRuler", "Screenshot", "ShortcutGuide", "TextActions", "TextExtractor",
+    "WindowControls", "WindowGestures", "WindowHopper", "Workspaces", "ZoomIt",
 ]
 
 /// Extra dependencies beyond MacToysCore.

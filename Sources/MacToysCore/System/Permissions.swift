@@ -2,6 +2,7 @@ import AppKit
 import ApplicationServices
 import AVFoundation
 import CoreLocation
+import EventKit
 import IOKit.hid
 import Observation
 
@@ -13,6 +14,8 @@ public enum Permission: String, CaseIterable, Codable, Sendable, Identifiable {
     case fullDiskAccess
     case microphone
     case location
+    case camera
+    case calendar
 
     public var id: String { rawValue }
 
@@ -25,6 +28,8 @@ public enum Permission: String, CaseIterable, Codable, Sendable, Identifiable {
         case .fullDiskAccess: String(localized: "Full Disk Access")
         case .microphone: String(localized: "Microphone")
         case .location: String(localized: "Location")
+        case .camera: String(localized: "Camera")
+        case .calendar: String(localized: "Calendars")
         }
     }
 
@@ -37,6 +42,8 @@ public enum Permission: String, CaseIterable, Codable, Sendable, Identifiable {
         case .fullDiskAccess: String(localized: "Optional · let File Locksmith see protected files")
         case .microphone: String(localized: "ZoomIt recording audio and snip dictation")
         case .location: String(localized: "Light Switch sunrise and sunset times")
+        case .camera: String(localized: "Camera Mirror preview")
+        case .calendar: String(localized: "Menu Bar Calendar events and meeting reminders")
         }
     }
 
@@ -49,6 +56,8 @@ public enum Permission: String, CaseIterable, Codable, Sendable, Identifiable {
         case .fullDiskAccess: "Privacy_AllFiles"
         case .microphone: "Privacy_Microphone"
         case .location: "Privacy_LocationServices"
+        case .camera: "Privacy_Camera"
+        case .calendar: "Privacy_Calendars"
         }
     }
 
@@ -93,6 +102,8 @@ public final class PermissionCenter {
         if AVCaptureDevice.authorizationStatus(for: .audio) == .authorized { now.insert(.microphone) }
         let loc = locationManager.authorizationStatus
         if loc == .authorizedAlways || loc == .authorized { now.insert(.location) }
+        if AVCaptureDevice.authorizationStatus(for: .video) == .authorized { now.insert(.camera) }
+        if EKEventStore.authorizationStatus(for: .event) == .fullAccess { now.insert(.calendar) }
         if now != granted {
             granted = now
             for l in listeners { l(now) }
@@ -115,6 +126,10 @@ public final class PermissionCenter {
             AVCaptureDevice.requestAccess(for: .audio) { _ in }
         case .location:
             locationManager.requestWhenInUseAuthorization()
+        case .camera:
+            AVCaptureDevice.requestAccess(for: .video) { _ in }
+        case .calendar:
+            EKEventStore().requestFullAccessToEvents { _, _ in }
         case .fullDiskAccess:
             openSettings(p)
         }

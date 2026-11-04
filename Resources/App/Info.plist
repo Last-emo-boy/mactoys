@@ -62,6 +62,14 @@
 	</array>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>App Volume changes the volume of each app by passing its sound through MacToys on this Mac.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Menu Bar Calendar shows your events and reminds you of upcoming meetings.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Menu Bar Calendar shows your events and reminds you of upcoming meetings.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera Mirror shows your camera so you can check how you look before a call.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Mouse Without Borders finds and connects to your other Macs on the local network.</string>
 	<key>NSLocationUsageDescription</key>
