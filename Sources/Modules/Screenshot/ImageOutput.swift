@@ -7,7 +7,8 @@ import UniformTypeIdentifiers
 
 /// Names saved captures from a template with date tokens (`$YYYY-$MM-$DD at $hh.$mm.$ss`).
 enum FileNamer {
-    static let defaultTemplate = "Screenshot $YYYY-$MM-$DD at $hh.$mm.$ss"
+    static let defaultTemplate = String(localized: "Screenshot $YYYY-$MM-$DD at $hh.$mm.$ss",
+                                        comment: "Default capture file name. Translate the words; keep each $ token, which becomes part of the date and time")
 
     /// The file name (with extension) for `date`, unique in the folder according to `exists`.
     static func name(template: String, date: Date, format: ImageFormat, calendar: Calendar = .current,
@@ -35,7 +36,7 @@ enum FileNamer {
         s = s.trimmingCharacters(in: .whitespacesAndNewlines)
         while s.hasPrefix(".") { s.removeFirst() }
         if s.count > 200 { s = String(s.prefix(200)) }
-        return s.isEmpty ? "Screenshot" : s
+        return s.isEmpty ? String(localized: "Screenshot", comment: "Capture file name when the template gives nothing") : s
     }
 }
 
@@ -45,7 +46,8 @@ enum ImageEncoder {
         case failed(String)
         var errorDescription: String? {
             switch self {
-            case .failed(let type): "Couldn't encode the image as \(type)"
+            case .failed(let type): String(localized: "Couldn’t encode the image as \(type)",
+                                           comment: "Saving a capture failed; the argument is a format such as PNG")
             }
         }
     }

@@ -39,18 +39,27 @@ struct ScreenshotSettingsView: View {
                     Text("Select an area, a window or a whole screen. Each capture lands on a card you can copy, save, annotate, pin or drag into any app.",
                          comment: "Screenshot settings hero text")
                         .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                    HStack(spacing: 8) {
-                        Button { module.captureArea() } label: { Text("Capture Area", comment: "Screenshot hero button") }
-                            .buttonStyle(.borderedProminent)
-                        if let s = settings.value.areaShortcut { Keycaps(s) }
-                        Button { module.captureWindow() } label: { Text("Window", comment: "Screenshot hero button: capture a window") }
-                        Button { module.showHistory() } label: { Text("History", comment: "Screenshot hero button: open the capture history") }
+                    // Long translations drop the keycaps before any button label is cut.
+                    ViewThatFits(in: .horizontal) {
+                        heroButtons(keycaps: true)
+                        heroButtons(keycaps: false)
                     }
                     .padding(.top, 6)
                 }
                 Spacer(minLength: 0)
             }
         }
+    }
+
+    private func heroButtons(keycaps: Bool) -> some View {
+        HStack(spacing: 8) {
+            Button { module.captureArea() } label: { Text("Capture Area", comment: "Screenshot hero button") }
+                .buttonStyle(.borderedProminent)
+            if keycaps, let s = settings.value.areaShortcut { Keycaps(s) }
+            Button { module.captureWindow() } label: { Text("Window", comment: "Screenshot hero button: capture a window") }
+            Button { module.showHistory() } label: { Text("History", comment: "Screenshot hero button: open the capture history") }
+        }
+        .fixedSize()
     }
 
     // MARK: Sections

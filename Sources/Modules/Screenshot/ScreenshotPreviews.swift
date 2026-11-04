@@ -10,6 +10,9 @@ enum ScreenshotPreviews {
     /// Where the dashboard window sits on the sample desktop (points, top-left origin).
     static let dashboardFrame = CGRect(x: 268, y: 92, width: 960, height: 600)
     static let notesFrame = CGRect(x: 52, y: 168, width: 380, height: 470)
+    /// When the sample captures were taken: just before the menu bar clock, so titles stay put.
+    static let sampleDate = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 4,
+                                                                       hour: 14, minute: 31, second: 58)) ?? Date()
 
     static func scenes(module: ScreenshotModule) -> [PreviewScene] {
         [
@@ -173,10 +176,10 @@ enum ScreenshotPreviews {
 
     private static func sampleItems() -> [CaptureItem] {
         var items: [CaptureItem] = []
-        if let img = area(chartArea) { items.append(CaptureItem(image: img, scale: 2, kind: .area)) }
-        if let img = notesWindow { items.append(CaptureItem(image: img, scale: 2, kind: .window)) }
+        if let img = area(chartArea) { items.append(CaptureItem(image: img, scale: 2, kind: .area, date: sampleDate)) }
+        if let img = notesWindow { items.append(CaptureItem(image: img, scale: 2, kind: .window, date: sampleDate)) }
         if let img = codeSnippet {
-            let item = CaptureItem(image: img, scale: 2, kind: .area)
+            let item = CaptureItem(image: img, scale: 2, kind: .area, date: sampleDate)
             var style = BeautifyStyle()
             style.backdrop = .preset(.ocean)
             style.padding = 40
@@ -214,7 +217,7 @@ enum ScreenshotPreviews {
         guard let img = area(CGRect(x: dashboardFrame.minX + 180, y: dashboardFrame.minY + 44, width: 780, height: 556)) else {
             return nil
         }
-        let item = CaptureItem(image: img, scale: 2, kind: .area)
+        let item = CaptureItem(image: img, scale: 2, kind: .area, date: sampleDate)
         let red = MarkupPalette.colors[0], yellow = MarkupPalette.colors[2], blue = MarkupPalette.colors[4]
         item.document.items = [
             MarkupItem(shape: .highlighter([CGPoint(x: 34, y: 482), CGPoint(x: 160, y: 482)]), color: yellow, size: .large),
@@ -283,7 +286,8 @@ enum ScreenshotPreviews {
         let history = CaptureHistory(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("MacToys Screenshot Preview", isDirectory: true))
         var entries: [HistoryEntry] = []
-        let now = Date()
+        // Today at the menu bar clock's time, so the tiles read the same whenever this renders.
+        let now = Calendar.current.date(bySettingHour: 14, minute: 32, second: 0, of: Date()) ?? Date()
         func add(_ image: CGImage?, kind: CaptureKind, minutesAgo: Double, beautify: BackdropPreset? = nil) {
             guard let image else { return }
             let item = CaptureItem(image: image, scale: 2, kind: kind)

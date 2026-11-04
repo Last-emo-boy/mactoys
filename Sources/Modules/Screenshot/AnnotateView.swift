@@ -54,6 +54,7 @@ struct AnnotateView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
+                    .background(.regularMaterial, in: Capsule())
                     .glassEffect(.regular, in: .capsule)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.scale(scale: 0.92).combined(with: .opacity))
@@ -146,6 +147,7 @@ struct CanvasFooter: View {
         .foregroundStyle(.secondary)
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
+        .background(.regularMaterial, in: Capsule())
         .glassEffect(.regular, in: .capsule)
     }
 }
@@ -239,9 +241,14 @@ struct ToolStrip: View {
                     .keyboardShortcut(.defaultAction)
             }
         case .blur, .pixelate:
-            Text(subject == .blur ? "Drag over what should be unreadable" : "Drag over what should be hidden",
-                 comment: "Annotate hint for the blur and pixelate tools")
-                .font(.system(size: 12)).foregroundStyle(.secondary)
+            Group {
+                if subject == .blur {
+                    Text("Drag over what should be unreadable", comment: "Annotate hint for the blur tool")
+                } else {
+                    Text("Drag over what should be hidden", comment: "Annotate hint for the pixelate tool")
+                }
+            }
+            .font(.system(size: 12)).foregroundStyle(.secondary)
         default:
             if model.selection != nil {
                 Button(role: .destructive) { model.deleteSelection() } label: { Image(systemName: "trash") }
@@ -317,7 +324,7 @@ struct ColorSwatches: View {
                 Button { color = c } label: {
                     Circle()
                         .fill(c.color)
-                        .overlay(Circle().strokeBorder(.black.opacity(c.isLight ? 0.22 : 0.1), lineWidth: 0.5))
+                        .overlay(Circle().strokeBorder(Color.primary.opacity(0.22), lineWidth: 0.5))
                         .frame(width: 17, height: 17)
                         .padding(2.5)
                         .overlay(Circle().strokeBorder(Color.accentColor, lineWidth: color == c ? 2 : 0))
