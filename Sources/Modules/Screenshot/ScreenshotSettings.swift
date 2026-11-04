@@ -211,7 +211,7 @@ enum CaptureKind: String, Codable, CaseIterable, Sendable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .area: String(localized: "Area", comment: "Kind of screenshot: a selected area")
+        case .area: String(localized: "screenshot.kind.area", defaultValue: "Area", comment: "Kind of screenshot: a selected area of the screen")
         case .window: String(localized: "Window", comment: "Kind of screenshot: one window")
         case .screen: String(localized: "Screen", comment: "Kind of screenshot: a whole display")
         case .file: String(localized: "Image file", comment: "Kind of screenshot: an image opened from a file")

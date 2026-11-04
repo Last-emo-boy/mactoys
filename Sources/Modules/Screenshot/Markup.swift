@@ -12,7 +12,7 @@ public enum MarkupSize: String, Codable, CaseIterable, Sendable, Identifiable {
         switch self {
         case .small: String(localized: "Thin", comment: "Annotation stroke size")
         case .medium: String(localized: "Regular", comment: "Annotation stroke size")
-        case .large: String(localized: "Bold", comment: "Annotation stroke size")
+        case .large: String(localized: "screenshot.stroke.bold", defaultValue: "Bold", comment: "Annotation stroke size: the thickest line (not bold text)")
         case .extraLarge: String(localized: "Heavy", comment: "Annotation stroke size")
         }
     }

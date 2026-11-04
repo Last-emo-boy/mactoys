@@ -58,7 +58,7 @@ enum MarkupTool: String, CaseIterable, Identifiable, Sendable {
         case .counter: String(localized: "Counter", comment: "Annotate tool: numbered step badges 1, 2, 3")
         case .blur: String(localized: "Blur", comment: "Annotate tool: blur a region")
         case .pixelate: String(localized: "Pixelate", comment: "Annotate tool: pixelate a region")
-        case .spotlight: String(localized: "Spotlight", comment: "Annotate tool: dim everything but a region")
+        case .spotlight: String(localized: "screenshot.tool.spotlight", defaultValue: "Spotlight", comment: "Annotate tool: dims everything but a region, like a spotlight on a stage (not macOS Spotlight search)")
         case .crop: String(localized: "Crop", comment: "Annotate tool")
         }
     }

@@ -12,7 +12,7 @@ public struct CustomAction: Codable, Equatable, Sendable, Identifiable {
             case .url: String(localized: "URL", comment: "Custom text action type: open a web address")
             case .shell: String(localized: "Shell Script", comment: "Custom text action type")
             case .appleScript: String(localized: "AppleScript", comment: "Custom text action type")
-            case .shortcut: String(localized: "Shortcut", comment: "Custom text action type: run one of the user's Shortcuts")
+            case .shortcut: String(localized: "textactions.type.shortcut", defaultValue: "Shortcut", comment: "Custom text action type: run one of the user's Shortcuts from the Shortcuts app (not a keyboard shortcut)")
             case .keyPress: String(localized: "Key Press", comment: "Custom text action type: press a key combination")
             }
         }
@@ -23,7 +23,7 @@ public struct CustomAction: Codable, Equatable, Sendable, Identifiable {
             case .url: String(localized: "URL", comment: "Custom text action type: open a web address")
             case .shell: String(localized: "Shell", comment: "Custom text action type, short: shell script")
             case .appleScript: String(localized: "AppleScript", comment: "Custom text action type")
-            case .shortcut: String(localized: "Shortcut", comment: "Custom text action type: run one of the user's Shortcuts")
+            case .shortcut: String(localized: "textactions.type.shortcut", defaultValue: "Shortcut", comment: "Custom text action type: run one of the user's Shortcuts from the Shortcuts app (not a keyboard shortcut)")
             case .keyPress: String(localized: "Keys", comment: "Custom text action type, short: press a key combination")
             }
         }

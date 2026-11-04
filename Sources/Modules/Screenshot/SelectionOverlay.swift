@@ -372,7 +372,7 @@ struct SelectionHint: View {
             case .window:
                 Text("Click a window to capture it", comment: "Window capture hint").font(.system(size: 12.5, weight: .semibold))
                 if canSwitchMode {
-                    item(Text("Area", comment: "Window capture hint: Space switches back to area selection"), keys: [KeyCodes.name(for: 49)])
+                    item(Text(String(localized: "screenshot.kind.area", defaultValue: "Area", comment: "Window capture hint: Space switches back to area selection")), keys: [KeyCodes.name(for: 49)])
                 }
             case .display:
                 Text("Click a display to capture it", comment: "Display capture hint").font(.system(size: 12.5, weight: .semibold))

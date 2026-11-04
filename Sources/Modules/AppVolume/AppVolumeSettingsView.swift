@@ -158,7 +158,7 @@ struct AppVolumeSettingsView: View {
 
     private var captureStatus: some View {
         let (symbol, color, text): (String, Color, Text) = switch store.capture {
-        case .granted: ("checkmark.circle.fill", .green, Text("Working", comment: "App Volume: system audio capture works"))
+        case .granted: ("checkmark.circle.fill", .green, Text(String(localized: "appvolume.capture.working", defaultValue: "Working", comment: "App Volume status: system audio capture works")))
         case .silent: ("exclamationmark.triangle.fill", .orange, Text("No sound received", comment: "App Volume: capture seems blocked"))
         case .unknown: ("circle.dashed", .secondary, Text("Not used yet", comment: "App Volume: no app has been changed yet"))
         }

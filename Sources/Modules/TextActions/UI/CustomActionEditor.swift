@@ -131,7 +131,7 @@ struct CustomActionEditor: View {
         case .shortcut:
             Section {
                 HStack(spacing: 8) {
-                    TextField(text: $action.shortcutName, prompt: Text("Shortcut name")) { Text("Shortcut") }
+                    TextField(text: $action.shortcutName, prompt: Text("Shortcut name", comment: "Placeholder: name of a shortcut in the Shortcuts app")) { Text(String(localized: "textactions.type.shortcut", defaultValue: "Shortcut", comment: "Custom text action type: run one of the user's Shortcuts from the Shortcuts app (not a keyboard shortcut)")) }
                     Menu {
                         if shortcutNames.isEmpty {
                             Text("No shortcuts found")

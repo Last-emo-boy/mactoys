@@ -251,7 +251,7 @@ private struct ControlDetail: View {
                 }
                 ShortcutRow("Shortcut", subtitle: "Runs it on the focused window", shortcut: $control.shortcut)
             } header: {
-                Text("Use", comment: "Window Controls editor section: where the control can be used")
+                Text(String(localized: "windowcontrols.section.use", defaultValue: "Use", comment: "Window Controls editor section heading (a noun): where the control can be used"))
             }
         }
         .formStyle(.grouped)
