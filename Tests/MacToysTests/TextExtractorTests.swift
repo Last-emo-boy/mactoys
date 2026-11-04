@@ -330,8 +330,16 @@ import Vision
     @Test(.enabled(if: visionDetectsBarcodes, "Vision barcode detection can't run on this machine (virtualized CI runner)"))
     func detectsAGeneratedQRCode() throws {
         let image = try #require(Self.qrImage("WIFI:T:WPA;S:Studio;P:correct horse;;"))
+        let found = try TextRecognizer.barcodes(in: image)
+        #expect(found.first?.symbology == "QR")
+        #expect(found.first?.content == .wifi(network: "Studio", password: "correct horse", security: "WPA", hidden: false))
+    }
+
+    // The capture pass runs text recognition and barcode detection together, so it needs both.
+    @Test(.enabled(if: visionReadsText && visionDetectsBarcodes, "Vision text recognition can't run on this machine (virtualized CI runner)"))
+    func findsQRCodesInTheTextPass() throws {
+        let image = try #require(Self.qrImage("https://example.com/menu"))
         let found = try TextRecognizer.analyze(image, options: .init(language: "en-US"), barcodes: true)
-        #expect(found.barcodes.first?.symbology == "QR")
-        #expect(found.barcodes.first?.content == .wifi(network: "Studio", password: "correct horse", security: "WPA", hidden: false))
+        #expect(found.barcodes.map(\.payload) == ["https://example.com/menu"])
     }
 }
