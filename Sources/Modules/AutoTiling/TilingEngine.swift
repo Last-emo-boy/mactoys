@@ -929,10 +929,10 @@ final class TilingEngine {
         if zoomed[d.key] == id {
             zoomed[d.key] = nil
             if cleanSpace?.window == id { cleanSpace = nil }
-            HUD.show("Focus off", symbol: "arrow.down.right.and.arrow.up.left")
+            HUD.show(AutoTilingModule.focusOff, symbol: "arrow.down.right.and.arrow.up.left")
         } else {
             zoomed[d.key] = id
-            HUD.show("Focus on", symbol: "arrow.up.left.and.arrow.down.right")
+            HUD.show(AutoTilingModule.focusOn, symbol: "arrow.up.left.and.arrow.down.right")
         }
         retileNow()
         activate(id)

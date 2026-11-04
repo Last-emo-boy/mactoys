@@ -84,20 +84,20 @@ struct AutoTilingSettingsView: View {
             }
 
             Section("Focus modes") {
-                ModeRow(symbol: "arrow.up.left.and.arrow.down.right", title: "Focus",
+                ModeRow(symbol: "arrow.up.left.and.arrow.down.right", title: Text(AutoTilingModule.focusTitle),
                         detail: "Zooms the focused window to fill its display. Turn it off and the layout comes back.",
                         shortcut: v.focusModeShortcut)
-                ModeRow(symbol: "eye.slash", title: "No peek",
+                ModeRow(symbol: "eye.slash", title: Text("No peek"),
                         detail: "Dims every window except the one you're using, for privacy on calls and in public.",
                         shortcut: v.noPeekShortcut)
                 SliderRow("Darkness", value: $s.value.noPeekDarkness, in: 0.3...0.9, step: 0.05) {
                     $0.formatted(.percent.precision(.fractionLength(0)))
                 }
                 Toggle(isOn: $s.value.noPeekBlur) { RowLabel("Blur the dimmed windows") }
-                ModeRow(symbol: "rectangle.inset.filled", title: "Clean Space",
+                ModeRow(symbol: "rectangle.inset.filled", title: Text("Clean Space"),
                         detail: "For sharing your screen: the window fills its display and a plain backdrop covers everything else there.",
                         shortcut: v.cleanSpaceShortcut)
-                ModeRow(symbol: "rectangle.split.2x2", title: "Tab View",
+                ModeRow(symbol: "rectangle.split.2x2", title: Text("Tab View"),
                         detail: "A switcher that shows each display's layout, with minimized windows below. Hold the modifiers, press the key to move on, let go to switch.",
                         shortcut: v.tabViewShortcut, hold: true)
             }
@@ -122,7 +122,7 @@ struct AutoTilingSettingsView: View {
                     ShortcutRow("Previous window in the stack", shortcut: $s.value.previousInStackShortcut)
                     ShortcutRow("Float or tile the window", shortcut: $s.value.floatShortcut)
                     ShortcutRow("Send to the next display", shortcut: $s.value.sendToDisplayShortcut)
-                    ShortcutRow("Focus", shortcut: $s.value.focusModeShortcut)
+                    ShortcutRow(AutoTilingModule.focusTitle, shortcut: $s.value.focusModeShortcut)
                     ShortcutRow("No peek", shortcut: $s.value.noPeekShortcut)
                     ShortcutRow("Clean Space", shortcut: $s.value.cleanSpaceShortcut)
                     ShortcutRow("Tab View", subtitle: "Hold its modifier keys while you press the key again", shortcut: $s.value.tabViewShortcut)
@@ -508,7 +508,7 @@ private struct EdgeReserveRow: View {
 /// A focus mode: what it does and its shortcut.
 private struct ModeRow: View {
     let symbol: String
-    let title: LocalizedStringKey
+    let title: Text
     let detail: LocalizedStringKey
     let shortcut: Shortcut?
     var hold = false
@@ -521,7 +521,7 @@ private struct ModeRow: View {
                 .foregroundStyle(Tint.indigo.color)
                 .frame(width: 30, height: 30)
                 .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Tint.indigo.color.opacity(0.12)))
-            RowLabel(title, subtitle: detail)
+            RowLabel(title: title, subtitle: Text(detail))
             Spacer(minLength: 12)
             if let shortcut {
                 HStack(spacing: 4) {

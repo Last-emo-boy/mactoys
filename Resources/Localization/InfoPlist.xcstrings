@@ -5,10 +5,64 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys steuert den Finder (Auswahl für Peek, PowerRename und New+, Papierkorb entleeren), System Events (Dunkelmodus, Stummschalten sowie Ausblenden von Dock und Menüleiste für Lichtschalter und Schnellschalter) und das Anmeldefenster (Neustart, Ausschalten und Abmelden aus der Befehlspalette)."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "MacToys controls Finder (selection for Peek, PowerRename and New+, Empty Trash), System Events (Dark Mode, mute, and hiding the Dock and menu bar from Light Switch and Quick Switches) and the login window (restart, shut down and log out from Command Palette)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys controla el Finder (selección para Peek, PowerRename y New+, vaciar la Papelera), System Events (modo oscuro, silencio y ocultar el Dock y la barra de menús desde Cambio de aspecto e Interruptores rápidos) y la ventana de inicio de sesión (reiniciar, apagar y cerrar sesión desde la Paleta de comandos)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys contrôle le Finder (sélection pour Peek, PowerRename et New+, vider la corbeille), System Events (mode sombre, silence, et masquage du Dock et de la barre des menus pour Bascule d’apparence et Interrupteurs rapides) et la fenêtre de connexion (redémarrer, éteindre et fermer la session depuis la Palette de commandes)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToysは、Finder（Peek、PowerRename、New+での選択項目の取得、ゴミ箱を空にする）、System Events（ライトスイッチとクイックスイッチからのダークモード、消音、Dockとメニューバーを隠す操作）、ログインウインドウ（コマンドパレットからの再起動、システム終了、ログアウト）を操作します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys는 Finder(Peek, PowerRename, New+의 선택 항목 읽기, 휴지통 비우기), System Events(다크 모드, 음소거, 화면 모드 전환 및 빠른 스위치의 Dock 및 메뉴 막대 가리기) 및 로그인 윈도우(명령 팔레트에서 재시동, 시스템 종료, 로그아웃)를 제어합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O MacToys controla o Finder (seleção para Peek, PowerRename e New+, esvaziar o Lixo), o System Events (Modo Escuro, silenciar e ocultar o Dock e a barra de menus pelo Alternador de Aparência e pelos Alternadores Rápidos) e a janela de início de sessão (reiniciar, desligar e encerrar sessão pela Paleta de Comandos)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys управляет Finder (выбранные объекты для Peek, PowerRename и New+, очистка Корзины), System Events (темный режим, выключение звука, а также скрытие Dock и строки меню для Переключателя темы и Быстрых переключателей) и окном входа (перезагрузка, выключение и выход из системы из Палитры команд)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys 会控制访达（为 Peek、PowerRename 和 New+ 读取所选项目，以及清倒废纸篓）、System Events（为明暗切换更改深色模式、静音，以及为明暗切换和快捷开关隐藏程序坞和菜单栏）和登录窗口（在命令面板中重新启动、关机和退出登录）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys 會控制 Finder（為 Peek、PowerRename 和 New+ 讀取所選項目，以及清空垃圾桶）、System Events（為外觀切換更改深色模式、靜音，以及從外觀切換和快速開關隱藏 Dock 和選單列）和登入視窗（在指令面板中重新開機、關機和登出）。"
           }
         }
       }
@@ -17,10 +71,64 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App-Lautstärke ändert die Lautstärke jeder App, indem ihr Ton auf diesem Mac durch MacToys geleitet wird."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "App Volume changes the volume of each app by passing its sound through MacToys on this Mac."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volumen por app cambia el volumen de cada app haciendo pasar su sonido por MacToys en este Mac."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume par app modifie le volume de chaque app en faisant passer son son par MacToys sur ce Mac."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App音量は、このMac上でAppのサウンドをMacToysに通すことで、Appごとの音量を変更します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "앱 음량은 이 Mac에서 각 앱의 사운드를 MacToys를 통해 전달하여 앱별 음량을 변경합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Volume por App altera o volume de cada app passando o som dele pelo MacToys neste Mac."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Громкость приложений» меняет громкость каждого приложения, пропуская его звук через MacToys на этом Mac."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 音量会让每个 App 的声音在此 Mac 上经过 MacToys 处理，以更改其音量。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 音量會在此 Mac 上讓每個 App 的聲音經過 MacToys，以更改其音量。"
           }
         }
       }
@@ -29,10 +137,64 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schnellschalter verbindet und trennt Ihre gekoppelten Bluetooth-Geräte, etwa AirPods."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Quick Switches connects and disconnects your paired Bluetooth devices, like AirPods."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interruptores rápidos conecta y desconecta tus dispositivos Bluetooth enlazados, como los AirPods."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interrupteurs rapides connecte et déconnecte vos appareils Bluetooth jumelés, comme des AirPods."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クイックスイッチは、AirPodsなどのペアリング済みのBluetoothデバイスを接続したり接続解除したりします。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "빠른 스위치는 AirPods 같은 페어링된 Bluetooth 기기를 연결하고 연결 해제합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os Alternadores Rápidos conectam e desconectam seus dispositivos Bluetooth emparelhados, como AirPods."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Быстрые переключатели» подключают и отключают объединенные в пару устройства Bluetooth, например AirPods."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快捷开关会连接和断开你已配对的蓝牙设备，例如 AirPods。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速開關會連接和中斷連接你已配對的藍牙裝置，例如 AirPods。"
           }
         }
       }
@@ -41,10 +203,64 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menüleistenkalender zeigt Ihre Ereignisse an und erinnert Sie an anstehende Besprechungen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Menu Bar Calendar shows your events and reminds you of upcoming meetings."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario de la barra de menús muestra tus eventos y te recuerda las próximas reuniones."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendrier de la barre des menus affiche vos événements et vous rappelle les réunions à venir."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メニューバーカレンダーは、イベントを表示し、近づいているミーティングを通知します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메뉴 막대 캘린더는 이벤트를 표시하고 다가오는 회의를 알려 줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Calendário na Barra de Menus mostra seus eventos e lembra você das próximas reuniões."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Календарь в строке меню» показывает ваши события и напоминает о предстоящих встречах."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "菜单栏日历会显示你的日程，并提醒你即将开始的会议。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選單列行事曆會顯示你的行程，並提醒你即將到來的會議。"
           }
         }
       }
@@ -53,10 +269,64 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menüleistenkalender zeigt Ihre Ereignisse an und erinnert Sie an anstehende Besprechungen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Menu Bar Calendar shows your events and reminds you of upcoming meetings."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario de la barra de menús muestra tus eventos y te recuerda las próximas reuniones."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendrier de la barre des menus affiche vos événements et vous rappelle les réunions à venir."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メニューバーカレンダーは、イベントを表示し、近づいているミーティングを通知します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메뉴 막대 캘린더는 이벤트를 표시하고 다가오는 회의를 알려 줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Calendário na Barra de Menus mostra seus eventos e lembra você das próximas reuniões."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Календарь в строке меню» показывает ваши события и напоминает о предстоящих встречах."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "菜单栏日历会显示你的日程，并提醒你即将开始的会议。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選單列行事曆會顯示你的行程，並提醒你即將到來的會議。"
           }
         }
       }
@@ -65,10 +335,64 @@
       "comment": "Permission prompt shown by macOS",
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kameraspiegel zeigt Ihr Kamerabild, damit Sie vor einem Anruf prüfen können, wie Sie aussehen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Camera Mirror shows your camera so you can check how you look before a call."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espejo de cámara muestra tu cámara para que puedas comprobar tu aspecto antes de una llamada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miroir de caméra affiche votre caméra pour que vous puissiez vérifier votre apparence avant un appel."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カメラミラーは、通話の前に自分の映り具合を確認できるように、カメラの映像を表示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "카메라 미러는 통화 전에 모습을 확인할 수 있도록 카메라 화면을 보여 줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Espelho da Câmera mostra sua câmera para que você confira sua aparência antes de uma chamada."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Зеркало камеры» показывает изображение с камеры, чтобы вы могли проверить, как выглядите перед звонком."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相机镜像会显示你的相机画面，方便你在通话前查看自己的样子。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相機鏡像會顯示你的相機畫面，讓你在通話前查看自己的樣子。"
           }
         }
       }

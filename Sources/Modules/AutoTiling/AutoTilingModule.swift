@@ -14,6 +14,11 @@ import SwiftUI
 /// `clean-space`, `tab-view`, `settings`.
 @MainActor
 public final class AutoTilingModule: ToyModule {
+    /// Focus mode's name, apart from the macOS Focus feature that the plain "Focus" key translates.
+    static var focusTitle: String { String(localized: "autotile.focus", defaultValue: "Focus", comment: "Auto Tiling mode: the focused window fills its display (not the macOS Focus feature)") }
+    static var focusOn: String { String(localized: "autotile.focus.on", defaultValue: "Focus on", comment: "HUD: Auto Tiling's Focus mode turned on") }
+    static var focusOff: String { String(localized: "autotile.focus.off", defaultValue: "Focus off", comment: "HUD: Auto Tiling's Focus mode turned off") }
+
     public let info = ModuleInfo(
         id: "autotile", name: "Auto Tiling",
         summary: "Tile every window automatically as it opens, with a layout for each display.",

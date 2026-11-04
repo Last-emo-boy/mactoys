@@ -166,7 +166,7 @@ enum AutoTilingPreviews {
         return SampleDesktop(size: laptop, windows: windows, active: 2) {
             ZStack(alignment: .topLeading) {
                 HighlightShape(frame: area, radius: SampleApp.xcode.radius, style: .activeBorder, active: true)
-                hud(Text("Focus on"), symbol: "arrow.up.left.and.arrow.down.right")
+                hud(Text(AutoTilingModule.focusOn), symbol: "arrow.up.left.and.arrow.down.right")
                     .frame(width: laptop.width).offset(y: laptop.height - 200)
             }
         }
