@@ -2,12 +2,15 @@ import AppKit
 import MacToysCore
 import SwiftUI
 
-/// FancyZones: per-display zone layouts, snapping by dragging with ⇧ held or with ⌃⌥ arrows,
-/// a full-screen layout editor and quick layout switching.
+/// FancyZones: per-display zone layouts, snapping by dragging with an activation key held (⇧ by
+/// default) or with ⌃⌥ arrows, optional edge snap, a full-screen layout editor where zones are
+/// drawn, workflow and ultrawide presets, and quick layout switching.
 ///
 /// URL actions (`mactoys://fancyzones/<action>`):
 /// - `editor` (also `open`, `show`), `close` — the layout editor
 /// - `apply?layout=<quick key | id | name>[&display=<n>]` — apply a layout to the active (or n-th) display
+/// - `preset?name=<preset id or name>[&display=<n>]` — add a preset's layout and apply it
+/// - `edge-snap[?on=true|false]` — turn edge snap on, off, or toggle it
 /// - `move?direction=left|right|up|down`, `extend?direction=…` — keyboard snapping of the focused window
 /// - `snap?zone=<n>` — snap the focused window to zone n (1-based)
 /// - `settings`
@@ -211,7 +214,12 @@ public final class FancyZonesModule: ToyModule {
 
     public var quickActions: [QuickAction] {
         [QuickAction(id: "fancyzones.editor", title: "Launch layout editor", symbol: "rectangle.3.group",
-                     tint: .blue, shortcut: settings.value.editorShortcut) { [weak self] in self?.openEditor() }]
+                     tint: .blue, shortcut: settings.value.editorShortcut) { [weak self] in self?.openEditor() },
+         QuickAction(id: "fancyzones.edge-snap", title: "Edge snap", symbol: "rectangle.lefthalf.inset.filled",
+                     tint: .blue, isOn: { [weak self] in self?.settings.value.edgeSnap ?? false },
+                     detail: { String(localized: "Drag a window to a screen edge to tile it",
+                                      comment: "Menu bar switch detail for FancyZones edge snap") },
+                     perform: { [weak self] in self?.settings.value.edgeSnap.toggle() })]
     }
 
     public var shortcutBindings: [ShortcutBinding] {
@@ -219,8 +227,9 @@ public final class FancyZonesModule: ToyModule {
         let hold = String(localized: "Hold", comment: "Keycap label: hold down the key that follows")
         let drag = String(localized: "Drag", comment: "Keycap label: drag a window with the mouse")
         var list = [ShortcutBinding("Launch layout editor", s.editorShortcut),
-                    ShortcutBinding("Snap a window into zones", keys: s.holdShiftToActivate ? [hold, "⇧", drag] : [drag]),
-                    ShortcutBinding("Span several zones while dragging", keys: [hold, "⌘"])]
+                    ShortcutBinding("Snap a window into zones", keys: s.activation.glyph.map { [hold, $0, drag] } ?? [drag]),
+                    ShortcutBinding("Span several zones while dragging", keys: [hold, "⌘"]),
+                    ShortcutBinding("Cancel snapping while dragging", keys: ["esc"])]
         if s.moveWithKeyboard {
             for d in ZoneDirection.allCases where s.moveMode == .relativePosition || d == .left || d == .right {
                 list.append(ShortcutBinding(Self.moveTitle(d), s.moveShortcut(d)))
@@ -278,12 +287,18 @@ public final class FancyZonesModule: ToyModule {
             ModuleRegistry.shared.showSettings?(info.id)
             return true
         case "apply":
-            guard let query = command.parameters["layout"], let layout = layouts.value.resolve(query) else { return false }
-            let displays = engine.displays
-            let target = command.parameters["display"].flatMap(Int.init).flatMap { n in displays.first { $0.number == n } }
-                ?? engine.activeDisplay()
-            guard let target else { return false }
+            guard let query = command.parameters["layout"], let layout = layouts.value.resolve(query),
+                  let target = targetDisplay(command) else { return false }
             engine.apply(layout, to: target, announce: running)   // no overlays while FancyZones is off
+            return true
+        case "preset":
+            guard let query = command.parameters["name"] ?? command.parameters["preset"],
+                  let preset = LayoutPreset.resolve(query), let target = targetDisplay(command) else { return false }
+            engine.applyPreset(preset, to: target, announce: running)
+            return true
+        case "edge-snap":
+            let on = command.parameters["on"].map { ["1", "true", "yes", "on"].contains($0.lowercased()) }
+            settings.value.edgeSnap = on ?? !settings.value.edgeSnap
             return true
         case "move", "extend":
             guard running, let d = command.parameters["direction"].flatMap(ZoneDirection.init(rawValue:)) else { return false }
@@ -296,6 +311,13 @@ public final class FancyZonesModule: ToyModule {
         default:
             return false
         }
+    }
+
+    /// The display given by `display=<n>` (1-based, left to right), else the active one.
+    private func targetDisplay(_ command: AppCommand) -> ZoneDisplay? {
+        let displays = engine.displays
+        return command.parameters["display"].flatMap(Int.init).flatMap { n in displays.first { $0.number == n } }
+            ?? engine.activeDisplay()
     }
 
     public var previewScenes: [PreviewScene] { FancyZonesPreviews.scenes }

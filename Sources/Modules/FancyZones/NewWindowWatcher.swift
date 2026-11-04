@@ -98,16 +98,19 @@ final class NewWindowWatcher {
         seen[w.pid, default: []].insert(w)
         if let set = seen[w.pid], set.count > 64 { seen[w.pid] = set.filter { $0.position != nil } }
         guard engine.isSnappable(w), engine.record(for: w) == nil, let frame = w.frame else { return }
+        // Auto Tiling places windows on its displays itself: leave those, and don't move any onto them.
+        let gate = engine.autoTilingGate()
+        guard !gate.blocks(frame) else { return }
         let s = engine.settings.value
         let displays = engine.displays
         if s.moveNewWindowsToLastZone, let bid = w.bundleIdentifier, let entry = engine.history.value[bid],
-           let display = displays.first(where: { $0.key == entry.displayKey }),
+           let display = displays.first(where: { $0.matches(entry.displayKey) }),
            engine.layout(for: display).id == entry.layoutID,
            entry.zones.allSatisfy({ $0 < engine.layout(for: display).count }) {
             engine.snap(w, to: entry.zones, on: display)
             return
         }
-        guard s.moveNewWindowsToActiveDisplay, let target = engine.displayUnderPointer(),
+        guard s.moveNewWindowsToActiveDisplay, let target = engine.displayUnderPointer(), !gate.blocks(target.workArea),
               let current = ZoneDisplay.showing(frame, in: displays), current.key != target.key else { return }
         let area = target.workArea
         let size = CGSize(width: min(frame.width, area.width), height: min(frame.height, area.height))

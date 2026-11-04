@@ -2,13 +2,15 @@ import AppKit
 import MacToysCore
 
 /// Keyboard snapping: ⌃⌥ arrows move the focused window between zones, ⌃⌥⇧ arrows extend it
-/// over neighboring zones, ⌃⌥⇞/⇟ cycle windows sharing a zone.
+/// over neighboring zones, ⌃⌥⇞/⇟ cycle windows sharing a zone. None of it acts on a display
+/// Auto Tiling arranges, nor moves a window onto one.
 extension ZoneEngine {
     /// Moves the focused window to the adjacent zone (zone-index or relative-position mode).
     func moveFocusedWindow(_ direction: ZoneDirection) {
         guard let (w, frame, display) = focusedTarget() else { return }
         let s = settings.value
-        let all = displays
+        let gate = autoTilingGate()
+        let all = displays.filter { $0.key == display.key || !gate.blocks($0.workArea) }
         let zones = self.zones(for: display)
         let current = currentZones(of: w, frame: frame, on: display, zones: zones)
 
@@ -69,7 +71,7 @@ extension ZoneEngine {
 
     /// Focuses the next (or previous) window snapped to the same zone as the focused one.
     func cycleWindowsInZone(forward: Bool) {
-        guard let w = focusedWindow() else { return }
+        guard let w = focusedWindow(), let frame = w.frame, !autoTilingGate().blocks(frame) else { return }
         let group = windowsSharingZone(with: w)
         guard group.count > 1, let i = group.firstIndex(of: w) else { return }
         group[(i + (forward ? 1 : -1) + group.count) % group.count].focus()
@@ -87,10 +89,10 @@ extension ZoneEngine {
     /// The focused window, its frame and its display: the display it was snapped on while it
     /// is still in that zone (spanning layouts can reach across screens), else the one showing it.
     private func focusedTarget() -> (WindowRef, CGRect, ZoneDisplay)? {
-        guard let w = focusedWindow(), isSnappable(w), let frame = w.frame else { return nil }
+        guard let w = focusedWindow(), isSnappable(w), let frame = w.frame, !autoTilingGate().blocks(frame) else { return nil }
         AXUIElementSetMessagingTimeout(w.element, 0.5)
         let all = displays
-        let display = liveRecord(for: w, frame: frame).flatMap { r in all.first { $0.key == r.displayKey } }
+        let display = liveRecord(for: w, frame: frame).flatMap { r in all.first { $0.matches(r.displayKey) } }
             ?? ZoneDisplay.showing(frame, in: all)
         guard let display else { return nil }
         return (w, frame, display)

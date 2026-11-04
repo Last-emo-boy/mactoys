@@ -447,4 +447,352 @@ import Testing
         #expect(back.opacity == 70)
         try? FileManager.default.removeItem(at: dir)
     }
+
+    // MARK: Activation key
+
+    @Test func activationKeysMapToTheirModifier() {
+        let cases: [(ActivationKey, CGEventFlags)] = [(.shift, .maskShift), (.function, .maskSecondaryFn),
+                                                       (.option, .maskAlternate), (.control, .maskControl)]
+        for (key, flag) in cases {
+            #expect(key.flag == flag)
+            #expect(key.zonesActive(flags: flag, toggled: false), "\(key) held")
+            #expect(!key.zonesActive(flags: [], toggled: false), "\(key) not held")
+            #expect(key.zonesActive(flags: [flag, .maskCommand], toggled: false), "⌘ (span) doesn't get in the way")
+            #expect(!key.zonesActive(flags: flag, toggled: true), "the mouse-button toggle flips \(key)")
+            #expect(key.zonesActive(flags: [], toggled: true))
+        }
+        #expect(!ActivationKey.shift.zonesActive(flags: .maskCommand, toggled: false), "⌘ alone never activates")
+        #expect(!ActivationKey.option.zonesActive(flags: .maskShift, toggled: false))
+        #expect(ActivationKey.allCases.compactMap(\.glyph) == ["⇧", "fn", "⌥", "⌃"])
+    }
+
+    @Test func noActivationKeyMeansZonesAlwaysOnAndShiftDragsFreely() {
+        let key = ActivationKey.none
+        #expect(key.flag.isEmpty)
+        #expect(key.glyph == nil)
+        #expect(key.zonesActive(flags: [], toggled: false))
+        #expect(key.zonesActive(flags: .maskAlternate, toggled: false))
+        #expect(!key.zonesActive(flags: .maskShift, toggled: false))
+        #expect(!key.zonesActive(flags: [], toggled: true))
+        #expect(key.zonesActive(flags: .maskShift, toggled: true))
+    }
+
+    @Test func activationMigratesFromHoldShift() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = SettingsStore(directory: dir)
+        // Fresh install: ⇧, and nothing stored for the new key.
+        #expect(FancyZonesSettings().activation == .shift)
+        #expect(FancyZonesSettings().activationKey == nil)
+        // A file written before the choice existed.
+        try Data(#"{"holdShiftToActivate": false, "opacity": 30}"#.utf8).write(to: store.url(for: "fancyzones"))
+        var old = store.load("fancyzones", default: FancyZonesSettings())
+        #expect(old.activation == .none, "zones always on stays zones always on")
+        #expect(old.opacity == 30)
+        try Data(#"{"holdShiftToActivate": true}"#.utf8).write(to: store.url(for: "fancyzones"))
+        old = store.load("fancyzones", default: FancyZonesSettings())
+        #expect(old.activation == .shift)
+
+        // Choosing a key stores it and keeps the old flag in step for older versions.
+        var s = FancyZonesSettings()
+        s.activation = .function
+        #expect(s.holdShiftToActivate)
+        store.save(s, id: "fancyzones", defaults: FancyZonesSettings())
+        let back = store.load("fancyzones", default: FancyZonesSettings())
+        #expect(back.activation == .function)
+        s.activation = .none
+        #expect(!s.holdShiftToActivate)
+        store.save(s, id: "fancyzones", defaults: FancyZonesSettings())
+        #expect(store.load("fancyzones", default: FancyZonesSettings()).activation == .none)
+    }
+
+    @Test func newSettingsDefaults() {
+        let s = FancyZonesSettings()
+        #expect(!s.edgeSnap)
+        #expect(s.editorSnapToGrid)
+        #expect(s.editorGridDivisions == 12)
+        #expect(FancyZonesSettings.gridDivisionChoices.contains(s.editorGridDivisions))
+        var odd = s
+        odd.editorGridDivisions = 0
+        #expect(odd.gridDivisions == 2)
+    }
+
+    // MARK: Edge snap
+
+    @Test func edgeSnapRegionsOnALoneDisplay() {
+        let d = CGRect(x: 0, y: 0, width: 1440, height: 900)
+        #expect(EdgeSnap.region(at: CGPoint(x: 0, y: 450), display: d, others: []) == .left)
+        #expect(EdgeSnap.region(at: CGPoint(x: 1439, y: 450), display: d, others: []) == .right)
+        #expect(EdgeSnap.region(at: CGPoint(x: 720, y: 0), display: d, others: []) == .fill)
+        #expect(EdgeSnap.region(at: CGPoint(x: 0, y: 20), display: d, others: []) == .topLeft)
+        #expect(EdgeSnap.region(at: CGPoint(x: 30, y: 0), display: d, others: []) == .topLeft)
+        #expect(EdgeSnap.region(at: CGPoint(x: 1439, y: 880), display: d, others: []) == .bottomRight)
+        #expect(EdgeSnap.region(at: CGPoint(x: 40, y: 899), display: d, others: []) == .bottomLeft)
+        #expect(EdgeSnap.region(at: CGPoint(x: 720, y: 899), display: d, others: []) == nil, "the bottom edge only has corners")
+        #expect(EdgeSnap.region(at: CGPoint(x: 720, y: 450), display: d, others: []) == nil)
+        #expect(EdgeSnap.region(at: CGPoint(x: 10, y: 450), display: d, others: []) == nil, "too far from the edge")
+    }
+
+    @Test func edgeSnapNeverFiresWhereDisplaysMeet() {
+        // A 1080p display, a taller one to its right (top aligned), a third above the first.
+        let a = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let b = CGRect(x: 1920, y: 0, width: 2560, height: 1440)
+        let c = CGRect(x: 0, y: -1117, width: 1728, height: 1117)
+        let all = [a, b, c]
+        func region(_ p: CGPoint, _ d: CGRect) -> EdgeSnapRegion? {
+            EdgeSnap.region(at: p, display: d, others: all.filter { $0 != d })
+        }
+        #expect(region(CGPoint(x: 1919, y: 500), a) == nil, "a's right edge leads into b")
+        #expect(region(CGPoint(x: 1920, y: 500), b) == nil, "b's left edge leads into a")
+        #expect(region(CGPoint(x: 0, y: 500), a) == .left)
+        #expect(region(CGPoint(x: 4479, y: 700), b) == .right)
+        #expect(region(CGPoint(x: 1920, y: 1250), b) == .left, "below a, b's left edge is free")
+        #expect(region(CGPoint(x: 900, y: 0), a) == nil, "a's top leads into c")
+        #expect(region(CGPoint(x: 1850, y: 0), a) == .topRight, "past c's right end, a's top is free")
+        #expect(region(CGPoint(x: 900, y: -1117), c) == .fill)
+        #expect(region(CGPoint(x: 900, y: -1), c) == nil, "c's bottom leads into a")
+        #expect(EdgeSnap.isShared(.right, of: a, at: CGPoint(x: 1919, y: 10), others: [b]))
+        #expect(!EdgeSnap.isShared(.right, of: a, at: CGPoint(x: 1919, y: 10), others: [c]))
+        #expect(!EdgeSnap.isShared(.left, of: b, at: CGPoint(x: 1920, y: 1300), others: [a]))
+    }
+
+    @Test func edgeSnapTargetsTileTheWorkArea() {
+        let work = CGRect(x: 1440, y: 25, width: 1511, height: 875)
+        let left = EdgeSnapRegion.left.rect(in: work), right = EdgeSnapRegion.right.rect(in: work)
+        #expect(left.minX == work.minX && right.maxX == work.maxX && left.maxX == right.minX)
+        #expect(left.height == work.height)
+        let quarters: [EdgeSnapRegion] = [.topLeft, .topRight, .bottomLeft, .bottomRight]
+        let rects = quarters.map { $0.rect(in: work) }
+        #expect(rects.reduce(0) { $0 + $1.area } == work.area)
+        for i in rects.indices { for j in rects.indices where j > i { #expect(rects[i].intersection(rects[j]).area == 0) } }
+        #expect(EdgeSnapRegion.fill.rect(in: work) == work)
+    }
+
+    // MARK: Canvas snapping
+
+    private var canvasArea: CGSize { CGSize(width: 1200, height: 800) }
+
+    @Test func snappingPrefersNeighborEdgesOverTheGrid() {
+        let snapper = CanvasSnapper(area: canvasArea, zones: [CGRect(x: 0, y: 0, width: 437, height: 300)], gridDivisions: 12)
+        #expect(snapper.stepX == 100)
+        #expect(snapper.snapX(441) == 437, "a neighbor's edge within tolerance wins")
+        #expect(snapper.snapX(460) == 500, "otherwise the nearest grid line")
+        #expect(snapper.snapX(1195) == 1200, "the display edge")
+        let noGrid = CanvasSnapper(area: canvasArea, zones: [CGRect(x: 0, y: 0, width: 437, height: 300)], gridDivisions: nil)
+        #expect(noGrid.snapX(460) == 460)
+        #expect(noGrid.snapX(432) == 437)
+        #expect(CanvasSnapper.free.snapX(441) == 441)
+        #expect(CanvasSnapper.free.move(CGRect(x: 3, y: 3, width: 50, height: 50)).rect == CGRect(x: 3, y: 3, width: 50, height: 50))
+    }
+
+    @Test func movingKeepsTheSizeAndShowsGuides() {
+        let snapper = CanvasSnapper(area: canvasArea, zones: [CGRect(x: 0, y: 0, width: 437, height: 300)], gridDivisions: 12)
+        let moved = snapper.move(CGRect(x: 443, y: 10, width: 300, height: 200))
+        #expect(moved.rect == CGRect(x: 437, y: 0, width: 300, height: 200))
+        #expect(moved.guides == [SnapGuide(vertical: true, position: 437)], "a guide where it meets the zone, none at the display edge")
+        // Right edge closer to the display edge than the left one is to anything: it snaps there.
+        let right = snapper.move(CGRect(x: 896, y: 400, width: 300, height: 200)).rect
+        #expect(right.maxX == 1200 && right.width == 300)
+    }
+
+    @Test func zonesMovedAwayFromTheirOwnEdgesDontSnapToThemselves() {
+        let zones = [CGRect(x: 100, y: 100, width: 300, height: 200)]
+        let snapper = CanvasSnapper(area: canvasArea, zones: zones, excluding: 0, gridDivisions: nil)
+        #expect(snapper.move(CGRect(x: 104, y: 100, width: 300, height: 200)).rect.minX == 104)
+    }
+
+    @Test func resizingSnapsOnlyTheMovingEdges() {
+        let snapper = CanvasSnapper(area: canvasArea, zones: [CGRect(x: 800, y: 0, width: 400, height: 800)], gridDivisions: 12)
+        let r = snapper.resize(CGRect(x: 233, y: 140, width: 562, height: 300), edges: .right)
+        #expect(r.rect == CGRect(x: 233, y: 140, width: 567, height: 300), "right edge meets the neighbor at 800")
+        #expect(r.guides == [SnapGuide(vertical: true, position: 800)])
+        let corner = snapper.resize(CGRect(x: 233, y: 140, width: 300, height: 300), edges: [.bottom, .right]).rect
+        #expect(corner.maxX == 500)
+        #expect(abs(corner.maxY - 800.0 * 7 / 12) < 0.001)
+        #expect(corner.minX == 233 && corner.minY == 140, "the other edges stay")
+        let tiny = snapper.resize(CGRect(x: 0, y: 0, width: 45, height: 100), edges: .right, minimum: 40)
+        #expect(tiny.rect.width == 45, "snapping never shrinks a zone below the minimum")
+    }
+
+    @Test func drawingSnapsBothCornersAndStaysInside() {
+        let snapper = CanvasSnapper(area: canvasArea, zones: [], gridDivisions: 12)
+        let drawn = snapper.draw(from: CGPoint(x: 3, y: 5), to: CGPoint(x: 596, y: 402), in: canvasArea)
+        #expect(drawn.rect.origin == .zero)
+        #expect(drawn.rect.width == 600)
+        #expect(abs(drawn.rect.height - 400) < 0.001)
+        #expect(drawn.guides.isEmpty, "the display edge needs no guide")
+        let backwards = snapper.draw(from: CGPoint(x: 1300, y: 900), to: CGPoint(x: 710, y: 330), in: canvasArea)
+        #expect(backwards.rect.maxX == 1200 && backwards.rect.minX == 700)
+        #expect(backwards.rect.maxY == 800)
+    }
+
+    @Test @MainActor func editorDrawsAZoneAndAddsIt() {
+        let display = ZoneDisplay(key: "d", name: "D", number: 1, frame: CGRect(origin: .zero, size: canvasArea),
+                                  workArea: CGRect(origin: .zero, size: canvasArea), isBuiltIn: true)
+        let model = EditorModel(displays: [display], selectedKey: "d", library: LayoutLibrary(), pickerScreen: display.frame,
+                                defaultHorizontal: "columns", defaultVertical: "rows", snapToGrid: true, gridDivisions: 12)
+        model.newIsCanvas = true
+        model.beginCreate()
+        model.create()
+        let before = model.draft?.canvas?.zones.count ?? 0
+        model.drawZone(from: CGPoint(x: 8, y: 6), to: CGPoint(x: 291, y: 270), in: canvasArea)
+        #expect(model.showsGrid)
+        #expect(model.drawingZone == CGRect(x: 0, y: 0, width: 300, height: 800.0 / 3))
+        model.finishDrawing(in: canvasArea)
+        #expect(model.draft?.canvas?.zones.count == before + 1)
+        #expect(model.canvasSelection == before)
+        #expect(model.drawingZone == nil && model.guides.isEmpty && !model.showsGrid)
+        // Too small to hold a window: nothing is added.
+        model.drawZone(from: CGPoint(x: 600, y: 600), to: CGPoint(x: 610, y: 612), in: canvasArea)
+        model.finishDrawing(in: canvasArea)
+        #expect(model.draft?.canvas?.zones.count == before + 1)
+        // ⌘ held: free placement.
+        model.commandDown = true
+        model.drawZone(from: CGPoint(x: 13, y: 17), to: CGPoint(x: 413, y: 317), in: canvasArea)
+        #expect(model.drawingZone == CGRect(x: 13, y: 17, width: 400, height: 300))
+        #expect(!model.showsGrid)
+    }
+
+    // MARK: Presets
+
+    @Test func presetsAreValidLayoutsThatTileTheDisplay() {
+        #expect(LayoutPreset.workflows.count == 6)
+        #expect(LayoutPreset.ultrawide.count == 5)
+        #expect(Set(LayoutPreset.allCases.map(\.title)).count == LayoutPreset.allCases.count)
+        for p in LayoutPreset.allCases {
+            let g = p.grid
+            #expect(g.isValid, "\(p)")
+            #expect(g == g.normalized(), "\(p) is stored normalized")
+            #expect(p.zoneSymbols.count == g.zoneCount, "\(p) has a symbol per zone")
+            #expect(g.zoneCount >= 3 && p.primaryZone < g.zoneCount, "\(p)")
+            #expect(!p.title.isEmpty && !p.summary.isEmpty)
+            #expect((p.aspectLabel != nil) == (p.group == .ultrawide))
+            for area in [CGRect(x: 0, y: 25, width: 1440, height: 875), CGRect(x: -5120, y: 0, width: 5120, height: 1415)] {
+                let z = g.zones(in: area, spacing: 0)
+                #expect(z.allSatisfy { area.contains($0) && $0.width >= 100 && $0.height >= 100 }, "\(p) in \(area)")
+                for i in z.indices { for j in z.indices where j > i { #expect(z[i].intersection(z[j]).area == 0, "\(p)") } }
+                #expect(abs(z.reduce(0) { $0 + $1.area } - area.area) < 1, "\(p) covers the area")
+            }
+            let l = p.makeLayout()
+            #expect(l.kind == .customGrid && l.count == g.zoneCount && l.name == p.title && !l.isTemplate)
+        }
+        #expect(LayoutPreset.centerFocus.grid.columns.map { ($0 * 100).rounded() } == [25, 50, 25])
+        #expect(LayoutPreset.thirds.grid == .columns(3))
+        #expect(LayoutPreset.fiveColumns.grid.zoneCount == 5)
+        // Vibecoding: editor above terminal on the left, preview in the middle, chat on the right.
+        let v = LayoutPreset.vibecoding.grid.zones(in: screen, spacing: 0)
+        #expect(v[0].minX == 0 && v[1].minX == 0 && v[0].maxY == v[1].minY)
+        #expect(v[2].height == screen.height && v[3].maxX == screen.maxX)
+    }
+
+    @Test func adoptingAPresetReusesAnUntouchedCopy() {
+        var lib = LayoutLibrary()
+        let first = lib.adopt(.vibecoding)
+        #expect(lib.custom.count == 1)
+        #expect(lib.adopt(.vibecoding).id == first.id, "picking it again doesn't pile up copies")
+        // Once edited, picking the preset makes a fresh copy with its own name.
+        var edited = first
+        edited.grid = first.grid?.splitting(zone: 2, vertical: false, at: 0.5)
+        lib.update(edited)
+        let second = lib.adopt(.vibecoding)
+        #expect(second.id != first.id)
+        #expect(second.name == "\(LayoutPreset.vibecoding.title) 2")
+        #expect(lib.normalized().custom.count == 2, "preset layouts survive normalization")
+        #expect(LayoutPreset.resolve("centerFocus") == .centerFocus)
+        #expect(LayoutPreset.resolve(LayoutPreset.thirds.title.uppercased()) == .thirds)
+        #expect(LayoutPreset.resolve("nope") == nil)
+    }
+
+    // MARK: Display identity
+
+    @Test func displayKeysSurviveReconnects() {
+        let builtIn = DisplayIdentity(displayID: 1, uuid: "37D8832A-2D66-02CA-B9F7-8F30A301B230", hardwareID: "1552-41055-4251086178")
+        let studio = DisplayIdentity(displayID: 2, uuid: "98253CF1-5A5E-4089-B0BB-13AE936453BD", hardwareID: "1552-44610-4071091802")
+        let before = ZoneDisplay.keys(for: [builtIn, studio])
+        // Unplugged and plugged in again: macOS hands out new display ids.
+        var replugged = studio
+        replugged.displayID = 7
+        let after = ZoneDisplay.keys(for: [builtIn, replugged])
+        #expect(before.map(\.key) == after.map(\.key))
+        #expect(before[1].key == "98253CF1-5A5E-4089-B0BB-13AE936453BD")
+        #expect(before[1].legacy == "1552-44610-4071091802", "the key earlier versions stored layouts under")
+    }
+
+    @Test func identicalMonitorsWithoutSerialsKeepTheirOwnKeys() {
+        let left = DisplayIdentity(displayID: 3, uuid: "AAAA-1", hardwareID: "4268-41200-0")
+        let right = DisplayIdentity(displayID: 4, uuid: "BBBB-2", hardwareID: "4268-41200-0")
+        let keys = ZoneDisplay.keys(for: [left, right])
+        #expect(keys.map(\.key) == ["AAAA-1", "BBBB-2"])
+        #expect(keys.map(\.legacy) == ["4268-41200-0-3", "4268-41200-0-4"])
+        // Reconnected with swapped display ids: the UUID keys follow the monitors.
+        var l2 = left, r2 = right
+        l2.displayID = 4
+        r2.displayID = 3
+        #expect(ZoneDisplay.keys(for: [l2, r2]).map(\.key) == ["AAAA-1", "BBBB-2"])
+        // Without a UUID the hardware key stands in; a repeated UUID is told apart by position.
+        let bare = DisplayIdentity(displayID: 9, uuid: nil, hardwareID: "1-2-3")
+        #expect(ZoneDisplay.keys(for: [bare]).first?.key == "1-2-3")
+        #expect(ZoneDisplay.keys(for: [bare]).first?.legacy == nil)
+        let twins = ZoneDisplay.keys(for: [DisplayIdentity(displayID: 1, uuid: "U", hardwareID: "a"),
+                                          DisplayIdentity(displayID: 2, uuid: "U", hardwareID: "b")])
+        #expect(twins.map(\.key) == ["U", "U#2"])
+    }
+
+    @Test func layoutsSavedUnderTheOldKeyStillApply() {
+        var lib = LayoutLibrary()
+        let mine = ZoneLayout.newGrid(name: "Mine")
+        lib.add(mine)
+        lib.assignments["1552-44610-4071091802"] = mine.id          // written by an earlier version
+        let found = lib.layout(forDisplay: "UUID-1", legacyKey: "1552-44610-4071091802", vertical: false,
+                               defaultHorizontal: "columns", defaultVertical: "rows")
+        #expect(found.id == mine.id)
+        lib.assign("rows", toDisplay: "UUID-1", legacyKey: "1552-44610-4071091802")
+        #expect(lib.assignments["UUID-1"] == "rows")
+        #expect(lib.assignments["1552-44610-4071091802"] == "rows", "kept in step for the CLI and older versions")
+        lib.assignments["1552-44610-4071091802"] = mine.id
+        #expect(lib.layout(forDisplay: "UUID-1", legacyKey: "1552-44610-4071091802", vertical: false,
+                           defaultHorizontal: "columns", defaultVertical: "rows").kind == .rows, "the UUID key wins")
+        let d = ZoneDisplay(key: "UUID-1", name: "", number: 1, frame: screen, workArea: screen, isBuiltIn: false,
+                            legacyKey: "1552-44610-4071091802")
+        #expect(d.matches("UUID-1") && d.matches("1552-44610-4071091802") && !d.matches("other"))
+    }
+
+    // MARK: Auto Tiling
+
+    private let leftScreen = ScreenSlot(displayID: 1, frame: CGRect(x: 0, y: 0, width: 1440, height: 900),
+                                        workArea: CGRect(x: 0, y: 25, width: 1440, height: 875))
+    private let rightScreen = ScreenSlot(displayID: 2, frame: CGRect(x: 1440, y: 0, width: 2560, height: 1440),
+                                         workArea: CGRect(x: 1440, y: 0, width: 2560, height: 1440))
+
+    @Test func autoTilingGateBlocksOnlyItsDisplays() {
+        let open = AutoTilingGate(screens: [leftScreen, rightScreen], manages: nil)
+        #expect(open.isEmpty && !open.blocks(CGPoint(x: 2000, y: 500)))
+        let gate = AutoTilingGate(screens: [leftScreen, rightScreen], manages: { $0 == 2 })
+        #expect(gate.managed == [rightScreen.frame])
+        #expect(gate.blocks(CGPoint(x: 2000, y: 500)))
+        #expect(!gate.blocks(CGPoint(x: 700, y: 500)))
+        #expect(gate.blocks(CGRect(x: 1500, y: 100, width: 1200, height: 800)), "a window on the managed display")
+        #expect(!gate.blocks(CGRect(x: 600, y: 100, width: 1200, height: 600)), "mostly on the free display")
+        #expect(!gate.blocks(CGRect.null))
+        #expect(!AutoTilingGate.open.blocks(CGPoint(x: 2000, y: 500)))
+    }
+
+    @Test @MainActor func zoneEngineAsksAutoTilingEachTime() {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = SettingsStore(directory: dir)
+        let engine = ZoneEngine(settings: Persisted("fancyzones", default: FancyZonesSettings(), store: store),
+                                library: Persisted(LayoutLibrary.storageID, default: LayoutLibrary(), store: store),
+                                history: Persisted("history", default: [String: ZoneHistoryEntry](), store: store))
+        var managed: Set<CGDirectDisplayID> = []
+        engine.autoTilingManages = { { managed.contains($0) } }
+        let screens = [leftScreen, rightScreen]
+        #expect(engine.autoTilingGate(screens: screens).isEmpty)
+        managed = [2]
+        #expect(engine.autoTilingGate(screens: screens).blocks(CGPoint(x: 3000, y: 700)), "Auto Tiling took the display")
+        managed = []
+        #expect(!engine.autoTilingGate(screens: screens).blocks(CGPoint(x: 3000, y: 700)), "and gave it back")
+        engine.autoTilingManages = { nil }
+        #expect(engine.autoTilingGate(screens: screens) == .open, "Auto Tiling off")
+    }
 }

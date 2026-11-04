@@ -11,7 +11,9 @@ public struct LayoutLibrary: Codable, Equatable, Sendable {
     public var templates: [ZoneLayout]
     /// Custom grid and canvas layouts, in editor order.
     public var custom: [ZoneLayout]
-    /// Display key (`NSScreen.stableID`, or `ZoneDisplay.allDisplaysKey`) → layout id.
+    /// Display key → layout id. Keys are display UUIDs (`ZoneDisplay.key`), plus the
+    /// vendor/model/serial keys of earlier versions, which are still read and kept in step
+    /// (`ZoneDisplay.legacyKey`), and `ZoneDisplay.allDisplaysKey`.
     public var assignments: [String: String]
 
     public init(templates: [ZoneLayout] = ZoneLayout.defaultTemplates, custom: [ZoneLayout] = [],
@@ -41,12 +43,21 @@ public struct LayoutLibrary: Codable, Equatable, Sendable {
             ?? templates.first { $0.kind.rawValue.lowercased() == lower.replacingOccurrences(of: " ", with: "") }
     }
 
-    /// The layout a display uses: its assignment, or the default for its orientation.
-    public func layout(forDisplay key: String, vertical: Bool, defaultHorizontal: String,
+    /// The layout a display uses: its assignment (under its key, else its legacy key), or the
+    /// default for its orientation.
+    public func layout(forDisplay key: String, legacyKey: String? = nil, vertical: Bool, defaultHorizontal: String,
                        defaultVertical: String) -> ZoneLayout {
         if let id = assignments[key], let l = layout(id: id) { return l }
+        if let legacyKey, let id = assignments[legacyKey], let l = layout(id: id) { return l }
         let fallback = vertical ? defaultVertical : defaultHorizontal
         return layout(id: fallback) ?? templates.first { $0.kind == .priorityGrid } ?? .template(.priorityGrid)
+    }
+
+    /// Assigns a layout to a display under its key and its legacy key (which earlier versions and
+    /// the command-line tool look up).
+    public mutating func assign(_ id: String, toDisplay key: String, legacyKey: String? = nil) {
+        assignments[key] = id
+        if let legacyKey, legacyKey != key { assignments[legacyKey] = id }
     }
 
     /// Replaces the layout with the same id.

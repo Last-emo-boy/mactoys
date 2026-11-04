@@ -4,16 +4,30 @@ import SwiftUI
 /// The FancyZones settings page (design 03), grouped like PowerToys.
 struct FancyZonesSettingsView: View {
     let module: FancyZonesModule
+    /// macOS's own tiling options, read when the page appears and when MacToys becomes active again.
+    @State private var tiling = SystemTilingState()
 
     var body: some View {
         @Bindable var s = module.settings
         let v = s.value
         SettingsPage(module: module) {
-            FancyZonesHero(module: module)
+            VStack(spacing: 0) {
+                AutoTilingNotice()
+                FancyZonesHero(module: module)
+            }
         } content: {
             Section("Zone activation") {
-                Toggle(isOn: $s.value.holdShiftToActivate) { RowLabel(title: Text("Hold ⇧ to activate zones while dragging"),
-                    subtitle: v.holdShiftToActivate ? nil : Text("Zones show as soon as you drag a window; hold ⇧ to drag freely")) }
+                Picker(selection: $s.value.activation) {
+                    ForEach(ActivationKey.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
+                } label: {
+                    RowLabel(title: Text("Activation key", comment: "FancyZones: the key held while dragging a window to show zones"),
+                             subtitle: activationHint(v.activation))
+                }
+                if v.activation == .option && tiling.option {
+                    InfoBar(.info, title: Text("macOS also tiles windows while ⌥ is held"),
+                            message: Text("Turn off “Hold ⌥ key while dragging windows to tile” in Desktop & Dock settings, or choose another key."),
+                            actionTitle: Text("Open Settings…")) { SystemTiling.openSettings() }
+                }
                 Toggle(isOn: $s.value.nonPrimaryButtonToggles) { RowLabel("Use a non-primary mouse button to toggle zones",
                     subtitle: "Right-click while dragging shows or hides zones") }
                 Toggle(isOn: $s.value.middleButtonSpansZones) { RowLabel("Use the middle mouse button to span multiple zones",
@@ -26,6 +40,18 @@ struct FancyZonesSettingsView: View {
                 Picker(selection: $s.value.overlapAlgorithm) {
                     ForEach(OverlapAlgorithm.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("When multiple zones overlap") }
+            }
+
+            Section("Edge snap") {
+                Toggle(isOn: $s.value.edgeSnap) {
+                    RowLabel("Snap windows to screen edges",
+                             subtitle: "While zones are hidden, drag a window to a side for half the display, to a corner for a quarter, to the top to fill it. Edges between two displays never snap.")
+                }
+                if v.edgeSnap && tiling.edges {
+                    InfoBar(.warning, title: Text("macOS tiles windows at screen edges too"),
+                            message: Text("Both would move the window. Turn off “Drag windows to screen edges to tile” and “Drag windows to menu bar to fill screen” in Desktop & Dock settings."),
+                            actionTitle: Text("Open Settings…")) { SystemTiling.openSettings() }
+                }
             }
 
             Section("Zone appearance") {
@@ -115,11 +141,24 @@ struct FancyZonesSettingsView: View {
                 .disabled(!v.switchWindowsInZone)
             }
 
-            Section("Layouts") {
+            Section("Layout editor") {
                 ShortcutRow("Open layout editor", shortcut: $s.value.editorShortcut)
                 Picker(selection: $s.value.editorDisplay) {
                     ForEach(FancyZonesSettings.EditorDisplay.allCases, id: \.self) { Text(verbatim: $0.title).tag($0) }
                 } label: { RowLabel("Open the editor on") }
+                Toggle(isOn: $s.value.editorSnapToGrid) {
+                    RowLabel("Snap canvas zones to a grid",
+                             subtitle: "While you draw, move or resize zones. Edges also snap to other zones and the display edges; hold ⌘ to place freely.")
+                }
+                Picker(selection: $s.value.editorGridDivisions) {
+                    ForEach(FancyZonesSettings.gridDivisionChoices, id: \.self) { n in
+                        Text("1/\(n) of the display", comment: "FancyZones grid step: a fraction of the display's width and height").tag(n)
+                    }
+                } label: { RowLabel("Grid step") }
+                .disabled(!v.editorSnapToGrid)
+            }
+
+            Section("Layouts") {
                 Toggle(isOn: $s.value.quickLayoutSwitch) {
                     RowLabel(title: Text("Enable quick layout switch"), subtitle: Text(verbatim: quickKeysSummary))
                 }
@@ -131,6 +170,23 @@ struct FancyZonesSettingsView: View {
             Section("Excluded apps") {
                 ExcludedAppsEditor("Exclude apps from snapping to zones", apps: $s.value.excludedApps)
             }
+        }
+        .onAppear { tiling = SystemTilingState() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            tiling = SystemTilingState()
+        }
+    }
+
+    private func activationHint(_ key: ActivationKey) -> Text {
+        switch key {
+        case .shift, .option:
+            Text("Hold it while you drag a window, then let go over a zone. Esc cancels.")
+        case .function:
+            Text("Hold it while you drag a window, then let go over a zone. Esc cancels. If letting go of 🌐 opens the emoji picker, set “Press 🌐 key to” to “Do Nothing” in Keyboard settings.")
+        case .control:
+            Text("Press ⌃ once the window is moving (⌃-click is a secondary click), then let go over a zone. Esc cancels.")
+        case .none:
+            Text("Zones show whenever you drag a window. Hold ⇧ to drag freely; Esc cancels.")
         }
     }
 
@@ -188,17 +244,78 @@ private struct FancyZonesHero: View {
                 VStack(alignment: .leading, spacing: 8) {
                     title(layout: current?.displayName ?? ZoneLayout.Kind.blank.title, display: display?.name)
                         .font(.system(size: 14, weight: .semibold))
-                    Text("Each display keeps its own layout. Custom canvas and grid layouts are made in the editor.")
+                    activationLine
                         .font(.system(size: 12)).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    HStack(spacing: 10) {
-                        Button("Launch layout editor") { module.openEditor() }
-                            .buttonStyle(.borderedProminent)
-                        Keycaps(module.settings.value.editorShortcut)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 10) {
+                            launchButton
+                            presetMenu(display: display)
+                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            launchButton
+                            presetMenu(display: display)
+                        }
                     }
+                    .padding(.top, 2)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+        }
+    }
+
+    private var launchButton: some View {
+        HStack(spacing: 10) {
+            Button("Launch layout editor") { module.openEditor() }
+                .buttonStyle(.borderedProminent)
+                .fixedSize()
+            Keycaps(module.settings.value.editorShortcut)
+        }
+    }
+
+    /// How snapping starts with the current activation key.
+    @ViewBuilder
+    private var activationLine: some View {
+        let key = module.settings.value.activation
+        if let glyph = key.glyph {
+            HStack(spacing: 6) {
+                Keycaps([glyph])
+                Text("Hold while you drag a window, then let go over a zone.",
+                     comment: "FancyZones hero, after the activation key's keycap")
+            }
+        } else {
+            Text("Zones show whenever you drag a window; hold ⇧ to drag freely.")
+        }
+    }
+
+    /// Adds a preset's layout and applies it to the hero's display.
+    private func presetMenu(display: ZoneDisplay?) -> some View {
+        Menu {
+            Section {
+                ForEach(LayoutPreset.workflows) { presetItem($0, display: display) }
+            } header: {
+                Text("Workflows", comment: "Layout editor: presets for kinds of work")
+            }
+            Section {
+                ForEach(LayoutPreset.ultrawide) { presetItem($0, display: display) }
+            } header: {
+                Text("Ultrawide displays", comment: "Layout editor: presets for 21:9 and 32:9 displays")
+            }
+        } label: {
+            Label("Presets", systemImage: "square.grid.3x1.below.line.grid.1x2")
+        }
+        .menuStyle(.button)
+        .buttonStyle(.bordered)
+        .fixedSize()
+        .disabled(display == nil)
+        .help(Text("Start from a preset: adds a layout you can edit and applies it to this display"))
+    }
+
+    private func presetItem(_ preset: LayoutPreset, display: ZoneDisplay?) -> some View {
+        Button {
+            if let display { module.engine.applyPreset(preset, to: display, announce: true) }
+        } label: {
+            Text(verbatim: preset.aspectLabel.map { "\(preset.title)  \($0)" } ?? preset.title)
         }
     }
 
@@ -207,6 +324,29 @@ private struct FancyZonesHero: View {
             Text("\(layout) on \(display)", comment: "FancyZones: a layout name, then the name of the display that uses it")
         } else {
             Text("\(layout) on this display", comment: "FancyZones: a layout name")
+        }
+    }
+}
+
+/// macOS's tiling options that act on the same drags (read off the main path: not on every redraw).
+private struct SystemTilingState: Equatable {
+    var edges = SystemTiling.tilesAtScreenEdges
+    var option = SystemTiling.tilesWithOptionKey
+}
+
+/// Shown while Auto Tiling arranges windows on some displays, which FancyZones then leaves alone.
+/// Auto Tiling can take or release a display at any time, so this looks again every few seconds.
+private struct AutoTilingNotice: View {
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 3)) { _ in
+            let names = NSScreen.screens.filter { Services.autoTilingManagesDisplay?($0.displayID) == true }
+                .map(\.localizedName)
+            if !names.isEmpty {
+                InfoBar(.info, title: Text("Auto Tiling arranges \(names.formatted(.list(type: .and)))",
+                                           comment: "FancyZones notice: the names of the displays Auto Tiling manages"),
+                        message: Text("FancyZones leaves new windows, drags and keyboard moves there to it, and shows no zones."))
+                    .padding(.bottom, 12)
+            }
         }
     }
 }

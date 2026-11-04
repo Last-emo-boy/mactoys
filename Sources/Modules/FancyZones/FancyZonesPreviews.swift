@@ -1,15 +1,19 @@
 import MacToysCore
 import SwiftUI
 
-/// Offscreen previews: the editor with its picker, the grid and canvas editors, and zones while dragging.
+/// Offscreen previews: the editor with its picker, the preset gallery, the grid and canvas
+/// editors (drawing a zone with guides), zones while dragging and the edge-snap preview.
 @MainActor
 enum FancyZonesPreviews {
     static var scenes: [PreviewScene] {
         [
             PreviewScene("editor", size: CGSize(width: 1600, height: 1000)) { AnyView(editor(mode: .picker)) },
+            PreviewScene("presets", size: CGSize(width: 1600, height: 1000)) { AnyView(editor(mode: .creating)) },
             PreviewScene("dragging", size: CGSize(width: 1440, height: 900)) { AnyView(dragging) },
+            PreviewScene("edge-snap", size: CGSize(width: 1440, height: 900)) { AnyView(edgeSnap) },
             PreviewScene("grid-editor", size: CGSize(width: 1600, height: 1000)) { AnyView(editor(mode: .editing)) },
             PreviewScene("canvas-editor", size: CGSize(width: 1600, height: 1000)) { AnyView(editor(mode: .editing, canvas: true)) },
+            PreviewScene("draw-zone", size: CGSize(width: 1600, height: 1000)) { AnyView(drawZone) },
         ]
     }
 
@@ -44,6 +48,9 @@ enum FancyZonesPreviews {
     static func editor(mode: EditorModel.Mode, canvas: Bool = false) -> some View {
         let model = EditorModel(displays: sampleDisplays, selectedKey: "1552-41009-0", library: sampleLibrary,
                                 pickerScreen: screen, defaultHorizontal: "priorityGrid", defaultVertical: "rows")
+        if mode == .creating {
+            model.beginCreate()
+        }
         if mode == .editing {
             if canvas, let writing = model.library.custom.first(where: { $0.kind == .canvas }) {
                 model.edit(writing)
@@ -70,6 +77,66 @@ enum FancyZonesPreviews {
                             textSize: 36, padding: 12)
                 .position(x: 720, y: 80)
         }
+    }
+
+    /// A canvas layout being made: two zones, a third drawn beside them, snapped to the grid and
+    /// lined up with its neighbors' edges.
+    static var drawZone: some View {
+        let model = EditorModel(displays: sampleDisplays, selectedKey: "1552-41009-0", library: sampleLibrary,
+                                pickerScreen: screen, defaultHorizontal: "priorityGrid", defaultVertical: "rows",
+                                snapToGrid: true, gridDivisions: 12)
+        var studio = ZoneLayout.newCanvas(name: "Studio", reference: screen.size)
+        studio.canvas?.zones = [CanvasZone(x: 0, y: 0, width: 933, height: 1000),
+                                CanvasZone(x: 933, y: 583, width: 667, height: 417)]
+        model.library.add(studio)
+        model.edit(studio)
+        let area = screen.size
+        model.drawZone(from: CGPoint(x: 941, y: 112), to: CGPoint(x: 1462, y: 577), in: area)
+        return EditorScreenView(model: model, screen: screen, screens: [screen])
+    }
+
+    /// A window dragged to the left edge with edge snap on: the left half lights up.
+    static var edgeSnap: some View {
+        var s = FancyZonesSettings()
+        s.opacity = 45
+        var style = ZoneStyle(s)
+        style.showNumbers = false
+        let work = CGRect(x: 0, y: 25, width: 1440, height: 875)
+        let target = EdgeSnapRegion.left.rect(in: work)
+        return ZStack(alignment: .topLeading) {
+            menuBar
+            fakeWindow.frame(width: 640, height: 420).position(x: 1080, y: 470)
+            fakeWindow.frame(width: 600, height: 400).position(x: 240, y: 330)
+            ZoneFieldView(zones: [target], highlighted: [0], style: style)
+            ZStack(alignment: .topLeading) {
+                // A black arrow with a white rim, like the system pointer.
+                ForEach(0..<4, id: \.self) { i in
+                    Image(systemName: "cursorarrow").foregroundStyle(.white)
+                        .offset(x: [-1.5, 1.5, 0, 0][i], y: [0, 0, -1.5, 1.5][i])
+                }
+                Image(systemName: "cursorarrow").foregroundStyle(.black)
+            }
+            .font(.system(size: 22))
+            .fixedSize()
+            .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
+            .offset(x: 2, y: 138)
+        }
+    }
+
+    /// The top strip of a desktop, so the work area (below it) reads.
+    private static var menuBar: some View {
+        Rectangle().fill(.ultraThinMaterial)
+            .frame(width: 1440, height: 25)
+            .overlay(alignment: .leading) {
+                HStack(spacing: 18) {
+                    Image(systemName: "apple.logo").font(.system(size: 13))
+                    Text(verbatim: "Xcode").font(.system(size: 13, weight: .bold))
+                    ForEach(["File", "Edit", "View", "Window"], id: \.self) { Text(verbatim: $0).font(.system(size: 13)) }
+                }
+                .padding(.leading, 18)
+                .foregroundStyle(.white)
+            }
+            .position(x: 720, y: 12.5)
     }
 
     private static var fakeWindow: some View {
