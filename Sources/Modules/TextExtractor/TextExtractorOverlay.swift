@@ -11,6 +11,10 @@ final class SelectionModel {
     private var last: CGPoint?
     var mode: TextExtractorSettings.Mode
     var language: String?
+    /// Add this capture to the clipboard instead of replacing it.
+    var add = false
+    /// Read this capture aloud.
+    var speak = false
 
     init(mode: TextExtractorSettings.Mode, language: String?) {
         self.mode = mode
@@ -57,7 +61,8 @@ struct TextExtractorOverlay<Background: View>: View {
     let background: Background
     var languages: [(code: String, name: String)] = TextRecognizer.languages
     var onFinish: (_ rect: CGRect?, _ click: CGPoint?) -> Void = { _, _ in }
-    var onSettingsChange: (TextExtractorSettings.Mode, String?) -> Void = { _, _ in }
+    var onSettingsChange: (SelectionModel) -> Void = { _ in }
+    @State private var barSize = CGSize(width: 520, height: 38)
 
     var body: some View {
         GeometryReader { geo in
@@ -75,6 +80,7 @@ struct TextExtractorOverlay<Background: View>: View {
                 }
                 hintBar
                     .fixedSize()
+                    .onGeometryChange(for: CGSize.self) { $0.size } action: { barSize = $0 }
                     .position(hintPosition(in: geo.size))
             }
             .contentShape(Rectangle())
@@ -103,7 +109,6 @@ struct TextExtractorOverlay<Background: View>: View {
 
     /// Below the selection (above it when there's no room); centered near the top before a drag.
     private func hintPosition(in size: CGSize) -> CGPoint {
-        let barSize = CGSize(width: 400, height: 38)
         guard let rect = model.rect, rect.width > 1 else {
             return CGPoint(x: size.width / 2, y: 64)
         }
@@ -116,10 +121,11 @@ struct TextExtractorOverlay<Background: View>: View {
 
     private var hintBar: some View {
         HStack(spacing: 8) {
-            (model.isDragging ? Text("Release to copy") : Text("Drag over text · click a word"))
+            (model.isDragging ? (model.add ? Text("Release to add") : Text("Release to copy")) : Text("Drag over text · click a word"))
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white)
                 .padding(.leading, 4)
+                .contentTransition(.opacity)
             Menu {
                 Button { setLanguage(nil) } label: {
                     Text("Automatic", comment: "Recognition language: detect it automatically")
@@ -155,6 +161,20 @@ struct TextExtractorOverlay<Background: View>: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .help(Text(verbatim: "\(mode.detail) (\(mode.key))"))
+                }
+            }
+            Rectangle().fill(.white.opacity(0.14)).frame(width: 1, height: 16)
+            HStack(spacing: 2) {
+                toggleChip(isOn: model.add, symbol: "text.badge.plus",
+                           help: Text("Add to the clipboard instead of replacing it (A, or hold ⌥ while releasing)")) {
+                    model.add.toggle()
+                    onSettingsChange(model)
+                }
+                toggleChip(isOn: model.speak, symbol: model.speak ? "speaker.wave.2.fill" : "speaker.wave.2",
+                           help: Text("Read the text aloud after copying (R)")) {
+                    model.speak.toggle()
+                    onSettingsChange(model)
                 }
             }
         }
@@ -166,14 +186,29 @@ struct TextExtractorOverlay<Background: View>: View {
         .environment(\.colorScheme, .dark)
     }
 
+    private func toggleChip(isOn: Bool, symbol: String, help: Text, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(isOn ? Tint.mint.color : .white.opacity(0.7))
+                .frame(width: 28, height: 22)
+                .background(RoundedRectangle(cornerRadius: 6).fill(isOn ? Tint.mint.color.opacity(0.22) : .clear))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(help)
+        .accessibilityLabel(help)
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+
     private func setMode(_ mode: TextExtractorSettings.Mode) {
         model.mode = mode
-        onSettingsChange(mode, model.language)
+        onSettingsChange(model)
     }
 
     private func setLanguage(_ code: String?) {
         model.language = code
-        onSettingsChange(model.mode, code)
+        onSettingsChange(model)
     }
 }
 

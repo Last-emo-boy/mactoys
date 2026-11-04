@@ -826,3 +826,143 @@ private func item(_ id: String, _ provider: String, score: Double, fallback: Boo
         #expect(list[2].remote == "ssh-remote+box")
     }
 }
+
+// MARK: - Menu commands
+
+@MainActor
+@Suite struct MenuCommandsTests {
+    func n(_ title: String, _ keys: [String] = [], enabled: Bool = true, checked: Bool = false) -> MenuNode {
+        MenuNode(title: title, enabled: enabled, keys: keys, checked: checked)
+    }
+
+    func menu(_ title: String, _ items: [MenuNode]) -> MenuNode { MenuNode(title: title, children: items) }
+
+    var tree: [MenuNode] {
+        [
+            menu("Pages", [n("Settings…", ["⌘", ","])]),
+            menu("File", [n("New", ["⌘", "N"]), n(" "), menu("Export To", [n("PDF…"), n("Word…"), n("EPUB…", enabled: false)]),
+                          menu("Open Recent", []), n("Print…", ["⌘", "P"])]),
+            menu("Format", [menu("Font", [n("Bold", ["⌘", "B"]), n("Bold", ["⌘", "B"])]), n("Show Ruler", ["⌘", "R"], checked: true)]),
+            menu("", [n("Ghost")]),
+        ]
+    }
+
+    @Test func flatteningKeepsPathsAndSkipsEmptyItems() {
+        let commands = MenuFlattener.flatten(tree)
+        #expect(commands.map(\.fullPath) == ["Pages › Settings…", "File › New", "File › Export To › PDF…", "File › Export To › Word…",
+                                             "File › Export To › EPUB…", "File › Print…", "Format › Font › Bold", "Format › Font › Bold",
+                                             "Format › Show Ruler"])
+        let pdf = commands[2]
+        #expect(pdf.title == "PDF…" && pdf.menu == "File" && pdf.parentPath == "File › Export To")
+        #expect(commands[4].enabled == false)
+        #expect(commands[8].checked && commands[8].keys == ["⌘", "R"])
+        // Repeated titles still get distinct ids.
+        #expect(commands[6].id != commands[7].id)
+        #expect(Set(commands.map(\.id)).count == commands.count)
+    }
+
+    @Test func keyEquivalentsBecomeKeycaps() {
+        #expect(MenuKeycaps.keys(char: "N", virtualKey: nil, glyph: nil, modifiers: 0) == ["⌘", "N"])
+        #expect(MenuKeycaps.keys(char: "n", virtualKey: nil, glyph: nil, modifiers: MenuKeycaps.shiftBit) == ["⇧", "⌘", "N"])
+        #expect(MenuKeycaps.keys(char: "W", virtualKey: nil, glyph: nil, modifiers: MenuKeycaps.optionBit) == ["⌥", "⌘", "W"])
+        #expect(MenuKeycaps.keys(char: "S", virtualKey: nil, glyph: nil, modifiers: MenuKeycaps.controlBit) == ["⌃", "⌘", "S"])
+        #expect(MenuKeycaps.keys(char: "Q", virtualKey: nil, glyph: nil,
+                                 modifiers: MenuKeycaps.controlBit | MenuKeycaps.optionBit | MenuKeycaps.noCommandBit) == ["⌃", "⌥", "Q"])
+        #expect(MenuKeycaps.keys(char: "F", virtualKey: nil, glyph: nil, modifiers: MenuKeycaps.functionBit | MenuKeycaps.noCommandBit) == ["fn", "F"])
+        #expect(MenuKeycaps.keys(char: "\u{F704}", virtualKey: nil, glyph: nil, modifiers: MenuKeycaps.noCommandBit) == ["F1"])
+        #expect(MenuKeycaps.keys(char: nil, virtualKey: nil, glyph: 0x17, modifiers: 0) == ["⌘", "⌫"])
+        #expect(MenuKeycaps.keys(char: "\u{1B}", virtualKey: nil, glyph: nil, modifiers: MenuKeycaps.optionBit) == ["⌥", "⌘", "⎋"])
+        #expect(MenuKeycaps.keys(char: "\t", virtualKey: nil, glyph: nil, modifiers: MenuKeycaps.controlBit | MenuKeycaps.noCommandBit) == ["⌃", "⇥"])
+        #expect(MenuKeycaps.keys(char: nil, virtualKey: 0, glyph: 0, modifiers: 0) == [])
+        #expect(MenuKeycaps.keys(char: "", virtualKey: nil, glyph: nil, modifiers: 0) == [])
+    }
+
+    @Test func rankingMatchesTitlesAndPathsAndLearnsFromUse() {
+        let commands = MenuFlattener.flatten(tree)
+        // Every word may match the path: "export pdf" finds File › Export To › PDF….
+        #expect(MenuRanker.rank(commands, query: "export pdf", usage: [:]).first?.command.title == "PDF…")
+        // Equal matches keep menu order, except that commands that can't run now sink below the others.
+        let export = MenuRanker.rank(commands, query: "export", usage: [:]).map(\.command.title)
+        #expect(export == ["PDF…", "Word…", "EPUB…"])
+        // A command used often and lately rises above a better text match.
+        let now = Date(timeIntervalSince1970: 2_000_000_000)
+        let word = commands.first { $0.title == "Word…" }!
+        let pdf = commands.first { $0.title == "PDF…" }!
+        let plain = MenuRanker.rank(commands, query: "export", usage: [:], now: now).map(\.command.id)
+        #expect(plain.firstIndex(of: pdf.id)! < plain.firstIndex(of: word.id)!)
+        let usage = [word.id: MenuRanker.Usage(count: 6, last: now.addingTimeInterval(-60))]
+        let learned = MenuRanker.rank(commands, query: "export", usage: usage, now: now).map(\.command.id)
+        #expect(learned.first == word.id)
+        // Old use counts less than recent use.
+        #expect(MenuRanker.boost(MenuRanker.Usage(count: 3, last: now.addingTimeInterval(-60)), now: now)
+                > MenuRanker.boost(MenuRanker.Usage(count: 3, last: now.addingTimeInterval(-30 * 86400)), now: now))
+        #expect(MenuRanker.recent(commands, usage: usage, limit: 5).map(\.id) == [word.id])
+        #expect(MenuRanker.rank(commands, query: "zzz", usage: [:]).isEmpty)
+    }
+
+    @Test func providerListsRecentDimsDisabledAndHidesWhatTheUserHid() throws {
+        let engine = LauncherEngine.shared
+        let usage = MenuUsageStore(file: nil)
+        let provider = MenuCommandsProvider(engine: engine, usage: usage)
+        let target = MenuTarget(pid: 0, name: "Pages", bundleID: "com.example.pages", bundlePath: nil)
+        let commands = MenuFlattener.flatten(tree)
+        let snapshot = MenuReader.Snapshot(menus: tree, commands: commands, truncated: false)
+        let print = try #require(commands.first { $0.title == "Print…" })
+        usage.record(print.id, in: target.key)
+
+        let browse = provider.items(snapshot, query: "", scoped: true, target: target, options: ProviderOptions())
+        #expect(browse.first?.title == "Print…")
+        #expect(browse.first?.section == "Recent")
+        #expect(browse.first?.keycaps == ["⌘", "P"])
+        #expect(browse.dropFirst().first?.section == "Pages")
+        let epub = try #require(browse.first { $0.title == "EPUB…" })
+        #expect(epub.isDimmed)
+        #expect(epub.subtitle == "File › Export To")
+        #expect(!epub.isPinnable)
+
+        var options = ProviderOptions()
+        options.menusShowDisabled = false
+        options.menusHidden[target.key] = [print.id]
+        let filtered = provider.items(snapshot, query: "", scoped: true, target: target, options: options)
+        #expect(!filtered.contains { $0.title == "EPUB…" || $0.title == "Print…" })
+        // The main search shows a few, scaled below exact hits of other providers.
+        let global = provider.items(snapshot, query: "font", scoped: false, target: target, options: ProviderOptions())
+        #expect(global.count <= 6)
+        #expect(global.first?.section == "Pages Menus")
+        // Nothing readable: a hint explains it.
+        let empty = provider.items(MenuReader.Snapshot(menus: [], commands: [], truncated: false), query: "", scoped: true, target: target,
+                                   options: ProviderOptions())
+        #expect(empty.map(\.id) == ["menus:hint:empty"])
+    }
+
+    @Test func usageIsKeptPerApp() throws {
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("menu-usage-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let store = MenuUsageStore(file: file)
+        store.record("File\u{1F}New", in: "com.a")
+        store.record("File\u{1F}New", in: "com.a")
+        store.record("File\u{1F}New", in: "com.b")
+        #expect(store.usage(for: "com.a")["File\u{1F}New"]?.count == 2)
+        #expect(store.usage(for: "com.b")["File\u{1F}New"]?.count == 1)
+        store.flush()
+        let reloaded = MenuUsageStore(file: file)
+        #expect(reloaded.usage(for: "com.a")["File\u{1F}New"]?.count == 2)
+        reloaded.forget("com.a")
+        #expect(reloaded.usage(for: "com.a").isEmpty)
+    }
+
+    @Test func menuAliasIsADefaultAndParses() {
+        let alias = CommandPaletteSettings.defaultAliases.first { $0.target == MenuCommandsProvider.pageID }
+        #expect(alias?.alias == "menu")
+        #expect(alias?.direct == false)
+        // No other default alias or Run keyword uses it.
+        #expect(CommandPaletteSettings.defaultAliases.filter { $0.alias == "menu" }.count == 1)
+        #expect(LauncherEngine.shared.providers.filter { $0.defaultKeyword == "menu" }.map(\.id) == ["menus"])
+        let entries = CommandPaletteSettings.defaultAliases.map { KeywordParser.Entry(target: $0.target, keyword: $0.alias, direct: $0.direct) }
+        #expect(KeywordParser.match("menu export pdf", entries) == KeywordParser.Match(target: "menus:page", keyword: "menu", rest: "export pdf"))
+        #expect(KeywordParser.match("menus", entries) == nil)
+        // Older settings files load with the new options at their defaults.
+        let old = try? JSONDecoder().decode(ProviderOptions.self, from: JSONEncoder().encode(ProviderOptions()))
+        #expect(old?.menusShowDisabled == true)
+    }
+}

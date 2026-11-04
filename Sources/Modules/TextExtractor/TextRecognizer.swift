@@ -14,18 +14,16 @@ enum TextRecognizer {
 
     /// Recognized lines with boxes in the image's pixel space (top-left origin).
     static func recognize(_ image: CGImage, options: Options) throws -> [TextBox] {
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.usesLanguageCorrection = options.languageCorrection
-        if let language = options.language {
-            request.recognitionLanguages = [language]
-            request.automaticallyDetectsLanguage = false
-        } else {
-            request.automaticallyDetectsLanguage = true
-        }
-        try VNImageRequestHandler(cgImage: image).perform([request])
+        try analyze(image, options: options, barcodes: false).boxes
+    }
+
+    /// Text and, with `barcodes`, QR codes and barcodes, in one pass over the image.
+    static func analyze(_ image: CGImage, options: Options, barcodes: Bool) throws -> (boxes: [TextBox], barcodes: [Barcode]) {
+        let request = textRequest(options)
+        let barcodeRequest = barcodes ? VNDetectBarcodesRequest() : nil
+        try VNImageRequestHandler(cgImage: image).perform([request] + (barcodeRequest.map { [$0] } ?? []))
         let size = CGSize(width: image.width, height: image.height)
-        return (request.results ?? []).compactMap { observation -> TextBox? in
+        let boxes = (request.results ?? []).compactMap { observation -> TextBox? in
             guard let candidate = observation.topCandidates(1).first else { return nil }
             let text = candidate.string
             var words: [TextBox.Word] = []
@@ -36,6 +34,49 @@ enum TextRecognizer {
                 }
             }
             return TextBox(text, pixelRect(observation.boundingBox, in: size), words: words)
+        }
+        return (boxes, barcodeResults(barcodeRequest?.results ?? []))
+    }
+
+    /// Only QR codes and barcodes (a PDF page that already has a text layer).
+    static func barcodes(in image: CGImage) throws -> [Barcode] {
+        let request = VNDetectBarcodesRequest()
+        try VNImageRequestHandler(cgImage: image).perform([request])
+        return barcodeResults(request.results ?? [])
+    }
+
+    /// Payloads in reading order, each once.
+    private static func barcodeResults(_ observations: [VNBarcodeObservation]) -> [Barcode] {
+        var seen = Set<String>()
+        return observations
+            .sorted { ($0.boundingBox.maxY, -$0.boundingBox.minX) > ($1.boundingBox.maxY, -$1.boundingBox.minX) }
+            .compactMap { o -> Barcode? in
+                guard let payload = o.payloadStringValue, !payload.isEmpty, seen.insert(payload).inserted else { return nil }
+                let name = o.symbology.rawValue.replacingOccurrences(of: "VNBarcodeSymbology", with: "")
+                return Barcode(symbology: name, payload: payload)
+            }
+    }
+
+    private static func textRequest(_ options: Options) -> VNRecognizeTextRequest {
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = options.languageCorrection
+        if let language = options.language {
+            request.recognitionLanguages = [language]
+            request.automaticallyDetectsLanguage = false
+        } else {
+            request.automaticallyDetectsLanguage = true
+        }
+        return request
+    }
+
+    /// Boxes laid out the way a mode asks for.
+    static func text(_ boxes: [TextBox], mode: TextExtractorSettings.Mode) -> String {
+        switch mode {
+        case .lines: TextLayout.lines(boxes)
+        case .paragraphs: TextLayout.paragraphs(boxes)
+        case .singleLine: TextLayout.singleLine(boxes)
+        case .table: TextLayout.table(boxes)
         }
     }
 

@@ -31,6 +31,8 @@ protocol SearchProvider: AnyObject {
     func launcherWillShow()
     /// Called after the shared provider options changed, while the engine is active.
     func optionsChanged()
+    /// The page that searches only this provider (for commands, filters and aliases).
+    var page: ListPage { get }
 }
 
 extension SearchProvider {

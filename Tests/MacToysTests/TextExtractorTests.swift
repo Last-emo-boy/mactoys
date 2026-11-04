@@ -1,9 +1,12 @@
 import CoreGraphics
+import CoreImage
+import CoreImage.CIFilterBuiltins
 import CoreText
 import Foundation
 import Testing
 import Vision
 @testable import TextExtractor
+@testable import MacToysCore
 
 @Suite struct TextExtractorTests {
     private func box(_ text: String, _ x: CGFloat, _ y: CGFloat, _ w: CGFloat = 60, _ h: CGFloat = 20) -> TextBox {
@@ -130,5 +133,205 @@ import Vision
         #expect(text.components(separatedBy: "\n").count == 2)
         let total = try #require(boxes.first { $0.text.contains("Total") }?.words.first)
         #expect(TextLayout.word(at: CGPoint(x: total.rect.midX, y: total.rect.midY), in: boxes) == "Total")
+    }
+
+    // MARK: Line joining
+
+    @Test func paragraphsJoinWrappedLinesAndRejoinHyphens() {
+        let boxes = [
+            box("Optical character recog-", 0, 0, 300), box("nition turns pictures of text", 0, 26, 296),
+            box("into text you can edit.", 0, 52, 180),
+            box("A second paragraph starts", 0, 100, 300), box("after the gap.", 0, 126, 110),
+        ]
+        #expect(TextLayout.paragraphs(boxes) == """
+        Optical character recognition turns pictures of text into text you can edit.
+
+        A second paragraph starts after the gap.
+        """)
+    }
+
+    @Test func paragraphsKeepShortLinesListsAndIndents() {
+        // A narrow list is never joined.
+        #expect(TextLayout.paragraphs([box("Milk", 0, 0, 40), box("Eggs", 0, 26, 40), box("Bread", 0, 52, 46)]) == "Milk\nEggs\nBread")
+        // A short line ends where it is; list items and an indented first line start anew.
+        let boxes = [
+            box("Shopping list for the weekend:", 0, 0, 300),
+            box("• Fresh basil and tomatoes", 0, 26, 260),
+            box("• Two loaves of sourdough bread", 0, 52, 300),
+            box("Then a paragraph that wraps across", 0, 100, 300), box("the whole width of the column.", 0, 126, 280),
+            box("An indented paragraph follows", 30, 152, 300), box("right after it.", 0, 178, 120),
+        ]
+        #expect(TextLayout.paragraphs(boxes) == """
+        Shopping list for the weekend:
+        • Fresh basil and tomatoes
+        • Two loaves of sourdough bread
+
+        Then a paragraph that wraps across the whole width of the column.
+
+        An indented paragraph follows right after it.
+        """)
+    }
+
+    @Test func textJoinerKeepsParagraphBreaksAndLists() {
+        let text = "Optical character recog-\nnition is fun\nand useful.\n\n\nSecond para-\ngraph here.\n1. First item\n2. Second item\n   continues"
+        #expect(TextJoiner.joinLines(text) == "Optical character recognition is fun and useful.\n\nSecond paragraph here.\n1. First item\n2. Second item continues")
+        #expect(TextJoiner.joinLines("会议改到\n周四下午") == "会议改到周四下午")
+        #expect(TextJoiner.joinLines("soft\u{00AD}\nhyphen and well-\nKnown") == "softhyphen and well- Known")
+        #expect(TextJoiner.joinLines("a\r\nb") == "a b")
+        #expect(TextJoiner.isListItem("- dash item"))
+        #expect(TextJoiner.isListItem("a) letter item"))
+        #expect(!TextJoiner.isListItem("e.g. not a list"))
+        #expect(!TextJoiner.isListItem("2026 was a year"))
+    }
+
+    // MARK: Additive clipboard
+
+    @Test func additiveClipboardAppendsUntilSomethingElseIsCopied() {
+        var clip = AdditiveClipboard()
+        #expect(clip.add("one", changeCount: 10, separator: .newline) == "one")
+        clip.didWrite(changeCount: 11)
+        #expect(clip.isCurrent(changeCount: 11))
+        #expect(clip.add("two", changeCount: 11, separator: .newline) == "one\ntwo")
+        clip.didWrite(changeCount: 12)
+        #expect(clip.add("three", changeCount: 12, separator: .blankLine) == "one\n\ntwo\n\nthree")
+        clip.didWrite(changeCount: 13)
+        #expect(clip.replaceLast("THREE", separator: .space) == "one two THREE")
+        // Something else was copied: the next capture starts a new collection.
+        #expect(!clip.isCurrent(changeCount: 20))
+        #expect(clip.add("fresh", changeCount: 20, separator: .newline) == "fresh")
+        clip.reset()
+        #expect(clip.pieces.isEmpty && clip.writtenChangeCount == nil)
+    }
+
+    // MARK: Barcodes
+
+    @Test func barcodePayloadsAreClassified() {
+        #expect(BarcodeContent(payload: "HTTPS://EXAMPLE.COM/A1") == .link(URL(string: "https://EXAMPLE.COM/A1")!))
+        #expect(BarcodeContent(payload: "www.example.org/menu") == .link(URL(string: "https://www.example.org/menu")!))
+        #expect(BarcodeContent(payload: "mailto:ada@example.com?subject=Hello%20there") == .email(address: "ada@example.com", subject: "Hello there"))
+        #expect(BarcodeContent(payload: "MATMSG:TO:ada@example.com;SUB:Hi;BODY:x;;") == .email(address: "ada@example.com", subject: "Hi"))
+        #expect(BarcodeContent(payload: "tel:+1-555-0100") == .phone("+1-555-0100"))
+        #expect(BarcodeContent(payload: "SMSTO:+15550100:See you at 8") == .message(number: "+15550100", body: "See you at 8"))
+        #expect(BarcodeContent(payload: #"WIFI:T:WPA;S:Café\;Guest;P:pa\:ss\\word;H:true;;"#)
+                == .wifi(network: "Café;Guest", password: "pa:ss\\word", security: "WPA", hidden: true))
+        #expect(BarcodeContent(payload: "WIFI:S:Open Net;T:nopass;P:;;") == .wifi(network: "Open Net", password: nil, security: nil, hidden: false))
+        #expect(BarcodeContent(payload: "geo:37.7869,-122.3997;u=35") == .location(latitude: 37.7869, longitude: -122.3997))
+        #expect(BarcodeContent(payload: "BEGIN:VCARD\nVERSION:3.0\nN:Lovelace;Ada\nFN:Ada Lovelace\nEND:VCARD") == .contact(name: "Ada Lovelace"))
+        #expect(BarcodeContent(payload: "MECARD:N:Lovelace,Ada;TEL:5550100;;") == .contact(name: "Ada Lovelace"))
+        #expect(BarcodeContent(payload: "BEGIN:VEVENT\nSUMMARY:Launch review\nDTSTART:20261105T140000\nEND:VEVENT") == .event(title: "Launch review"))
+        #expect(BarcodeContent(payload: "4006381333931", symbology: "EAN13") == .product("4006381333931"))
+        #expect(BarcodeContent(payload: "12345678", symbology: "QR") == .text("12345678"))
+        // Only web links open; other schemes are plain text.
+        #expect(BarcodeContent(payload: "javascript:alert(1)") == .text("javascript:alert(1)"))
+        #expect(BarcodeContent(payload: "file:///etc/passwd") == .text("file:///etc/passwd"))
+        #expect(BarcodeContent(payload: "https://") == .text("https://"))
+    }
+
+    @Test func barcodeActionsOpenTheRightApp() {
+        #expect(BarcodeContent.phone("+1 (555) 0100").openURL == URL(string: "tel:+15550100"))
+        #expect(BarcodeContent.message(number: "+15550100", body: nil).openURL == URL(string: "sms:+15550100"))
+        #expect(BarcodeContent.email(address: "ada@example.com", subject: "Hi there").openURL?.absoluteString == "mailto:ada@example.com?subject=Hi%20there")
+        #expect(BarcodeContent.location(latitude: 1.5, longitude: 2.25).openURL?.host() == "maps.apple.com")
+        #expect(BarcodeContent.wifi(network: "N", password: "secret", security: "WPA", hidden: false).openURL == nil)
+        #expect(BarcodeContent.wifi(network: "N", password: "secret", security: "WPA", hidden: false).primaryText == "secret")
+        #expect(Barcode(symbology: "QR", payload: "WIFI:T:WPA;S:Net;P:pw;;").copyText == "pw")
+        #expect(Barcode(symbology: "QR", payload: "WIFI:T:nopass;S:Open Net;;").copyText == "Open Net")
+        #expect(Barcode(symbology: "QR", payload: "mailto:ada@example.com?subject=x").copyText == "ada@example.com")
+        let vcard = "BEGIN:VCARD\nFN:Ada Lovelace\nEND:VCARD"
+        #expect(Barcode(symbology: "QR", payload: vcard).copyText == vcard)
+        #expect(Barcode(symbology: "QR", payload: "x").isMatrix)
+        #expect(!Barcode(symbology: "EAN13", payload: "x").isMatrix)
+    }
+
+    @Test func codesWinOverShortCaptionsOnly() {
+        let code = [Barcode(symbology: "QR", payload: "https://example.com")]
+        #expect(Capture.prefersBarcodes(text: "Scan me", barcodes: code))
+        #expect(!Capture.prefersBarcodes(text: "Scan me", barcodes: []))
+        #expect(!Capture.prefersBarcodes(text: "Line one\nLine two\nLine three", barcodes: code))
+        var c = Capture(text: "Scan me", mode: .lines, source: .screen, barcodes: code, barcodeFirst: true)
+        #expect(c.copiedText == "https://example.com")
+        c.barcodeFirst = false
+        #expect(c.copiedText == "Scan me")
+    }
+
+    // MARK: Card and history
+
+    @Test func cardGoesBelowAboveOrBesideTheSelection() {
+        let visible = CGRect(x: 0, y: 0, width: 1440, height: 875)
+        let size = CGSize(width: 400, height: 220)
+        // Room below (Cocoa: lower y).
+        #expect(CardPlacement.origin(for: size, near: CGRect(x: 100, y: 500, width: 300, height: 100), in: visible)
+                == CGPoint(x: 100, y: 268))
+        // No room below: above.
+        #expect(CardPlacement.origin(for: size, near: CGRect(x: 100, y: 60, width: 300, height: 100), in: visible)
+                == CGPoint(x: 100, y: 172))
+        // Clamped to the right edge.
+        #expect(CardPlacement.origin(for: size, near: CGRect(x: 1300, y: 500, width: 100, height: 50), in: visible).x == 1032)
+        // A tall selection: beside it.
+        #expect(CardPlacement.origin(for: size, near: CGRect(x: 100, y: 20, width: 300, height: 840), in: visible)
+                == CGPoint(x: 412, y: 640))
+        // No selection: the top-right corner.
+        #expect(CardPlacement.origin(for: size, near: nil, in: visible) == CGPoint(x: 1024, y: 639))
+    }
+
+    @MainActor @Test func recentCapturesDedupeTrimAndPersist() throws {
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("recent-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let history = CaptureHistory(file: file)
+        history.limit = 3
+        for i in 1...4 { history.add(Capture(text: "text \(i)", mode: .lines, source: .screen)) }
+        #expect(history.items.map(\.text) == ["text 4", "text 3", "text 2"])
+        history.add(Capture(text: "text 2", mode: .lines, source: .screen))
+        #expect(history.items.map(\.text) == ["text 2", "text 4", "text 3"])
+        var first = history.items[0]
+        first.text = "text 2, joined"
+        history.update(first)
+        #expect(history.items[0].text == "text 2, joined")
+        // Nothing is written until saving is turned on.
+        #expect(!FileManager.default.fileExists(atPath: file.path))
+        history.setPersistence(true)
+        #expect(FileManager.default.fileExists(atPath: file.path))
+        let reloaded = CaptureHistory(file: file)
+        reloaded.setPersistence(true)
+        #expect(reloaded.items.map(\.text) == ["text 2, joined", "text 4", "text 3"])
+        reloaded.setPersistence(false)
+        #expect(!FileManager.default.fileExists(atPath: file.path))
+    }
+
+    @Test func settingsKeepOlderFilesWorking() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = SettingsStore(directory: dir)
+        // A settings file from before the card, barcodes and the other new options.
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        try Data(#"{"mode":"table","languageCorrection":false,"showConfirmation":false}"#.utf8)
+            .write(to: store.url(for: "textextractor"))
+        let s = store.load("textextractor", default: TextExtractorSettings())
+        #expect(s.mode == .table && !s.languageCorrection && !s.showConfirmation)
+        #expect(s.detectBarcodes && !s.additive && s.feedback == .card && s.captureAdding == nil)
+        #expect(s.activation == TextExtractorSettings().activation)
+    }
+
+    /// Vision's barcode detector, probed the same way as text recognition.
+    static let visionDetectsBarcodes: Bool = {
+        guard let image = qrImage("probe") else { return false }
+        return (try? VNImageRequestHandler(cgImage: image).perform([VNDetectBarcodesRequest()])) != nil
+    }()
+
+    static func qrImage(_ payload: String) -> CGImage? {
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(payload.utf8)
+        filter.correctionLevel = "M"
+        guard let output = filter.outputImage?.transformed(by: CGAffineTransform(scaleX: 12, y: 12)) else { return nil }
+        let padded = output.composited(over: CIImage(color: .white).cropped(to: output.extent.insetBy(dx: -60, dy: -60)))
+        return CIContext().createCGImage(padded, from: padded.extent)
+    }
+
+    @Test(.enabled(if: visionDetectsBarcodes, "Vision barcode detection can't run on this machine (virtualized CI runner)"))
+    func detectsAGeneratedQRCode() throws {
+        let image = try #require(Self.qrImage("WIFI:T:WPA;S:Studio;P:correct horse;;"))
+        let found = try TextRecognizer.analyze(image, options: .init(language: "en-US"), barcodes: true)
+        #expect(found.barcodes.first?.symbology == "QR")
+        #expect(found.barcodes.first?.content == .wifi(network: "Studio", password: "correct horse", security: "WPA", hidden: false))
     }
 }

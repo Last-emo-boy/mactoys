@@ -39,6 +39,72 @@ enum PalettePreviews {
                 model.showPreview(query: "", sections: clipboardSections(module), page: page)
                 return AnyView(framed(PaletteView(model: model, appearance: module.appearance), height: PaletteLayout.fullHeight))
             },
+            PreviewScene("menus", size: CGSize(width: 900, height: 640)) {
+                let model = module.makeModel()
+                let (page, sections) = menuSections(module, query: "tab")
+                model.showPreview(query: "tab", sections: sections, page: page)
+                return AnyView(framed(PaletteView(model: model, appearance: module.appearance), height: PaletteLayout.fullHeight))
+            },
+            PreviewScene("menus-browse", size: CGSize(width: 900, height: 640)) {
+                let model = module.makeModel()
+                let (page, sections) = menuSections(module, query: "")
+                model.showPreview(query: "", sections: sections, page: page)
+                return AnyView(framed(PaletteView(model: model, appearance: module.appearance), height: PaletteLayout.fullHeight))
+            },
+        ]
+    }
+
+    /// Safari's menus, searched the way the Menu Commands page does.
+    static func menuSections(_ module: CommandPaletteModule, query: String) -> (ListPage, [ResultSection]) {
+        let usage = MenuUsageStore(file: nil)
+        let provider = MenuCommandsProvider(engine: module.engine, usage: usage)
+        let safari = URL(fileURLWithPath: "/Applications/Safari.app").resolvingSymlinksInPath().path
+        let target = MenuTarget(pid: 0, name: "Safari", bundleID: "com.apple.Safari",
+                                bundlePath: FileManager.default.fileExists(atPath: safari) ? safari : nil)
+        let commands = MenuFlattener.flatten(sampleSafariMenus)
+        let now = Date()
+        for (title, minutesAgo, times) in [("Reopen Last Closed Tab", 12.0, 9), ("Show All Tabs", 180.0, 3), ("Export as PDF…", 2000.0, 2)] {
+            guard let c = commands.first(where: { $0.title == title }) else { continue }
+            for i in 0..<times { usage.record(c.id, in: target.key, at: now.addingTimeInterval(-minutesAgo * 60 - Double(i))) }
+        }
+        let items = provider.items(MenuReader.Snapshot(menus: sampleSafariMenus, commands: commands, truncated: false),
+                                   query: query, scoped: true, target: target, options: ProviderOptions(), now: now)
+        var sections: [ResultSection] = []
+        for item in items {
+            let title = item.section ?? ""
+            if let i = sections.firstIndex(where: { $0.title == title }) {
+                sections[i].items.append(item)
+            } else {
+                sections.append(ResultSection(id: "s:\(title)", title: title, items: [item]))
+            }
+        }
+        let page = ListPage(id: MenuCommandsProvider.pageID,
+                            title: String(localized: "\("Safari") Menus", comment: "Page title: the menu commands of an app; %@ is the app name"),
+                            placeholder: String(localized: "Search the menus of \("Safari")…", comment: "Search field placeholder; %@ is an app name"),
+                            icon: target.bundlePath.map { .file($0) } ?? .symbol("safari", .blue)) { _ in [] }
+        return (page, sections)
+    }
+
+    /// A believable slice of Safari's menu bar.
+    static var sampleSafariMenus: [MenuNode] {
+        func n(_ title: String, _ keys: [String] = [], enabled: Bool = true, checked: Bool = false) -> MenuNode {
+            MenuNode(title: title, enabled: enabled, keys: keys, checked: checked)
+        }
+        func menu(_ title: String, _ items: [MenuNode]) -> MenuNode { MenuNode(title: title, children: items) }
+        return [
+            menu("Safari", [n("About Safari"), n("Settings…", ["⌘", ","]), n("Clear History…"), n("Hide Safari", ["⌘", "H"])]),
+            menu("File", [n("New Window", ["⌘", "N"]), n("New Private Window", ["⇧", "⌘", "N"]), n("New Tab", ["⌘", "T"]),
+                          n("Open File…", ["⌘", "O"]), n("Close Tab", ["⌘", "W"]), n("Close Other Tabs", ["⌥", "⌘", "W"], enabled: false),
+                          menu("Export", [n("Export as PDF…"), n("Bookmarks…")]), n("Share…"), n("Print…", ["⌘", "P"])]),
+            menu("Edit", [n("Undo Typing", ["⌘", "Z"]), n("Copy", ["⌘", "C"]), n("Paste", ["⌘", "V"]), n("Find…", ["⌘", "F"])]),
+            menu("View", [n("Show All Tabs", ["⇧", "⌘", "\\"]), n("Always Show Tab Bar", checked: true),
+                          n("Show Sidebar", ["⌃", "⌘", "S"]), n("Reload Page", ["⌘", "R"]), n("Enter Full Screen", ["fn", "F"])]),
+            menu("History", [n("Show All History", ["⌘", "Y"]), n("Reopen Last Closed Tab", ["⇧", "⌘", "T"]),
+                             n("Reopen All Windows from Last Session")]),
+            menu("Bookmarks", [n("Add Bookmark…", ["⌘", "D"]), n("Add Bookmark Folder", enabled: false)]),
+            menu("Window", [n("Minimize", ["⌘", "M"]), n("Show Previous Tab", ["⌃", "⇧", "⇥"]),
+                            n("Move Tab to New Window", enabled: false), n("Pin Tab"), n("Merge All Windows", enabled: false)]),
+            menu("Help", [n("Safari Help")]),
         ]
     }
 

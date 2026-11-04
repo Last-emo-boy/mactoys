@@ -22,7 +22,7 @@ final class LauncherEngine {
             SystemCommandsProvider(engine: self), SystemSettingsProvider(), ClipboardProvider(engine: self),
             BookmarksProvider(engine: self), ProcessesProvider(engine: self), ValueProvider(),
             HomebrewProvider(engine: self), MacToysProvider(), ScriptsProvider(engine: self),
-            EditorsProvider(engine: self), HistoryProvider(engine: self),
+            EditorsProvider(engine: self), MenuCommandsProvider(engine: self), HistoryProvider(engine: self),
         ]
         options.onChange { [weak self] _ in
             guard let self, self.isActive else { return }

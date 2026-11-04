@@ -57,14 +57,50 @@ public enum TextLayout {
         rows(boxes).flatMap { $0 }.map(\.text).reduce("") { join($0, $1, rejoinHyphen: true) }
     }
 
+    /// Paragraphs: lines that run to the right edge of the text block are joined with the next one
+    /// (rejoining hyphenated words); a shorter line ends a line of its own (lists, addresses,
+    /// headings); a taller gap, an indented first line or a list item starts a new paragraph,
+    /// separated by a blank line.
+    public static func paragraphs(_ boxes: [TextBox]) -> String {
+        let lines = rows(boxes).compactMap { row -> (text: String, rect: CGRect, height: CGFloat)? in
+            guard let first = row.first else { return nil }
+            let rect = row.dropFirst().reduce(first.rect) { $0.union($1.rect) }
+            let heights = row.map(\.rect.height).sorted()
+            return (row.map(\.text).reduce("") { join($0, $1) }, rect, heights[heights.count / 2])
+        }
+        guard let first = lines.first else { return "" }
+        let left = lines.map(\.rect.minX).min() ?? 0
+        let right = lines.map(\.rect.maxX).max() ?? 0
+        let width = max(right - left, 1)
+        let heights = lines.map(\.height).sorted()
+        // A block narrower than about 25 characters is a list or a column of labels, not wrapped prose.
+        let wraps = width > heights[heights.count / 2] * 12
+        var out = first.text
+        for (prev, line) in zip(lines, lines.dropFirst()) {
+            let height = max(prev.height, line.height)
+            let gap = line.rect.minY - prev.rect.maxY
+            let indented = line.rect.minX - prev.rect.minX > height * 1.2 && prev.rect.minX - left < height
+                && !TextJoiner.isListItem(prev.text)
+            if gap > height * 0.8 || indented {
+                out += "\n\n" + line.text
+            } else if !wraps || TextJoiner.isListItem(line.text) || right - prev.rect.maxX > width * 0.22 {
+                out += "\n" + line.text
+            } else {
+                // `out` ends with `prev`, so joining onto it joins the two lines.
+                out = join(out, line.text, rejoinHyphen: true)
+            }
+        }
+        return out
+    }
+
     /// Joins two fragments with a space, or none between CJK characters; with `rejoinHyphen`,
-    /// `"infor-" + "mation"` becomes `"information"`.
+    /// `"infor-" + "mation"` becomes `"information"` (also for soft and Unicode hyphens).
     public static func join(_ a: String, _ b: String, rejoinHyphen: Bool = false) -> String {
         let a = a.trimmingCharacters(in: .whitespaces)
         let b = b.trimmingCharacters(in: .whitespaces)
         guard let last = a.last else { return b }
         guard let first = b.first else { return a }
-        if rejoinHyphen, last == "-", a.count > 1, a.dropLast().last?.isLetter == true, first.isLowercase {
+        if rejoinHyphen, "-\u{00AD}\u{2010}".contains(last), a.count > 1, a.dropLast().last?.isLetter == true, first.isLowercase {
             return String(a.dropLast()) + b
         }
         if isCJK(last) && isCJK(first) { return a + b }
