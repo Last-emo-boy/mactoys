@@ -77,11 +77,13 @@ struct QuickAccessView: View {
         } label: {
             VStack(spacing: 8) {
                 ModuleIcon(symbol: a.symbol, tint: a.tint, size: 30)
-                Text(verbatim: a.title).font(.system(size: 11.5, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                // Long names (German compounds) wrap or shrink a little rather than lose their end.
+                Text(verbatim: a.title).font(.system(size: 11.5, weight: .medium))
+                    .multilineTextAlignment(.center).lineLimit(2).minimumScaleFactor(0.75).allowsTightening(true)
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 6)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(RoundedRectangle(cornerRadius: 12).fill(.quaternary.opacity(0.5)))
             .contentShape(Rectangle())
         }
@@ -137,6 +139,7 @@ private struct SwitchRow: View {
                 Text(verbatim: action.title).fontWeight(.medium)
                 if let d = action.detail?() ?? action.shortcut?.description {
                     Text(verbatim: d).font(.system(size: 11)).foregroundStyle(.secondary)
+                        .lineLimit(2).fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer()

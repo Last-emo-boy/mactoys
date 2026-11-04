@@ -1334,6 +1334,12 @@
             "value": "%@ (profil de l’écran)"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (del monitor)"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2419,6 +2425,12 @@
             "value": "%@ avant"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ prima"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3078,6 +3090,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ n’a pas de réglage du volume"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ non ha un controllo del volume"
           }
         },
         "ja": {
@@ -7276,6 +7294,12 @@
             "value": "%1$@ × %2$@ pixels"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ × %2$@ pixel"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -7352,6 +7376,12 @@
             "value": "%1$@ × %2$@ · HiDPI, équivaut à %3$@ × %4$@ · %5$@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ × %2$@ · HiDPI, sembra %3$@ × %4$@ · %5$@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -7415,6 +7445,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ × %2$@ · équivaut à %3$@ × %4$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ × %2$@ · sembra %3$@ × %4$@"
           }
         },
         "ja": {
@@ -7929,6 +7965,12 @@
             "value": "%@ : désactivé"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: disattivato"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -7986,6 +8028,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ : activé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: attivato"
           }
         },
         "ja": {
@@ -12371,6 +12419,24 @@
             }
           }
         },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld monitor collegato"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld monitor collegati"
+                }
+              }
+            }
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -13182,6 +13248,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld événements"
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld evento"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld eventi"
                 }
               }
             }
@@ -17960,6 +18044,24 @@
             }
           }
         },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld persona"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld persone"
+                }
+              }
+            }
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -18413,6 +18515,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld utilitaires avancés pour macOS : chaque utilitaire de Microsoft PowerToys, et plus encore. Tout fonctionne depuis la barre des menus ; chaque utilitaire peut être activé ou désactivé dans les Réglages."
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld utility avanzata per macOS: tutte le utility di Microsoft PowerToys e altro ancora. Tutto funziona dalla barra dei menu; ogni utility si può attivare o disattivare in Impostazioni."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld utility avanzate per macOS: tutte le utility di Microsoft PowerToys e altro ancora. Tutto funziona dalla barra dei menu; ogni utility si può attivare o disattivare in Impostazioni."
                 }
               }
             }
@@ -23670,6 +23790,12 @@
             "value": "12 heures"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12 ore"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -24052,6 +24178,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "24 heures"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "24 ore"
           }
         },
         "ja": {
@@ -25486,6 +25618,12 @@
             "value": "Un peu sombre"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un po' scuro"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -25611,7 +25749,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un calendario, orologi del mondo e la prossima riunione nella barra dei menu."
+            "value": "Un calendario, orologi internazionali e la prossima riunione nella barra dei menu."
           }
         },
         "ja": {
@@ -26832,6 +26970,12 @@
             "value": "Une fenêtre en direct et redimensionnable de cet écran. Nécessite l’autorisation Enregistrement de l’écran."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una finestra dal vivo e ridimensionabile di questo monitor. Richiede l'autorizzazione Registrazione schermo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -27273,6 +27417,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un rappel avec un bouton Rejoindre, pour ne jamais être en retard à un appel."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un promemoria con un pulsante Partecipa, così non arrivi mai in ritardo a una chiamata."
           }
         },
         "ja": {
@@ -27910,6 +28060,12 @@
             "value": "Un écran virtuel est un écran qui n’existe que sous forme logicielle. Faites afficher un écran virtuel HiDPI par un moniteur sans HiDPI pour un texte plus net, ou donnez aux apps un écran à diffuser ou à enregistrer. Les écrans virtuels existent tant que MacToys est ouvert."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un monitor virtuale è uno schermo che esiste solo via software. Duplica un monitor senza HiDPI su un monitor virtuale HiDPI per un testo più nitido, oppure offri alle app uno schermo da trasmettere o registrare. I monitor virtuali esistono finché MacToys è in esecuzione."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -28222,6 +28378,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Une fenêtre ou une lampe derrière vous assombrit votre visage. Tournez-vous vers la lumière."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una finestra o una lampada alle tue spalle ti scurisce il viso. Girati verso la luce."
           }
         },
         "ja": {
@@ -32926,6 +33088,12 @@
             "value": "Ajouter le texte"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi testo"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -32982,6 +33150,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter un écran virtuel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi monitor virtuale"
           }
         },
         "ja": {
@@ -33106,6 +33280,12 @@
             "value": "Ajoutez une ville ou un fuseau horaire, comme Tokyo, Paris ou PST"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi una città o un fuso orario, come Tokyo, Parigi o PST"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -33162,6 +33342,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter une horloge"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi un orologio"
           }
         },
         "ja": {
@@ -33349,6 +33535,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter un élément au texte de la barre des menus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi un elemento al testo della barra dei menu"
           }
         },
         "ja": {
@@ -34370,6 +34562,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter aux favoris"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi ai preferiti"
           }
         },
         "ja": {
@@ -37371,6 +37569,12 @@
             "value": "Toute la journée"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giornata intera"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -37752,6 +37956,12 @@
             "value": "Autoriser l’accès"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti accesso"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -38131,6 +38341,12 @@
             "value": "Autoriser l’accès aux calendriers"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti accesso a Calendario"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -38187,6 +38403,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Autoriser l’accès à la caméra"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti accesso alla fotocamera"
           }
         },
         "ja": {
@@ -38439,6 +38661,12 @@
             "value": "Autorisez MacToys à contrôler le Finder pour vider la corbeille."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti a MacToys di controllare il Finder per svuotare il Cestino."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -38561,6 +38789,12 @@
             "value": "Autorisez MacToys à contrôler System Events dans Réglages Système › Confidentialité et sécurité › Automatisation."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti a MacToys di controllare System Events in Impostazioni di Sistema › Privacy e sicurezza › Automazione."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -38619,6 +38853,12 @@
             "value": "Autoriser l’accès à vos calendriers"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti l'accesso ai calendari"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -38675,6 +38915,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Autorisez l’accès à vos calendriers pour afficher les événements et vous rappeler les réunions. Le calendrier et les horloges mondiales fonctionnent sans cet accès."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti l'accesso ai calendari per mostrare gli eventi e ricordarti le riunioni. Il calendario e gli orologi internazionali funzionano anche senza."
           }
         },
         "ja": {
@@ -39250,6 +39496,12 @@
             "value": "Également pour l’agenda et les horloges mondiales."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anche per l'agenda e gli orologi internazionali."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -39308,6 +39560,12 @@
             "value": "Également depuis le menu MacToys et Palette de commandes."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anche dal menu di MacToys e da Riquadro comandi."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -39364,6 +39622,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Également dans le menu de MacToys de la barre des menus. Cliquez sur un interrupteur pour le basculer."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anche nel menu di MacToys nella barra dei menu. Fai clic su uno per cambiarne lo stato."
           }
         },
         "ja": {
@@ -39871,6 +40135,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Propose aussi chaque taille avec deux fois moins de pixels par côté, affichée deux fois plus nette."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offre anche ogni dimensione con metà dei pixel per lato, disegnata con nitidezza doppia."
           }
         },
         "ja": {
@@ -41086,6 +41356,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un iPhone à proximité de ce Mac, connecté au même compte Apple, apparaît ici comme caméra."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un iPhone vicino a questo Mac, con lo stesso Account Apple, compare qui come fotocamera."
           }
         },
         "ja": {
@@ -47354,6 +47630,12 @@
             "value": "Demander s’il faut garder une nouvelle résolution"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiedi se mantenere una nuova risoluzione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -49215,6 +49497,12 @@
             "value": "Automatique suit la caméra choisie par macOS, comme un iPhone que vous approchez."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatica segue la fotocamera scelta da macOS, ad esempio un iPhone che avvicini."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -49913,6 +50201,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Awake n’est pas disponible."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Awake non è disponibile."
           }
         },
         "ja": {
@@ -50937,6 +51231,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Retour dans la barre des menus (double-clic)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Torna nella barra dei menu (doppio clic)"
           }
         },
         "ja": {
@@ -52281,6 +52581,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bannière"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Banner"
           }
         },
         "ja": {
@@ -54553,6 +54859,12 @@
             "value": "Appareils Bluetooth"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivi Bluetooth"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -54609,6 +54921,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Appareils Bluetooth"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivi Bluetooth"
           }
         },
         "ja": {
@@ -54669,6 +54987,12 @@
             "value": "Bluetooth n’est pas disponible dans cette version"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth non è disponibile in questa build"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -54725,6 +55049,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bluetooth n’est pas disponible dans cette version de MacToys"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth non è disponibile in questa build di MacToys"
           }
         },
         "ja": {
@@ -57886,6 +58216,12 @@
             "value": "Les curseurs de luminosité continuent en dessous de 0 % en assombrissant l’écran par logiciel. Les écrans sans réglage de luminosité sont toujours assombris par logiciel."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I cursori della luminosità proseguono oltre lo 0%, attenuando via software. I monitor senza controllo della luminosità si attenuano sempre via software."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -57944,6 +58280,12 @@
             "value": "Synchronisation de la luminosité"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizzazione luminosità"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -58000,6 +58342,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Luminosité, résolution, couleur et disposition de chaque écran"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luminosità, risoluzione, colore e disposizione di ogni monitor"
           }
         },
         "ja": {
@@ -59927,6 +60275,12 @@
             "value": "Calendrier"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -60047,6 +60401,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calendriers à afficher"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendari da mostrare"
           }
         },
         "ja": {
@@ -60559,6 +60919,12 @@
             "value": "Réglages de Miroir de caméra…"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impostazioni di Specchio fotocamera…"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -60615,6 +60981,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Miroir de caméra est désactivé dans les réglages de MacToys"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specchio fotocamera è disattivato nelle impostazioni di MacToys"
           }
         },
         "ja": {
@@ -60739,6 +61111,12 @@
             "value": "Miroir de caméra n’affiche votre caméra que lorsque le miroir est ouvert. Rien n’est enregistré ni envoyé."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specchio fotocamera mostra la fotocamera solo mentre lo specchio è aperto. Nulla viene registrato o inviato altrove."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -60795,6 +61173,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Accès à la caméra requis"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "È necessario l'accesso alla fotocamera"
           }
         },
         "ja": {
@@ -60981,6 +61365,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Autorisation Caméra requise"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "È necessaria l'autorizzazione Fotocamera"
           }
         },
         "ja": {
@@ -64557,6 +64947,12 @@
             "value": "Modifiez la rotation dans Réglages Système › Moniteurs"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia la rotazione in Impostazioni di Sistema › Monitor"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -64806,6 +65202,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modification…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica…"
           }
         },
         "ja": {
@@ -67700,6 +68102,12 @@
             "value": "Vérifier l’éclairage"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla la luce"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -68340,6 +68748,12 @@
             "value": "Choisissez un raccourci de concentration dans les réglages d’Interrupteurs rapides."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli un comando rapido per Full immersion nelle impostazioni di Interruttori rapidi."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -68460,6 +68874,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisir une caméra"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli una fotocamera"
           }
         },
         "ja": {
@@ -69172,6 +69592,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisissez un raccourci dans les réglages"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli un comando rapido nelle impostazioni"
           }
         },
         "ja": {
@@ -70262,6 +70688,12 @@
             "value": "Cercle"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerchio"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -70514,6 +70946,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nettoyer le clavier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulisci tastiera"
           }
         },
         "ja": {
@@ -70893,6 +71331,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nettoyer le clavier maintenant"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulisci ora la tastiera"
           }
         },
         "ja": {
@@ -72048,6 +72492,12 @@
             "value": "Cliquez sur un élément pour le déplacer ou le supprimer. Les dates suivent l’ordre de votre région."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai clic su un elemento per spostarlo o rimuoverlo. Le date seguono l'ordine della tua zona."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -72492,6 +72942,12 @@
             "value": "Cliquez sur l’icône de la caméra pour ouvrir le miroir ; cliquez avec le bouton droit pour plus d’options."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai clic sull'icona della fotocamera per aprire lo specchio; fai clic con il tasto destro per altre opzioni."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -72548,6 +73004,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cliquez sur la caméra dans la barre des menus, ou utilisez le raccourci. La caméra ne s’allume que lorsque le miroir est ouvert et s’éteint quand vous le fermez."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai clic sulla fotocamera nella barra dei menu o usa l'abbreviazione. La fotocamera si accende solo mentre lo specchio è aperto e si spegne quando lo chiudi."
           }
         },
         "ja": {
@@ -72671,6 +73133,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cliquez sur le bouton de détachement dans le miroir ou appuyez sur D. Double-cliquez sur la fenêtre pour la remettre en place."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai clic sul pulsante Sgancia nello specchio o premi D. Fai doppio clic sulla finestra per riportarlo nella barra dei menu."
           }
         },
         "ja": {
@@ -72857,6 +73325,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cliquer sur l’encoche pour ouvrir le miroir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai clic sulla tacca per aprire lo specchio"
           }
         },
         "ja": {
@@ -73173,6 +73647,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cliquer pour renommer"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai clic per rinominare"
           }
         },
         "ja": {
@@ -73552,6 +74032,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un clic dans l’espace vide de la barre des menus, devant la caméra, ouvre le miroir juste en dessous."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Facendo clic sulla barra dei menu vuota davanti alla fotocamera, lo specchio si apre lì sotto."
           }
         },
         "ja": {
@@ -75476,6 +75962,12 @@
             "value": "Fermer le miroir"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiudi lo specchio"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -77204,6 +77696,12 @@
             "value": "Profil colorimétrique"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profilo colore"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -77392,6 +77890,12 @@
             "value": "Table gamma"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabella colori"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -77448,6 +77952,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La table gamma assombrit tout, y compris le pointeur. La superposition fonctionne sur tous les écrans, y compris AirPlay et DisplayLink."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabella colori attenua tutto, anche il puntatore. Sovrapposizione funziona su ogni monitor, inclusi AirPlay e DisplayLink."
           }
         },
         "ja": {
@@ -80019,6 +80529,12 @@
             "value": "Connectez une caméra, ou approchez votre iPhone pour l’utiliser comme webcam."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collega una fotocamera o avvicina l'iPhone per usarlo come webcam."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -80075,6 +80591,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Connecter ou déconnecter les écouteurs, haut-parleurs et autres appareils jumelés."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connetti o disconnetti cuffie, altoparlanti e altri dispositivi abbinati."
           }
         },
         "ja": {
@@ -80394,6 +80916,12 @@
             "value": "Connexion de %@…"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connessione di %@…"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -80450,6 +80978,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Connexion…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connessione…"
           }
         },
         "ja": {
@@ -81022,6 +81556,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Contrôlez la luminosité, la résolution, la couleur et la disposition de vos écrans depuis un seul panneau."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla luminosità, risoluzione, colore e disposizione dei monitor da un unico pannello."
           }
         },
         "ja": {
@@ -86391,6 +86931,12 @@
             "value": "Copier « %@ »"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia “%@”"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -87222,6 +87768,12 @@
             "value": "Impossible de modifier la recopie"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile modificare la duplicazione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -87345,6 +87897,12 @@
             "value": "Impossible de modifier le profil colorimétrique"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile cambiare il profilo colore"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -87401,6 +87959,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible de changer l’écran principal"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile cambiare il monitor principale"
           }
         },
         "ja": {
@@ -87524,6 +88088,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible de créer l’écran virtuel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile creare il monitor virtuale"
           }
         },
         "ja": {
@@ -88365,6 +88935,12 @@
             "value": "Impossible de changer de résolution"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile cambiare la risoluzione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -88617,6 +89193,12 @@
             "value": "Impossible de modifier les réglages du Finder."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile modificare le impostazioni del Finder."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -88673,6 +89255,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible de modifier le mode Économie d’énergie."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile modificare la modalità Risparmio energetico."
           }
         },
         "ja": {
@@ -88733,6 +89321,12 @@
             "value": "Impossible de modifier les réglages du Dock."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile modificare le impostazioni del Dock."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -88790,6 +89384,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible de modifier le volume d’entrée de %@."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile modificare il volume di ingresso di %@."
           }
         },
         "ja": {
@@ -88914,6 +89514,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible de connecter %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile connettere %@"
           }
         },
         "ja": {
@@ -89166,6 +89772,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible de déconnecter %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile disconnettere %@"
           }
         },
         "ja": {
@@ -89482,6 +90094,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible d’ouvrir le lien %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile aprire il link di %@"
           }
         },
         "ja": {
@@ -89801,6 +90419,12 @@
             "value": "Impossible de relancer %@."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile riavviare %@."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -89921,6 +90545,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible d’enregistrer la photo : %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile salvare la foto: %@"
           }
         },
         "ja": {
@@ -90300,6 +90930,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impossible de prendre la photo"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile scattare la foto"
           }
         },
         "ja": {
@@ -92415,6 +93051,12 @@
             "value": "Résolution actuelle"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Risoluzione attuale"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -93998,6 +94640,12 @@
             "value": "Personnaliser…"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personalizza…"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -94832,6 +95480,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mode sombre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modalità scura"
           }
         },
         "ja": {
@@ -95796,6 +96450,12 @@
             "value": "Assombrissement logiciel maximal"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attenuazione software massima"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -96306,6 +96966,12 @@
             "value": "Date et heure"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data e ora"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -96557,6 +97223,12 @@
             "value": "Date avec l’année"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data con anno"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -96743,6 +97415,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jour et mois"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giorno e mese"
           }
         },
         "ja": {
@@ -97060,6 +97738,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les événements refusés et annulés sont omis. Les nouveaux calendriers sont affichés jusqu’à ce que vous les désactiviez."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gli eventi rifiutati e annullati vengono esclusi. I nuovi calendari vengono mostrati finché non li disattivi."
           }
         },
         "ja": {
@@ -100876,6 +101560,12 @@
             "value": "Assombrir sous le minimum matériel"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attenua sotto il minimo hardware"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -101128,6 +101818,12 @@
             "value": "Assombrissement %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attenuato %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -101184,6 +101880,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Assombri par logiciel sous le minimum de l’écran"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attenuato via software sotto il minimo del monitor"
           }
         },
         "ja": {
@@ -102080,6 +102782,12 @@
             "value": "Déconnecter"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnetti"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -102627,6 +103335,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Disposition des écrans"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disposizione monitor"
           }
         },
         "ja": {
@@ -103204,6 +103918,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Options d’affichage"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opzioni monitor"
           }
         },
         "ja": {
@@ -103972,6 +104692,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ne pas déranger"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non disturbare"
           }
         },
         "ja": {
@@ -108166,6 +108892,12 @@
             "value": "Faites glisser la fenêtre n’importe où ; faites glisser la poignée de son coin pour la redimensionner."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trascina la finestra ovunque; trascina la maniglia nell'angolo per ridimensionarla."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -108350,6 +109082,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Faites glisser pour déplacer la partie de l’image affichée par le miroir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trascina per spostare la parte dell'immagine mostrata dallo specchio"
           }
         },
         "ja": {
@@ -112686,6 +113424,12 @@
             "value": "Modifier les écrans virtuels…"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica monitor virtuali…"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -114522,6 +115266,12 @@
             "value": "Vider la corbeille ?"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svuotare il Cestino?"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -114635,6 +115385,24 @@
             }
           }
         },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Svuotare il Cestino? %lld elemento verrà eliminato."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Svuotare il Cestino? %lld elementi verranno eliminati."
+                }
+              }
+            }
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -114727,6 +115495,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vider la corbeille ? 1 élément sera effacé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svuotare il Cestino? 1 elemento verrà eliminato."
           }
         },
         "ja": {
@@ -116976,6 +117750,12 @@
             "value": "Effacer les éléments de la corbeille, après confirmation."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina gli elementi nel Cestino, dopo averlo chiesto."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -117162,6 +117942,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les erreurs sont toujours affichées."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gli errori vengono sempre mostrati."
           }
         },
         "ja": {
@@ -117737,6 +118523,12 @@
             "value": "Les événements, les points et les rappels de réunion en ont besoin. Le calendrier et les horloges mondiales fonctionnent sans."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serve per eventi, punti e promemoria delle riunioni. Il calendario e gli orologi internazionali funzionano anche senza."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -118052,6 +118844,12 @@
             "value": "Tous les écrans sont masqués. Affichez-les de nouveau dans les réglages de Power Display."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tutti i monitor sono nascosti. Mostrali di nuovo nelle impostazioni di Power Display."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -118237,6 +119035,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Toutes les touches, y compris les touches multimédias et de luminosité, sont ignorées. Nécessite l’accès Accessibilité."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni tasto, compresi i tasti multimediali e della luminosità, viene ignorato. Richiede l'accesso Accessibilità."
           }
         },
         "ja": {
@@ -119065,6 +119869,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exemple : Revue de design"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esempio: Revisione design"
           }
         },
         "ja": {
@@ -121320,6 +122130,12 @@
             "value": "Les moniteurs externes sont contrôlés via DDC/CI sur les Mac avec puce Apple ; l’écran intégré et les écrans Apple utilisent le réglage de luminosité de macOS. De nombreux docks USB-C/Thunderbolt et adaptateurs DisplayLink ne transmettent pas le DDC/CI ; ces écrans sont assombris par logiciel. L’assombrissement logiciel et la luminosité supplémentaire ne durent que tant que MacToys est ouvert : macOS rétablit les écrans à sa fermeture. La rotation n’est pas proposée : macOS n’a pas d’API publique pour faire pivoter un écran — utilisez Réglages Système › Moniteurs › Rotation."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I monitor esterni vengono controllati tramite DDC/CI su Apple silicon; il monitor integrato e i monitor Apple usano il controllo della luminosità di macOS. Molti dock USB-C/Thunderbolt e adattatori DisplayLink non trasmettono DDC/CI; quei monitor si attenuano via software. L'attenuazione software e la luminosità extra durano solo finché MacToys è in esecuzione: quando si chiude, macOS ripristina i monitor. La rotazione non è disponibile: macOS non ha un'API pubblica per ruotare un monitor — usa Impostazioni di Sistema › Monitor › Rotazione."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -121376,6 +122192,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Luminosité supplémentaire"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luminosità extra"
           }
         },
         "ja": {
@@ -121436,6 +122258,12 @@
             "value": "Luminosité supplémentaire %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luminosità extra %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -121494,6 +122322,12 @@
             "value": "Luminosité supplémentaire tirée de la marge HDR de l’écran"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luminosità extra dal margine HDR del monitor"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -121550,6 +122384,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Luminosité supplémentaire sur les écrans XDR"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luminosità extra sui monitor XDR"
           }
         },
         "ja": {
@@ -126563,6 +127403,12 @@
             "value": "Premier jour de la semaine"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primo giorno della settimana"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -127533,6 +128379,12 @@
             "value": "Détacher"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sgancia"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -127589,6 +128441,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Garder au-dessus des autres fenêtres"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantieni sopra le altre finestre"
           }
         },
         "ja": {
@@ -127649,6 +128507,12 @@
             "value": "Détacher dans une fenêtre"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sgancia in una finestra"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -127705,6 +128569,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Détacher dans une fenêtre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sgancia in una finestra"
           }
         },
         "ja": {
@@ -127765,6 +128635,12 @@
             "value": "Détacher dans une fenêtre (D)"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sgancia in una finestra (D)"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -127822,6 +128698,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Garder au premier plan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantieni in primo piano"
           }
         },
         "ja": {
@@ -128010,6 +128892,12 @@
             "value": "Détacher le miroir dans une fenêtre"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sgancia lo specchio in una finestra"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -128131,6 +129019,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fenêtre flottante"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finestra sganciata"
           }
         },
         "ja": {
@@ -128903,7 +129797,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Modalità di concentrazione"
+            "value": "Modalità di messa a fuoco"
           }
         },
         "ja": {
@@ -128967,7 +129861,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Full immersion: riempi il monitor con una finestra"
+            "value": "Messa a fuoco: riempi il monitor con una finestra"
           }
         },
         "ja": {
@@ -129157,6 +130051,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suivre %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segui %@"
           }
         },
         "ja": {
@@ -129474,6 +130374,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suit %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segue %@"
           }
         },
         "ja": {
@@ -131892,6 +132798,12 @@
             "value": "Cadrage"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inquadratura"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -132142,6 +133054,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Depuis %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dalle %@"
           }
         },
         "ja": {
@@ -133111,6 +134029,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Plein écran assombrit le bureau et affiche la prochaine réunion dans une grande carte ; appuyez sur Retour pour la rejoindre ou sur Échap pour l’ignorer."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tutto schermo attenua la scrivania e mostra la prossima riunione in una grande scheda; premi A capo per partecipare o Esc per chiuderla."
           }
         },
         "ja": {
@@ -135742,6 +136666,12 @@
             "value": "Aller à aujourd’hui"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vai a oggi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -135800,6 +136730,12 @@
             "value": "Aller à aujourd’hui (T)"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vai a oggi (T)"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -135856,6 +136792,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aller à aujourd’hui (dans le calendrier)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vai a oggi (nel calendario)"
           }
         },
         "ja": {
@@ -136044,6 +136986,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bon éclairage"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luce buona"
           }
         },
         "ja": {
@@ -137524,6 +138472,12 @@
             "value": "Avec la barre des menus"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ha la barra dei menu"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -138685,6 +139639,12 @@
             "value": "HiDPI"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HiDPI"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -139388,6 +140348,12 @@
             "value": "Masquer les icônes du bureau"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi icone della scrivania"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -140088,6 +141054,12 @@
             "value": "Masquez les fichiers et dossiers du bureau, pour un partage d’écran ou un aspect épuré. Le Finder est relancé."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi file e cartelle sulla scrivania, per la condivisione dello schermo o un aspetto pulito. Il Finder si riavvia."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -140208,6 +141180,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Masquer les doublons en basse résolution"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi i duplicati a bassa risoluzione"
           }
         },
         "ja": {
@@ -140653,6 +141631,12 @@
             "value": "Masquer la résolution, la couleur et la disposition"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi risoluzione, colore e disposizione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -140712,6 +141696,12 @@
             "value": "Masquer le Dock"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi il Dock"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -140769,6 +141759,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Masquer la barre des menus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi la barra dei menu"
           }
         },
         "ja": {
@@ -141534,6 +142530,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les fréquences plus élevées sont plus fluides et consomment plus d’énergie."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frequenze più alte sono più fluide e consumano più energia."
           }
         },
         "ja": {
@@ -147131,6 +148133,12 @@
             "value": "Quantité de lumière retirée à l’extrémité du curseur."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quanta luce viene tolta alla fine del cursore."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -147685,6 +148693,12 @@
             "value": "ISO 8601"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ISO 8601"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -147743,6 +148757,12 @@
             "value": "Date ISO 8601"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data ISO 8601"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -147799,6 +148819,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "ISO 8601 : les semaines commencent le lundi et la semaine 1 contient le premier jeudi de l’année. Régional : la règle de votre région."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ISO 8601: le settimane iniziano di lunedì e la settimana 1 contiene il primo giovedì dell'anno. Regionale: la regola della tua zona."
           }
         },
         "ja": {
@@ -148053,6 +149079,12 @@
             "value": "Icône et texte"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icona e testo"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -148110,6 +149142,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Icône avec le jour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icona con il giorno"
           }
         },
         "ja": {
@@ -148811,6 +149849,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ignorez toutes les touches pendant un moment pour pouvoir nettoyer le clavier. Appuyez trois fois sur Échap pour arrêter plus tôt."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignora tutti i tasti per un po' così puoi pulire la tastiera. Premi esc tre volte per interrompere prima."
           }
         },
         "ja": {
@@ -150745,6 +151789,12 @@
             "value": "Dans l’app Raccourcis, créez un raccourci avec l’action Définir la concentration (par exemple Ne pas déranger, Activer)."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nell'app Comandi Rapidi, crea un comando rapido con l'azione Imposta full immersion (ad esempio Non disturbare, Attiva)."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -151958,6 +153008,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indépendante"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indipendente"
           }
         },
         "ja": {
@@ -156499,6 +157555,12 @@
             "value": "Rejoindre"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partecipa"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -156622,6 +157684,12 @@
             "value": "Rejoindre le prochain appel"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partecipa alla prossima chiamata"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -156678,6 +157746,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rejoindre le prochain appel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partecipa alla prossima chiamata"
           }
         },
         "ja": {
@@ -156738,6 +157812,12 @@
             "value": "Rejoindre le prochain appel (dans le calendrier)"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partecipa alla prossima chiamata (nel calendario)"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -156795,6 +157875,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rejoindre avec %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partecipa con %@"
           }
         },
         "ja": {
@@ -157049,6 +158135,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Garder"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantieni"
           }
         },
         "ja": {
@@ -158527,6 +159619,12 @@
             "value": "Garder au-dessus des autres fenêtres"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantieni sopra le altre finestre"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -159929,6 +161027,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Garder cette résolution ?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantenere questa risoluzione?"
           }
         },
         "ja": {
@@ -161675,6 +162779,12 @@
             "value": "Clavier verrouillé pour le nettoyage"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tastiera bloccata per la pulizia"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -161924,6 +163034,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clavier déverrouillé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tastiera sbloccata"
           }
         },
         "ja": {
@@ -162241,6 +163357,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Touches dans le miroir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasti nello specchio"
           }
         },
         "ja": {
@@ -166939,6 +168061,12 @@
             "value": "Laissez Même raccourci si le vôtre active et désactive la concentration."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lascialo su Stesso comando rapido se il tuo attiva e disattiva la modalità Full immersion."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -166995,6 +168123,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Omettre les modes 1× lorsque la même taille de bureau existe en HiDPI."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escludi le modalità 1× quando la stessa dimensione della scrivania esiste in HiDPI."
           }
         },
         "ja": {
@@ -169746,6 +170880,12 @@
             "value": "Lumière derrière vous"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La luce è alle tue spalle"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -170186,6 +171326,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comme un miroir : levez la main droite, elle bouge à droite. Pendant un appel, les autres vous voient sans effet miroir."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Come uno specchio: alzi la mano destra e si muove a destra. Gli altri in chiamata ti vedono non riflesso."
           }
         },
         "ja": {
@@ -171125,6 +172271,12 @@
             "value": "Liée"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collegati"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -171247,6 +172399,12 @@
             "value": "Liée déplace tous les écrans avec un seul curseur. Suivre conserve l’écart de chaque écran avec celui que vous choisissez, par exemple l’écran intégré lorsqu’il s’adapte à la lumière ambiante."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collegati muove ogni monitor con un solo cursore. Segui mantiene la distanza di ogni monitor da quello che scegli, ad esempio il monitor integrato mentre si adatta alla luce ambientale."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -171304,6 +172462,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Liée : un seul curseur pour tous"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collegati: un cursore per tutti"
           }
         },
         "ja": {
@@ -171427,6 +172591,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les liens Zoom, Google Meet, Microsoft Teams, Webex et FaceTime sont recherchés dans l’URL, le lieu et les notes de l’événement."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I link a Zoom, Google Meet, Microsoft Teams, Webex e FaceTime vengono trovati nell'URL, nel luogo e nelle note dell'evento."
           }
         },
         "ja": {
@@ -173615,6 +174785,12 @@
             "value": "Verrouiller le clavier pendant"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocca la tastiera per"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -173927,6 +175103,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verrouillez votre Mac et affichez la fenêtre de connexion."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocca il Mac e mostra la finestra di login."
           }
         },
         "ja": {
@@ -175275,6 +176457,12 @@
             "value": "Mode Économie d’énergie"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modalità Risparmio energetico"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -175331,6 +176519,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le mode Économie d’énergie n’a pas été modifié."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La modalità Risparmio energetico non è stata modificata."
           }
         },
         "ja": {
@@ -177262,6 +178456,12 @@
             "value": "Principal"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principale"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -177576,6 +178776,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Définir comme principal"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rendi principale"
           }
         },
         "ja": {
@@ -179375,6 +180581,12 @@
             "value": "Luminosité supplémentaire maximale"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luminosità extra massima"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -180500,6 +181712,12 @@
             "value": "Rappels de réunion"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Promemoria riunioni"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -180752,6 +181970,12 @@
             "value": "Réglages de Calendrier de la barre des menus…"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impostazioni di Calendario barra dei menu…"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -180872,6 +182096,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Réglages de Calendrier de la barre des menus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impostazioni di Calendario barra dei menu"
           }
         },
         "ja": {
@@ -181316,6 +182546,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Panneau de la barre des menus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pannello della barra dei menu"
           }
         },
         "ja": {
@@ -183672,6 +184908,12 @@
             "value": "Recopie"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplica"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -183796,6 +185038,12 @@
             "value": "Photo du miroir %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto Specchio %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -183918,6 +185166,12 @@
             "value": "Afficher l’image en miroir"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rifletti l'immagine"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -183974,6 +185228,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher l’image en miroir (M)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rifletti l'immagine (M)"
           }
         },
         "ja": {
@@ -184033,6 +185293,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Recopie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicazione"
           }
         },
         "ja": {
@@ -185255,6 +186521,12 @@
             "value": "Mois abrégé"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese, breve"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -185506,6 +186778,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Plus d’interrupteurs"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Altri interruttori"
           }
         },
         "ja": {
@@ -186978,6 +188256,12 @@
             "value": "Déplacer à gauche"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sposta a sinistra"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -187162,6 +188446,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Déplacer à droite"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sposta a destra"
           }
         },
         "ja": {
@@ -187479,6 +188769,12 @@
             "value": "Éloignez-vous de la lumière directe ou baissez la lampe."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allontanati dalla luce diretta o abbassa la lampada."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -187535,6 +188831,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Avancer par jour ou par semaine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spostati per giorno o settimana"
           }
         },
         "ja": {
@@ -190359,6 +191661,12 @@
             "value": "Couper le micro"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Silenzia microfono"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -191512,6 +192820,12 @@
             "value": "Native"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nativa"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -191569,6 +192883,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Format natif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proporzioni native"
           }
         },
         "ja": {
@@ -193109,6 +194429,12 @@
             "value": "Nouvel événement"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuovo evento"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -193809,6 +195135,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nouvel écran virtuel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuovo monitor virtuale"
           }
         },
         "ja": {
@@ -195414,6 +196746,12 @@
             "value": "Mois suivant"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese successivo"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -195921,6 +197259,12 @@
             "value": "Night Shift"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Night Shift"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -196041,6 +197385,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Night Shift n’est pas proposé ici : macOS n’offre aux apps aucun moyen public de l’activer ou de le désactiver. Utilisez le Centre de contrôle ou Réglages Système › Moniteurs."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Night Shift non è qui: macOS non offre alle app un modo pubblico per attivarlo o disattivarlo. Usa Centro di Controllo o Impostazioni di Sistema › Monitor."
           }
         },
         "ja": {
@@ -196974,6 +198324,12 @@
             "value": "Aucun calendrier pour l’instant. Ajoutez des comptes dans l’app Calendrier ou dans Réglages Système › Comptes Internet."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancora nessun calendario. Aggiungi account nell'app Calendario o in Impostazioni di Sistema › Account internet."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -197032,6 +198388,12 @@
             "value": "Aucun appel à rejoindre dans les prochaines heures"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna chiamata a cui partecipare nelle prossime ore"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -197088,6 +198450,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucune caméra trouvée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna fotocamera trovata"
           }
         },
         "ja": {
@@ -197725,6 +199093,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun écran"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun monitor"
           }
         },
         "ja": {
@@ -198813,6 +200187,12 @@
             "value": "Aucune ville ni fuseau horaire correspondant."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna città o fuso orario corrispondente."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -199064,6 +200444,12 @@
             "value": "Aucun micro"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun microfono"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -199184,6 +200570,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun micro n’est connecté."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun microfono collegato."
           }
         },
         "ja": {
@@ -199628,6 +201020,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun appareil jumelé. Jumelez des écouteurs et d’autres appareils dans Réglages Système › Bluetooth."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun dispositivo abbinato. Abbina cuffie e altri dispositivi in Impostazioni di Sistema › Bluetooth."
           }
         },
         "ja": {
@@ -206053,6 +207451,12 @@
             "value": "Rien de prévu"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun impegno in programma"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -206816,6 +208220,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nulle part"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuno"
           }
         },
         "ja": {
@@ -208499,6 +209909,12 @@
             "value": "Date numérique"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data numerica"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -208880,6 +210296,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Du miroir de la barre des menus et des fenêtres arrondies et rectangulaires. Un cercle est toujours rond."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dello specchio nella barra dei menu e delle finestre arrotondate e rettangolari. Un cerchio è sempre rotondo."
           }
         },
         "ja": {
@@ -209327,6 +210749,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Désactivé, elles sont enregistrées telles que les autres vous voient, pour que le texte se lise dans le bon sens."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se disattivato, le salva come ti vedono gli altri, così il testo si legge nel verso giusto."
           }
         },
         "ja": {
@@ -210096,6 +211524,12 @@
             "value": "Sur les dalles compatibles HDR (MacBook Pro Liquid Retina XDR, Pro Display XDR), le curseur continue au-delà de 100 % dans la marge HDR."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sui pannelli compatibili con HDR (MacBook Pro Liquid Retina XDR, Pro Display XDR) il cursore prosegue oltre il 100% nel margine HDR."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -210152,6 +211586,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sur les écrans XDR, le curseur de luminosité continue au-delà de 100 % dans la marge HDR. Une luminosité élevée prolongée consomme plus d’énergie et fait chauffer l’écran ; macOS peut la réduire de nouveau pour protéger la dalle. Les parties très lumineuses des vidéos et photos HDR peuvent perdre des détails tant que cette option est activée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sui monitor XDR il cursore della luminosità prosegue oltre il 100% nel margine HDR. Una luminosità elevata prolungata consuma più energia e scalda il monitor; macOS potrebbe ridurla di nuovo per proteggere il pannello. Mentre è attiva, le parti molto luminose di video e foto HDR possono perdere dettagli."
           }
         },
         "ja": {
@@ -211824,6 +213264,12 @@
             "value": "Uniquement pour les réunions avec un lien d’appel vidéo"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo per le riunioni con un link di videochiamata"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -212074,6 +213520,12 @@
             "value": "Uniquement sur les Mac dont l’écran a une encoche."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo sui Mac il cui monitor ha la tacca."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -212258,6 +213710,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seule l’image dans l’image l’utilise, pour afficher une image en direct d’un écran."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La usa solo Picture in Picture, per mostrare un'immagine dal vivo di un monitor."
           }
         },
         "ja": {
@@ -213666,6 +215124,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvrir Calendrier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Calendario"
           }
         },
         "ja": {
@@ -215267,6 +216731,12 @@
             "value": "Ouvrir Raccourcis"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Comandi Rapidi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -215323,6 +216793,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvrir Réglages Système"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Impostazioni di Sistema"
           }
         },
         "ja": {
@@ -215895,6 +217371,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvrez un écran en image dans l’image depuis son onglet Organiser dans le panneau, ou avec `mactoys powerdisplay pip -n <n>`. Cliquez sur la fenêtre avec le bouton droit pour la taille et les options."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri un monitor in Picture in Picture dalla sua scheda Disponi nel pannello, o con `mactoys powerdisplay pip -n <n>`. Fai clic con il tasto destro sulla finestra per dimensioni e opzioni."
           }
         },
         "ja": {
@@ -217303,6 +218785,12 @@
             "value": "Ouvrir l’app Calendrier"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri l'app Calendario"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -217487,6 +218975,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvrir le calendrier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri il calendario"
           }
         },
         "ja": {
@@ -218453,6 +219947,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouverture du miroir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apertura dello specchio"
           }
         },
         "ja": {
@@ -220543,6 +222043,12 @@
             "value": "Ou cliquez sur la date dans la barre des menus. Cliquez dessus avec le bouton droit pour copier la date, le numéro de semaine ou l’heure."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oppure fai clic sulla data nella barra dei menu. Fai clic con il tasto destro per copiare la data, il numero della settimana o l'ora."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -221309,6 +222815,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Autre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Altro"
           }
         },
         "ja": {
@@ -229786,6 +231298,12 @@
             "value": "Photo enregistrée dans %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto salvata in %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -229844,6 +231362,12 @@
             "value": "Photos"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -229900,6 +231424,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les photos conservent le zoom et le cadrage du miroir, à la pleine résolution de la caméra."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le foto mantengono lo zoom e l'inquadratura dello specchio, alla risoluzione piena della fotocamera."
           }
         },
         "ja": {
@@ -230921,6 +232451,12 @@
             "value": "Image"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Immagine"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -230977,6 +232513,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Image dans l’image"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Picture in Picture"
           }
         },
         "ja": {
@@ -231038,6 +232580,12 @@
             "value": "Image dans l’image : %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Picture in Picture: %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -231095,6 +232643,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Images"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Immagini"
           }
         },
         "ja": {
@@ -233986,6 +235540,12 @@
             "value": "Pixel pour pixel"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pixel per pixel"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -234694,6 +236254,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Émettre un son"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riproduci un suono"
           }
         },
         "ja": {
@@ -238304,6 +239870,12 @@
             "value": "Appuyez trois fois sur Échap pour arrêter plus tôt."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premi esc tre volte per interrompere prima."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -239776,6 +241348,12 @@
             "value": "Mois précédent"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese precedente"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -239834,6 +241412,12 @@
             "value": "Mois précédent ou suivant"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese precedente o successivo"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -239890,6 +241474,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Résolution précédente rétablie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Risoluzione precedente ripristinata"
           }
         },
         "ja": {
@@ -242433,6 +244023,12 @@
             "value": "Proportions"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proporzioni"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -244292,6 +245888,12 @@
             "value": "Interrupteurs rapides souhaite désactiver le mode Économie d’énergie."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interruttori rapidi vuole disattivare la modalità Risparmio energetico."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -244348,6 +245950,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Interrupteurs rapides souhaite activer le mode Économie d’énergie."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interruttori rapidi vuole attivare la modalità Risparmio energetico."
           }
         },
         "ja": {
@@ -249806,6 +251414,12 @@
             "value": "Fréquence de rafraîchissement"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frequenza di aggiornamento"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -249927,6 +251541,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Régional"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regionale"
           }
         },
         "ja": {
@@ -251338,6 +252958,12 @@
             "value": "Recharger la liste"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ricarica elenco"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -252355,6 +253981,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Me rappeler"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ricordamelo"
           }
         },
         "ja": {
@@ -253507,6 +255139,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Retirer des favoris"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovi dai preferiti"
           }
         },
         "ja": {
@@ -256696,6 +258334,12 @@
             "value": "Réinitialiser la taille et la position"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reimposta dimensioni e posizione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -258246,6 +259890,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Résolution, couleur et disposition"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Risoluzione, colore e disposizione"
           }
         },
         "ja": {
@@ -263893,6 +265543,12 @@
             "value": "Rotation"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotazione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -264207,6 +265863,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Des lignes de la règle des tiers pour aligner vos yeux et la caméra."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linee della regola dei terzi per allineare gli occhi e la fotocamera."
           }
         },
         "ja": {
@@ -266573,6 +268235,12 @@
             "value": "Exécute un raccourci de votre choix qui définit une concentration."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esegue un comando rapido a tua scelta che imposta una modalità Full immersion."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -266886,6 +268554,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exécute « %@ »"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esegue “%@”"
           }
         },
         "ja": {
@@ -267655,6 +269329,12 @@
             "value": "Même raccourci"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stesso comando rapido"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -267776,6 +269456,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Même heure"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stessa ora"
           }
         },
         "ja": {
@@ -269184,6 +270870,12 @@
             "value": "Enregistrer les photos en miroir"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva le foto riflesse"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -269240,6 +270932,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enregistrer les photos dans"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva le foto in"
           }
         },
         "ja": {
@@ -270395,6 +272093,12 @@
             "value": "Enregistrée dans %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvata in %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -270606,6 +272310,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Économise de l’énergie. Le modifier demande votre mot de passe d’administrateur."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Risparmia energia. Per modificarla viene richiesta la password di amministratore."
           }
         },
         "ja": {
@@ -271050,6 +272760,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indique si votre visage est trop sombre, trop éclairé ou éclairé par derrière."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvisa quando il viso è troppo scuro, troppo luminoso o illuminato da dietro."
           }
         },
         "ja": {
@@ -277608,6 +279324,12 @@
             "value": "Vos événements apparaîtront ici"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vedi qui i tuoi eventi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -277664,6 +279386,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Voyez-vous avant le début de l’appel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardati prima che inizi la chiamata"
           }
         },
         "ja": {
@@ -280623,6 +282351,12 @@
             "value": "Séparateurs"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separatori"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -282610,6 +284344,12 @@
             "value": "Forme : %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forma: %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -284024,6 +285764,12 @@
             "value": "Raccourci qui désactive la concentration"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comando rapido che disattiva Full immersion"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -284080,6 +285826,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Raccourci qui active la concentration"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comando rapido che attiva Full immersion"
           }
         },
         "ja": {
@@ -284590,6 +286342,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher %@ dans le menu"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra %@ nel menu"
           }
         },
         "ja": {
@@ -285356,6 +287114,12 @@
             "value": "Afficher un exemple"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra esempio"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -285541,6 +287305,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher les fichiers cachés"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra file nascosti"
           }
         },
         "ja": {
@@ -285924,6 +287694,12 @@
             "value": "Afficher le miroir"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra specchio"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -286044,6 +287820,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher le bouton Night Shift"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra pulsante Night Shift"
           }
         },
         "ja": {
@@ -286232,6 +288014,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher le pointeur"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra puntatore"
           }
         },
         "ja": {
@@ -286548,6 +288336,12 @@
             "value": "Afficher une confirmation lorsqu’un interrupteur change"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra una conferma quando un interruttore cambia"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -286670,6 +288464,12 @@
             "value": "Afficher une grille"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra una griglia"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -286726,6 +288526,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher une grille (G)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra una griglia (G)"
           }
         },
         "ja": {
@@ -287492,6 +289298,12 @@
             "value": "Afficher comme interrupteurs"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra come interruttori"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -287998,6 +289810,12 @@
             "value": "Afficher des points pour les jours avec des événements"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra punti per i giorni con eventi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -288182,6 +290000,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Affichez les fichiers dont le nom commence par un point, dans le Finder et les zones de dialogue d’ouverture. Le Finder est relancé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra i file il cui nome inizia con un punto, nel Finder e nelle finestre di apertura. Il Finder si riavvia."
           }
         },
         "ja": {
@@ -289142,6 +290966,12 @@
             "value": "Afficher dans le menu"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra nel menu"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -289905,6 +291735,12 @@
             "value": "Afficher sur tous les Spaces"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra su tutti gli spazi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -290411,6 +292247,12 @@
             "value": "Afficher ou masquer le miroir de caméra"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra o nascondi lo specchio della fotocamera"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -290469,6 +292311,12 @@
             "value": "Afficher ou masquer la grille"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra o nascondi la griglia"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -290525,6 +292373,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher ou masquer le miroir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra o nascondi lo specchio"
           }
         },
         "ja": {
@@ -292763,6 +294617,12 @@
             "value": "Afficher toute l’image"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra l'intera immagine"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -292949,6 +294809,12 @@
             "value": "Afficher les numéros de semaine"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra i numeri delle settimane"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -293005,6 +294871,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher ce qu’affiche un autre écran"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra ciò che mostra un altro monitor"
           }
         },
         "ja": {
@@ -293320,6 +295192,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher les horloges mondiales dans le calendrier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra gli orologi internazionali nel calendario"
           }
         },
         "ja": {
@@ -294059,6 +295937,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Affiché sur %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrato su %@"
           }
         },
         "ja": {
@@ -295595,6 +297479,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Taille et position"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimensioni e posizione"
           }
         },
         "ja": {
@@ -298422,6 +300312,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Méthode d’assombrissement logiciel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metodo di attenuazione software"
           }
         },
         "ja": {
@@ -301832,6 +303728,12 @@
             "value": "Commencer maintenant"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvia ora"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -302725,6 +304627,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lancer l’économiseur d’écran immédiatement."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvia subito il salvaschermo."
           }
         },
         "ja": {
@@ -303944,6 +305852,12 @@
             "value": "Arrêter Nettoyer le clavier plus tôt"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interrompi prima Pulisci tastiera"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -304258,6 +306172,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Empêchez votre Mac de suspendre son activité, avec Awake."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impedisci al Mac di andare in stop, con Awake."
           }
         },
         "ja": {
@@ -307929,6 +309849,12 @@
             "value": "Basculez entre l’apparence claire et sombre. Utilise Bascule d’apparence lorsqu’elle est activée."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passa dall'aspetto chiaro a quello scuro. Usa Cambio aspetto quando è attivo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -308731,6 +310657,12 @@
             "value": "Passer à cette résolution"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passa a questa risoluzione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -308918,6 +310850,12 @@
             "value": "Interrupteurs"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interruttori"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -308974,6 +310912,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Revient en arrière après 15 secondes si vous ne la gardez pas, au cas où l’écran ne pourrait pas l’afficher."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Torna indietro dopo 15 secondi se non la mantieni, nel caso il monitor non possa mostrarla."
           }
         },
         "ja": {
@@ -309098,6 +311042,12 @@
             "value": "Les interrupteurs que vous ne choisissez pas restent à un clic, sous Plus d’interrupteurs."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gli interruttori che non scegli restano a un clic di distanza in Altri interruttori."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -309206,6 +311156,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "Retour en arrière dans %lld secondes si vous ne la gardez pas."
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ritorno tra %lld secondo se non la mantieni."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ritorno tra %lld secondi se non la mantieni."
                 }
               }
             }
@@ -310273,6 +312241,12 @@
             "value": "Réglage du système"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impostazione di sistema"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -310949,6 +312923,12 @@
             "value": "Prendre une photo"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scatta una foto"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -311005,6 +312985,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Prendre une photo"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scatta una foto"
           }
         },
         "ja": {
@@ -311065,6 +313051,12 @@
             "value": "Prendre une photo (Espace)"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scatta una foto (barra spaziatrice)"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -311121,6 +313113,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Prendre une photo dans le miroir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scatta una foto nello specchio"
           }
         },
         "ja": {
@@ -315043,6 +317041,12 @@
             "value": "Le Dock apparaît lorsque vous placez le pointeur sur son bord."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il Dock compare quando sposti il puntatore sul suo bordo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -315421,6 +317425,12 @@
             "value": "L’app Raccourcis n’est pas disponible."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'app Comandi Rapidi non è disponibile."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -315477,6 +317487,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La corbeille est vide"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il Cestino è vuoto"
           }
         },
         "ja": {
@@ -316479,6 +318495,12 @@
             "value": "La caméra n’a pas démarré"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La fotocamera non si è avviata"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -316535,6 +318557,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La caméra est utilisée par une autre app."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La fotocamera è in uso da parte di un'altra app."
           }
         },
         "ja": {
@@ -317236,6 +319264,12 @@
             "value": "La date dans la barre des menus ouvre un mois avec les numéros de semaine, les événements du jour avec des boutons Rejoindre, et des horloges pour les lieux avec lesquels vous travaillez."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La data nella barra dei menu apre un mese con i numeri delle settimane, gli eventi del giorno con i pulsanti Partecipa e gli orologi dei luoghi con cui lavori."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -317677,6 +319711,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La résolution par défaut de l’écran"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La risoluzione predefinita del monitor"
           }
         },
         "ja": {
@@ -320475,6 +322515,12 @@
             "value": "L’horloge de macOS reste dans la barre des menus ; passez-la en analogique ou masquez la date dans les réglages du Centre de contrôle si vous le souhaitez."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'orologio di macOS resta nella barra dei menu; se vuoi, rendilo analogico o nascondi la data nelle impostazioni di Centro di Controllo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -320595,6 +322641,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La barre des menus apparaît lorsque vous placez le pointeur en haut de l’écran."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La barra dei menu compare quando sposti il puntatore nella parte superiore dello schermo."
           }
         },
         "ja": {
@@ -320719,6 +322771,12 @@
             "value": "Le miroir s’ouvre"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo specchio si apre"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -320839,6 +322897,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le moniteur recopie l’écran virtuel : pour du HiDPI sur un moniteur qui n’en propose pas."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il monitor duplica il monitor virtuale: per avere HiDPI su un monitor che non lo offre."
           }
         },
         "ja": {
@@ -322220,6 +324284,12 @@
             "value": "L’économiseur d’écran n’est pas disponible."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il salvaschermo non è disponibile."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -322470,6 +324540,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le raccourci « %@ » ne s’est pas exécuté."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il comando rapido “%@” non è stato eseguito."
           }
         },
         "ja": {
@@ -325996,6 +328072,12 @@
             "value": "Cette copie de MacToys ne peut pas utiliser le Bluetooth. Connectez les appareils depuis le Centre de contrôle."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa copia di MacToys non può usare Bluetooth. Connetti i dispositivi da Centro di Controllo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -326182,6 +328264,12 @@
             "value": "Cet écran ne propose pas d’autres résolutions."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo monitor non offre altre risoluzioni."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -326238,6 +328326,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cet écran n’a aucune commande matérielle accessible à MacToys (les écrans DisplayLink, AirPlay et Sidecar, ainsi que certains docks et adaptateurs, ne prennent pas en charge le DDC/CI). Son curseur de luminosité l’assombrit par logiciel."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo monitor non ha controlli hardware raggiungibili da MacToys (i monitor DisplayLink, AirPlay e Sidecar, e alcuni dock e adattatori, non supportano DDC/CI). Il suo cursore della luminosità attenua via software."
           }
         },
         "ja": {
@@ -328162,6 +330256,12 @@
             "value": "Modules"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riquadri"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -328604,6 +330704,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Heure avec les secondes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ora con secondi"
           }
         },
         "ja": {
@@ -329901,6 +332007,12 @@
             "value": "Pour arrêter plus tôt, appuyez sur"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per interrompere prima, premi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -330280,6 +332392,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aujourd’hui, votre semaine et le monde, à un clic"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oggi, la tua settimana e il mondo, a un clic di distanza"
           }
         },
         "ja": {
@@ -331086,6 +333204,12 @@
             "value": "Demain"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domani"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -331143,6 +333267,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Trop sombre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Troppo scuro"
           }
         },
         "ja": {
@@ -337457,6 +339587,12 @@
             "value": "Allumez une lumière devant vous, ou placez-vous face à une fenêtre."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accendi una luce davanti a te o mettiti di fronte a una finestra."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -337835,6 +339971,12 @@
             "value": "Activer la luminosité supplémentaire ?"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attivare la luminosità extra?"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -338019,6 +340161,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Activez des interrupteurs ci-dessous pour les voir ici."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attiva gli interruttori qui sotto per vederli qui."
           }
         },
         "ja": {
@@ -338269,6 +340417,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Réduire à zéro le volume d’entrée du micro actuel, puis le rétablir à son niveau précédent."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Porta a zero il volume di ingresso del microfono attuale, e poi di nuovo dov'era."
           }
         },
         "ja": {
@@ -342427,6 +344581,12 @@
             "value": "Sous la caméra"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sotto la fotocamera"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -342483,6 +344643,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sous la caméra le place exactement là où vous regardez sur un portable."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sotto la fotocamera lo mette proprio dove guardi su un portatile."
           }
         },
         "ja": {
@@ -342542,6 +344708,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sous l’icône de la barre des menus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sotto l'icona della barra dei menu"
           }
         },
         "ja": {
@@ -345438,6 +347610,12 @@
             "value": "Jusqu’à %@"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fino alle %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -345695,6 +347873,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tant que vous n’en choisissez pas, tous les appareils audio jumelés sont affichés."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finché non ne scegli alcuni, vengono mostrati tutti i dispositivi audio abbinati."
           }
         },
         "ja": {
@@ -347361,6 +349545,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Utiliser les valeurs par défaut"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa predefiniti"
           }
         },
         "ja": {
@@ -349165,6 +351355,12 @@
             "value": "Utilise la marge HDR de la dalle : le curseur de luminosité continue au-delà de 100 %. Consomme plus d’énergie et fait chauffer l’écran."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa il margine HDR del pannello: il cursore della luminosità prosegue oltre il 100%. Consuma più energia e scalda il monitor."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -350643,6 +352839,12 @@
             "value": "Très lumineux"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Molto luminoso"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -351478,6 +353680,12 @@
             "value": "Virtuel"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virtuale"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -351591,6 +353799,24 @@
             }
           }
         },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Monitor virtuale %lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Monitor virtuale %lld"
+                }
+              }
+            }
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -351685,6 +353911,12 @@
             "value": "Écran virtuel"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitor virtuale"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -351743,6 +353975,12 @@
             "value": "Écrans virtuels"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitor virtuali"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -351799,6 +354037,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les écrans virtuels ne sont pas disponibles sur cette version de macOS."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I monitor virtuali non sono disponibili in questa versione di macOS."
           }
         },
         "ja": {
@@ -352378,6 +354622,12 @@
             "value": "S"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -352474,6 +354724,24 @@
           }
         },
         "fr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "S%lld"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "S%lld"
+                }
+              }
+            }
+          }
+        },
+        "it": {
           "variations": {
             "plural": {
               "one": {
@@ -354526,6 +356794,12 @@
             "value": "Numéro de semaine"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numero settimana"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -354582,6 +356856,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Numéros de semaine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numeri delle settimane"
           }
         },
         "ja": {
@@ -354641,6 +356921,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jour de la semaine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giorno della settimana"
           }
         },
         "ja": {
@@ -354765,6 +357051,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jour de la semaine abrégé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giorno della settimana, breve"
           }
         },
         "ja": {
@@ -356043,6 +358335,12 @@
             "value": "À son début"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All'inizio"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -357059,6 +359357,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lorsque le zoom est actif, faites glisser l’image pour cadrer votre visage, ou pincez sur le trackpad. La caméra ne s’allume que lorsqu’un miroir est ouvert, et rien ne quitte votre Mac."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con lo zoom attivo, trascina l'immagine per inquadrare il viso o pizzica sul trackpad. La fotocamera si accende solo mentre uno specchio è aperto e nulla lascia il Mac."
           }
         },
         "ja": {
@@ -360677,6 +362981,12 @@
             "value": "Nettoyez. Les touches, les touches multimédias et les clics sur cet écran sont sans effet jusqu’à la fin du délai."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulisci pure. Tasti, tasti multimediali e clic su questa schermata non hanno effetto finché il tempo non scade."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -360989,6 +363299,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Avec le décalage horaire et s’il y fait jour ou nuit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con la differenza di fuso orario e se lì è giorno o notte."
           }
         },
         "ja": {
@@ -361561,6 +363877,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Travail"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lavoro"
           }
         },
         "ja": {
@@ -363873,6 +366195,12 @@
             "value": "Année"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anno"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -364577,6 +366905,12 @@
             "value": "Cette action est irréversible."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non puoi annullare questa azione."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -364955,6 +367289,12 @@
             "value": "Votre visage est bien éclairé."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo viso è ben illuminato."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -365205,6 +367545,12 @@
             "value": "Vos interrupteurs"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I tuoi interruttori"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -365326,6 +367672,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Votre texte"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo testo"
           }
         },
         "ja": {
@@ -366028,6 +368380,12 @@
             "value": "Zoomer sur le centre (+ et −)"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingrandisci al centro (+ e −)"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -366086,6 +368444,12 @@
             "value": "Zoomer ou dézoomer"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingrandisci o riduci"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -366142,6 +368506,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zoomez pour que votre visage remplisse le miroir, puis faites glisser le cadre sur votre visage. Enregistré pour chaque miroir et chaque photo."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingrandisci per riempire lo specchio con il viso, poi trascina la cornice dove si trova il viso. Viene salvata per ogni specchio e ogni foto."
           }
         },
         "ja": {
@@ -366392,6 +368762,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zoom ; cliquez pour afficher toute l’image"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom; fai clic per mostrare l'intera immagine"
           }
         },
         "ja": {
@@ -367603,6 +369979,12 @@
             "value": "Focalisation"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messa a fuoco"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -367669,6 +370051,12 @@
             "value": "Focalisation désactivée"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messa a fuoco disattivata"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -367733,6 +370121,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Focalisation activée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messa a fuoco attivata"
           }
         },
         "ja": {
@@ -368384,6 +370778,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "dans %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tra %@"
           }
         },
         "ja": {
@@ -371537,6 +373937,12 @@
             "value": "rejoint le prochain appel"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "partecipa alla prossima chiamata"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -373003,6 +375409,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "macOS n’indique pas aux apps si une concentration est activée : l’interrupteur affiche donc le dernier état qu’il a défini, sauf si MacToys dispose de l’accès complet au disque."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS non comunica alle app se una modalità Full immersion è attiva, quindi l'interruttore mostra l'ultimo stato impostato, a meno che MacToys non abbia l'accesso completo al disco."
           }
         },
         "ja": {
@@ -375599,6 +378011,12 @@
             "value": "maintenant"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ora"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -376045,6 +378463,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "pixels"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pixel"
           }
         },
         "ja": {
@@ -378300,6 +380724,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "a commencé il y a %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iniziata %@ fa"
           }
         },
         "ja": {

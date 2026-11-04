@@ -83,7 +83,7 @@ private struct MockMenuBar: View {
             Spacer()
             Image(systemName: "wifi").font(.system(size: 13, weight: .semibold))
             Image(systemName: "battery.75percent").font(.system(size: 14))
-            Text(verbatim: "Wed 4 Nov  21:41").font(.system(size: 13))
+            Text(verbatim: PreviewScene.menuBarClock(hour: 21, minute: 41)).font(.system(size: 13))
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 16)

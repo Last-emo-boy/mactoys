@@ -134,7 +134,7 @@ private struct MenuBarScene: View {
                 .padding(.vertical, 2)
                 .background(RoundedRectangle(cornerRadius: 5, style: .continuous).fill(.white.opacity(0.22)))
                 Image(systemName: "switch.2").font(.system(size: 13, weight: .medium))
-                Text(verbatim: "Wed 4 Nov  22:41").font(.system(size: 13, weight: .medium))
+                Text(verbatim: PreviewScene.menuBarClock(hour: 22, minute: 41)).font(.system(size: 13, weight: .medium))
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 14)

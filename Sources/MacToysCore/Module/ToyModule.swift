@@ -167,6 +167,16 @@ public struct PreviewScene {
     }
 }
 
+extension PreviewScene {
+    /// A preview's menu bar clock on the sample day (Wednesday 4 November 2026), in the user's language:
+    /// "Wed 4 Nov  9:41", "Mi. 4. Nov.  09:41".
+    public static func menuBarClock(hour: Int, minute: Int) -> String {
+        let date = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 4, hour: hour, minute: minute)) ?? Date()
+        return date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)) + "  "
+            + date.formatted(date: .omitted, time: .shortened)
+    }
+}
+
 /// A request addressed to one module: `mactoys://powerrename/open?file=/a&file=/b`.
 public struct AppCommand: Sendable, CustomStringConvertible {
     public var module: String

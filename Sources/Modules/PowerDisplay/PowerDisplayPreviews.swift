@@ -199,7 +199,7 @@ struct SampleDesktop: View {
                 Spacer()
                 Image(systemName: "sun.max").font(.system(size: 13, weight: .medium))
                 Image(systemName: "wifi").font(.system(size: 13, weight: .medium))
-                Text(verbatim: "Wed 4 Nov  21:48").font(.system(size: 13))
+                Text(verbatim: PreviewScene.menuBarClock(hour: 21, minute: 48)).font(.system(size: 13))
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 16)

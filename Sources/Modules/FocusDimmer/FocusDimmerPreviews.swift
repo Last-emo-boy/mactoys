@@ -147,7 +147,7 @@ private struct MenuBarStrip: View {
             Image(systemName: "moon.haze.fill").font(.system(size: 13))
             Image(systemName: "wifi").font(.system(size: 13))
             Image(systemName: "battery.75percent").font(.system(size: 15))
-            Text(verbatim: "Wed 4 Nov  10:41").font(.system(size: 13, weight: .medium)).monospacedDigit()
+            Text(verbatim: PreviewScene.menuBarClock(hour: 10, minute: 41)).font(.system(size: 13, weight: .medium)).monospacedDigit()
         }
         .foregroundStyle(dark ? Color.white : Color.black.opacity(0.85))
         .padding(.horizontal, 18)

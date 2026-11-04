@@ -151,7 +151,7 @@ private struct MenuBarStrip: View {
             Spacer()
             Image(systemName: "wifi").font(.system(size: 12, weight: .medium))
             Image(systemName: "battery.75percent").font(.system(size: 13))
-            Text(verbatim: "Wed 4 Nov  9:41").font(.system(size: 13, weight: .medium))
+            Text(verbatim: PreviewScene.menuBarClock(hour: 9, minute: 41)).font(.system(size: 13, weight: .medium))
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 18)

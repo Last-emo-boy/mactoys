@@ -367,7 +367,7 @@ struct SampleDesktop: View {
             Image(systemName: "battery.75percent")
             Image(systemName: "wifi")
             Image(systemName: "magnifyingglass")
-            Text(verbatim: "Wed 4 Nov  14:32").font(.system(size: 13))
+            Text(verbatim: PreviewScene.menuBarClock(hour: 14, minute: 32)).font(.system(size: 13))
         }
         .font(.system(size: 13))
         .foregroundStyle(.white)

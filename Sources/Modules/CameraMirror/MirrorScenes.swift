@@ -123,7 +123,7 @@ private struct MenuBarStrip: View {
                 .background(Capsule().fill(.white.opacity(highlighted ? 0.22 : 0)))
             Image(systemName: "battery.75percent")
             Image(systemName: "wifi")
-            Text(verbatim: "Wed 4 Nov  9:41")
+            Text(verbatim: PreviewScene.menuBarClock(hour: 9, minute: 41))
         }
         .font(.system(size: 13, weight: .medium))
         .foregroundStyle(.white)

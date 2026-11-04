@@ -539,7 +539,7 @@ struct SampleDesktop<Overlay: View>: View {
             Image(systemName: "rectangle.split.2x2.fill").font(.system(size: 13))
             Image(systemName: "wifi").font(.system(size: 13))
             Image(systemName: "battery.75percent").font(.system(size: 14))
-            Text(verbatim: "Wed 4 Nov  9:41").font(.system(size: 13.5, weight: .medium))
+            Text(verbatim: PreviewScene.menuBarClock(hour: 9, minute: 41)).font(.system(size: 13.5, weight: .medium))
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 18)

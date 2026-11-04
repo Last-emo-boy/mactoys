@@ -29,6 +29,12 @@
             "value": "MacToys contrôle le Finder (sélection pour Peek, PowerRename et New+, vider la corbeille), System Events (mode sombre, silence, et masquage du Dock et de la barre des menus pour Bascule d’apparence et Interrupteurs rapides) et la fenêtre de connexion (redémarrer, éteindre et fermer la session depuis la Palette de commandes)."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacToys controlla il Finder (selezione per Peek, PowerRename e New+, svuotare il Cestino), System Events (modalità scura, silenzioso e nascondere il Dock e la barra dei menu da Cambio aspetto e Interruttori rapidi) e la finestra di login (riavvia, spegni e logout dal Riquadro comandi)."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -93,6 +99,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Volume par app modifie le volume de chaque app en faisant passer son son par MacToys sur ce Mac."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume per app modifica il volume di ogni app facendone passare l'audio attraverso MacToys su questo Mac."
           }
         },
         "ja": {
@@ -161,6 +173,12 @@
             "value": "Interrupteurs rapides connecte et déconnecte vos appareils Bluetooth jumelés, comme des AirPods."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interruttori rapidi connette e disconnette i dispositivi Bluetooth abbinati, come gli AirPods."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -225,6 +243,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calendrier de la barre des menus affiche vos événements et vous rappelle les réunions à venir."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario barra dei menu mostra i tuoi eventi e ti ricorda le riunioni imminenti."
           }
         },
         "ja": {
@@ -293,6 +317,12 @@
             "value": "Calendrier de la barre des menus affiche vos événements et vous rappelle les réunions à venir."
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario barra dei menu mostra i tuoi eventi e ti ricorda le riunioni imminenti."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -357,6 +387,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Miroir de caméra affiche votre caméra pour que vous puissiez vérifier votre apparence avant un appel."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specchio fotocamera mostra la fotocamera per permetterti di controllare il tuo aspetto prima di una chiamata."
           }
         },
         "ja": {
