@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>PowerToys, reimagined for the Mac.</b><br>
-  31 power-user utilities in one native menu-bar app for macOS 26.
+  48 power-user utilities in one native menu-bar app for macOS 26.
 </p>
 
 <p align="center">
@@ -24,8 +24,11 @@
 MacToys brings every utility of [Microsoft PowerToys](https://github.com/microsoft/PowerToys) 0.102 to
 macOS: window layouts with FancyZones, a Command Palette launcher, Color Picker, OCR, ZoomIt,
 PowerRename, Keyboard Manager, the mouse utilities, Quick Look previews for developer files and more.
-It is written in Swift and SwiftUI, follows macOS conventions (menu bar, Liquid Glass, System
-Settings–style pages) and is localized into 11 languages.
+On top of that come 17 utilities Mac power users usually buy one by one: automatic window tiling, a
+privacy screen, screenshots with annotation, a clipboard manager, a file shelf, actions on selected
+text, window controls and trackpad gestures, a tidy menu bar, per-app volume, a battery charge limit
+and more. It is written in Swift and SwiftUI, follows macOS conventions (menu bar, Liquid Glass,
+System Settings–style pages) and is localized into 11 languages.
 
 MacToys is an independent project and is not affiliated with Microsoft.
 
@@ -52,15 +55,24 @@ show a banner with a **Grant** button.
 
 | Permission | Used by |
 |---|---|
-| Accessibility | Moving windows, global shortcuts, key remapping |
+| Accessibility | Moving windows, global shortcuts, key remapping, reading selected text and app menus |
 | Input Monitoring | Quick Accent, mouse utilities |
-| Screen Recording | Color Picker, Screen Ruler, Text Extractor, ZoomIt, Always On Top, Crop And Lock |
-| Automation | Reading the Finder selection (Peek, PowerRename, New+), switching appearance |
+| Screen Recording | Color Picker, Screen Ruler, Text Extractor, ZoomIt, Screenshot, Always On Top, Crop And Lock, picture in picture |
+| System audio recording | App Volume |
+| Camera | Camera Mirror |
+| Automation | Reading the Finder selection (Peek, PowerRename, New+), switching appearance, hiding the Dock and menu bar |
 | Microphone (optional) | ZoomIt recording audio and snip dictation |
+| Calendars (optional) | Menu Bar Calendar events and meeting reminders |
+| Bluetooth (optional) | Quick Switches connecting your devices |
 | Location (optional) | Light Switch sunrise and sunset |
 | Full Disk Access (optional) | File Locksmith, to see protected files |
 
+Privacy Screen, File Shelf, Optimizer, Menu Bar Manager and Charge Limit need none of them. Charge
+Limit installs a small helper with your administrator password when you turn it on.
+
 ## Utilities
+
+### From PowerToys
 
 **System Tools**
 
@@ -118,8 +130,58 @@ show a banner with a **Grant** button.
 | Hosts File Editor | Edit /etc/hosts with validation, ping checks and automatic backups. | — |
 | Plist Preview | Inspect, edit and compare property lists and defaults domains. | — |
 
-Every utility can be turned on or off, has its own Settings page with all of PowerToys' options that
-make sense on a Mac, and can be driven by `mactoys://` URLs and the command-line tool.
+### Beyond PowerToys
+
+**Windowing**
+
+| Utility | What it does | Default shortcut |
+|---|---|---|
+| Auto Tiling | Tile every window automatically as it opens, with a layout for each display. | ⌃ ⌥ ⌘ 1–4 |
+| Window Controls | Move and resize windows from the green button, the keyboard, or saved layouts you restore in one click. | ⌃ ⌥ K |
+| Window Gestures | Swipe, pinch or double-tap on a title bar with two fingers to tile, fill, minimize, close or move a window. | Swipe on a title bar |
+| Focus Dimmer | Dim every window behind the one you're working in. | ⌃ ⌥ ⇧ H |
+
+**Capture and text**
+
+| Utility | What it does | Default shortcut |
+|---|---|---|
+| Screenshot | Capture an area, window or screen, then annotate, frame, pin or share it. | ⌃ ⌥ A |
+| Clipboard History | Search everything you copied, keep favorites on pinboards and paste it back from the keyboard. | ⌃ ⌥ ⇧ C |
+| Text Actions | Select text in any app to get a bar of actions: copy, search, translate, transform and your own. | Select text · ⌃ ⌥ ⇧ A |
+| Keystroke Overlay | Show the keys and shortcuts you press, for recordings and presentations. | ⌃ ⌥ ⇧ J |
+
+**Files**
+
+| Utility | What it does | Default shortcut |
+|---|---|---|
+| File Shelf | Hold files, text and links on a floating shelf while you switch apps, then drag them out together. | Shake a drag · ⌃ ⌥ S |
+| Optimizer | Shrink images, videos and PDFs as you copy, drop or save them. | ⌃ ⌥ O |
+
+**Menu bar and system**
+
+| Utility | What it does | Default shortcut |
+|---|---|---|
+| Privacy Screen | Blur or lock your screen in place, keep private apps blurred and hide everything but the window you're using. | ⌃ ⌥ L |
+| Menu Bar Manager | Hide the menu bar icons you rarely need and bring them back with a click, a hover or a shortcut. | — |
+| Menu Bar Calendar | A calendar, world clocks and your next meeting in the menu bar. | — |
+| Quick Switches | Hide desktop icons, show hidden files, connect AirPods and more, from the menu bar. | — |
+| Camera Mirror | Check your camera from the menu bar before a call, in a small window you can keep on top. | ⌃ ⌥ I |
+| App Volume | Set the volume, output device and equalizer of each app from the menu bar. | — |
+| Charge Limit | Keep your MacBook's battery between limits you choose to slow its aging. | — |
+
+**PowerToys utilities, extended**
+
+- **FancyZones** — pick the key that activates zones (⇧, fn, ⌥ or ⌃), Esc cancels a snap, drag to a
+  screen edge to tile, draw zones with grid and neighbor snapping, workflow and ultrawide presets.
+- **Command Palette** — search and run the menu commands of the app in front (⌃ ⌥ ⇧ M).
+- **Text Extractor** — QR codes and barcodes, smart line joining, add to the clipboard, read aloud,
+  on-device translation, text from image and PDF files.
+- **Power Display** — resolution and refresh rate with HiDPI modes, dimming below the hardware
+  minimum, extra brightness on XDR displays, virtual displays, mirroring, picture in picture, color
+  profiles and brightness sync.
+
+Every utility can be turned on or off, has its own Settings page, and can be driven by `mactoys://`
+URLs and the command-line tool.
 
 ### Where macOS works differently
 
@@ -134,6 +196,15 @@ make sense on a Mac, and can be driven by `mactoys://` URLs and the command-line
   API and is shown read-only.
 - **Mouse Without Borders** connects Macs to each other (encrypted, Bonjour discovery); it doesn't
   interoperate with the Windows version.
+- **Privacy Screen** covers and blurs the screen without capturing it. It isn't the macOS lock
+  screen: after a time you choose it also locks the Mac, and a guard process locks it if MacToys quits
+  while locked.
+- **App Volume** passes an app's sound through Core Audio process taps, only for apps whose volume,
+  device or equalizer you changed.
+- **Charge Limit** needs a Mac whose firmware exposes the charging switches; where macOS 26 offers
+  its own charge limit, MacToys points you to it instead.
+- **Menu Bar Manager** hides icons with a divider you ⌘-drag icons past, the way macOS lets apps
+  arrange the menu bar.
 
 ## Command line
 
@@ -149,6 +220,7 @@ mactoys locksmith ~/Projects/build       # which processes use these files
 mactoys zones                            # FancyZones geometry of the main display
 mactoys awake for 1:30                   # Awake, Light Switch and Power Display have full CLIs
 mactoys powerdisplay set -n 1 --brightness 70
+mactoys powerdisplay modes                # resolutions and refresh rates of each display
 mactoys open fancyzones editor           # any mactoys:// action
 mactoys help
 ```
@@ -166,7 +238,7 @@ Region › Applications). Translations live in `Resources/Localization/Localizab
 
 ```bash
 swift build                                   # all targets
-swift test                                    # 650+ unit tests
+swift test                                    # 1,400 unit tests
 scripts/bundle.sh                             # build/MacToys.app (CONFIG=release for an optimized build)
 build/MacToys.app/Contents/MacOS/MacToys --snapshot /tmp/shots --only fancyzones
                                               # render a utility's Settings page and overlays to PNG

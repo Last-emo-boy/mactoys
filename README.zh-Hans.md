@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>为 Mac 重新打造的 PowerToys。</b><br>
-  31 个效率工具，集成在一个原生的 macOS 26 菜单栏应用里。
+  48 个效率工具，集成在一个原生的 macOS 26 菜单栏应用里。
 </p>
 
 <p align="center">
@@ -23,7 +23,9 @@
 
 MacToys 把 [Microsoft PowerToys](https://github.com/microsoft/PowerToys) 0.102 的全部工具带到了 macOS：
 FancyZones 窗口布局、Command Palette 启动器、取色器、OCR 文字识别、ZoomIt、PowerRename 批量改名、
-Keyboard Manager 按键重映射、一组鼠标工具、面向开发者文件的 Quick Look 预览等等。它用 Swift 和 SwiftUI 编写，
+Keyboard Manager 按键重映射、一组鼠标工具、面向开发者文件的 Quick Look 预览等等。在此之外还有 17 个
+Mac 高级用户通常要一个个单独购买的工具：自动平铺窗口、隐私屏、带标注的截图、剪贴板管理、文件暂存架、
+划词操作、窗口控制与触控板手势、菜单栏整理、按应用调音量、电池充电上限等等。它用 Swift 和 SwiftUI 编写，
 遵循 macOS 的使用习惯（菜单栏、Liquid Glass、系统设置风格的设置页），并提供 11 种界面语言。
 
 MacToys 是独立项目，与 Microsoft 没有任何关联。
@@ -51,13 +53,20 @@ scripts/run.sh            # 构建、本地签名、安装到 ~/Applications 并
 
 | 权限 | 用途 |
 |---|---|
-| 辅助功能 | 移动窗口、全局快捷键、按键重映射 |
+| 辅助功能 | 移动窗口、全局快捷键、按键重映射、读取选中的文字和应用菜单 |
 | 输入监控 | Quick Accent、鼠标工具 |
-| 屏幕录制 | Color Picker、Screen Ruler、Text Extractor、ZoomIt、Always On Top、Crop And Lock |
-| 自动化 | 读取 Finder 选中的文件（Peek、PowerRename、New+）、切换外观 |
+| 屏幕录制 | Color Picker、Screen Ruler、Text Extractor、ZoomIt、Screenshot、Always On Top、Crop And Lock、画中画 |
+| 系统音频录制 | App Volume |
+| 相机 | Camera Mirror |
+| 自动化 | 读取 Finder 选中的文件（Peek、PowerRename、New+）、切换外观、隐藏程序坞和菜单栏 |
 | 麦克风（可选） | ZoomIt 录音和截图听写 |
+| 日历（可选） | Menu Bar Calendar 的日程和会议提醒 |
+| 蓝牙（可选） | Quick Switches 连接你的设备 |
 | 定位（可选） | Light Switch 的日出日落时间 |
 | 完全磁盘访问（可选） | File Locksmith 查看受保护的文件 |
+
+Privacy Screen、File Shelf、Optimizer、Menu Bar Manager 和 Charge Limit 不需要任何权限。Charge Limit
+在你打开它时用管理员密码安装一个小的辅助程序。
 
 ## 工具一览
 
@@ -77,6 +86,29 @@ New+（从模板新建文件）、Peek（快速预览）、PowerRename（批量�
 
 **高级**：Environment Variables（环境变量与配置组）、Hosts File Editor（编辑 /etc/hosts）、Plist Preview（属性列表与 defaults 编辑）。
 
+### PowerToys 之外
+
+**窗口**：Auto Tiling（新窗口打开即自动平铺，每块屏幕各有布局，⌃⌥⌘1–4）、Window Controls（从绿色按钮、键盘或保存的布局
+移动和缩放窗口，⌃⌥K）、Window Gestures（在标题栏上用双指轻扫、捏合、轻点来平铺、填满、最小化、关闭或移动窗口）、
+Focus Dimmer（调暗正在使用的窗口后面的所有窗口，⌃⌥⇧H）。
+
+**截图与文字**：Screenshot（截取区域、窗口或屏幕，再标注、加背景、钉在屏幕上或分享，⌃⌥A）、Clipboard History
+（搜索复制过的一切，收藏到图板，用键盘粘贴回去，⌃⌥⇧C）、Text Actions（在任何应用里选中文字就出现操作条：复制、搜索、
+翻译、转换和你自己的动作，⌃⌥⇧A）、Keystroke Overlay（录屏和演示时显示你按下的键，⌃⌥⇧J）。
+
+**文件**：File Shelf（拖动文件时晃一下鼠标就出现暂存架，切换应用后再一起拖出，⌃⌥S）、Optimizer（复制、拖入或保存时
+压缩图片、视频和 PDF，⌃⌥O）。
+
+**菜单栏与系统**：Privacy Screen（原地模糊或锁住屏幕、私密应用默认模糊、只保留当前窗口清晰，⌃⌥L）、Menu Bar Manager
+（隐藏不常用的菜单栏图标，点击、悬停或快捷键唤回）、Menu Bar Calendar（菜单栏里的月历、世界时钟和下一场会议）、
+Quick Switches（隐藏桌面图标、显示隐藏文件、连接 AirPods 等开关）、Camera Mirror（通话前在菜单栏检查摄像头画面，⌃⌥I）、
+App Volume（按应用设置音量、输出设备和均衡器）、Charge Limit（把 MacBook 电池保持在你设定的区间，减缓老化）。
+
+**增强的 PowerToys 工具**：FancyZones 可选激活键（⇧、fn、⌥、⌃）、按 Esc 取消吸附、拖到屏幕边缘平铺、手绘区域并对齐网格和
+相邻区域、场景与超宽屏预设；Command Palette 可搜索并执行前台应用的菜单命令（⌃⌥⇧M）；Text Extractor 支持二维码和条码、
+智能合并换行、追加到剪贴板、朗读、本机翻译、从图片和 PDF 文件取字；Power Display 增加分辨率与刷新率（含 HiDPI）、
+低于硬件下限的调暗、XDR 屏幕额外亮度、虚拟显示器、镜像、画中画、颜色描述文件和亮度同步。
+
 完整说明和默认快捷键见 [英文 README](README.md#utilities)。
 
 ### 与 Windows 版的差异
@@ -88,6 +120,11 @@ New+（从模板新建文件）、Peek（快速预览）、PowerRename（批量�
   **Command Not Found** 在 zsh 中推荐 Homebrew 包。
 - **Power Display** 在 Apple 芯片上通过 IOAVService 走 DDC/CI；屏幕旋转没有公开 API，只读显示。
 - **Mouse Without Borders** 在 Mac 之间连接（加密、Bonjour 自动发现），不与 Windows 版互通。
+- **Privacy Screen** 覆盖并模糊屏幕，但不截取屏幕内容。它不是 macOS 的锁定屏幕：超过你设定的时间后会同时锁定 Mac；
+  锁定期间 MacToys 被退出时，守护进程会锁定 Mac。
+- **App Volume** 通过 Core Audio 进程音频接管来处理声音，只对你改过音量、设备或均衡器的应用生效。
+- **Charge Limit** 需要固件提供充电开关的 Mac；macOS 26 自带充电上限的机型会引导你使用系统设置。
+- **Menu Bar Manager** 用一个分隔符隐藏图标，按住 ⌘ 拖动图标越过它即可，这是 macOS 允许应用整理菜单栏的方式。
 
 ## 命令行
 
@@ -116,7 +153,7 @@ English、简体中文、繁體中文、日本語、한국어、Deutsch、Franç
 
 ```bash
 swift build          # 构建所有目标
-swift test           # 650+ 个单元测试
+swift test           # 1,400 个单元测试
 scripts/bundle.sh    # 生成 build/MacToys.app（CONFIG=release 为优化构建）
 ```
 
