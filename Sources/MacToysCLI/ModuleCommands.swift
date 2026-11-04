@@ -68,8 +68,9 @@ enum ModuleCommands {
                                      Keep the Mac awake (see `mactoys awake --help`)
       lightswitch [status|light|dark|toggle|schedule …]
                                      Switch appearance (see `mactoys lightswitch --help`)
-      powerdisplay [list|get|set|up|down|profiles|apply-profile] …
-                                     Control displays over DDC/CI (see `mactoys powerdisplay --help`)
+      powerdisplay [list|get|set|up|down|profiles|apply-profile|modes|set-mode|dim|pip] …
+                                     Control displays: DDC/CI, resolution, dimming, picture in picture
+                                     (see `mactoys powerdisplay --help`)
       paste <action> [file] [--out <file>]
                                      Advanced Paste transform of a file, stdin or the clipboard;
                                      actions: plain-text, markdown, json, image-to-text, …
