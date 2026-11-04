@@ -205,8 +205,9 @@ extension AgendaEvent {
     func relativeStart(now: Date) -> String {
         let minutes = Int((start.timeIntervalSince(now) / 60).rounded(.up))
         if minutes > 0 {
-            return String(localized: "in \(Duration.seconds(minutes * 60).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)))",
-                          comment: "A meeting starts in this much time, e.g. 'in 5 min'")
+            return String(localized: "calendar.starts-in",
+                          defaultValue: "in \(Duration.seconds(minutes * 60).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)))",
+                          comment: "A meeting starts in this much time; the placeholder is a duration such as '5 min'")
         }
         let ago = Int(now.timeIntervalSince(start) / 60)
         if ago < 1 { return String(localized: "now", comment: "A meeting is starting now") }

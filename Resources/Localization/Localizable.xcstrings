@@ -1241,7 +1241,7 @@
       }
     },
     "%@ (%@)": {
-      "comment": "Annotate tool tooltip: tool name, then the letter key that picks it\nPen color tooltip: color name, then the letter key that selects it",
+      "comment": "Annotate tool tooltip: tool name, then the letter key that picks it\nFormat builder menu item: a token name and its current value in parentheses\nPen color tooltip: color name, then the letter key that selects it",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1253,6 +1253,9 @@
     },
     "%@ (default)": {
       "comment": "Open With menu: the default app for the file"
+    },
+    "%@ (display's own)": {
+      "comment": "Color profile menu: the profile the display came with"
     },
     "%@ (imported)": {
       "comment": "Name of an imported profile whose name is taken; %@ is its name",
@@ -2032,6 +2035,9 @@
         }
       }
     },
+    "%@ before": {
+      "comment": "Reminder lead time, e.g. '2 minutes before'"
+    },
     "%@ behind": {
       "comment": "Time zone difference; %@ is a duration such as “8 hours”",
       "localizations": {
@@ -2098,7 +2104,7 @@
       }
     },
     "%@ connected": {
-      "comment": "Status message; %@ is the other Mac's name",
+      "comment": "Status message; %@ is the other Mac's name\nThe placeholder is a Bluetooth device name",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -2302,7 +2308,7 @@
       "comment": "Equalizer band gain, e.g. '+3 dB'"
     },
     "%@ disconnected": {
-      "comment": "Status message; %@ is the other Mac's name",
+      "comment": "Status message; %@ is the other Mac's name\nThe placeholder is a Bluetooth device name",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -2571,6 +2577,9 @@
           }
         }
       }
+    },
+    "%@ has no volume control": {
+      "comment": "The placeholder is a microphone name"
     },
     "%@ in %@": {
       "comment": "World clock: “10:41 PM in London”; %1$@ is a time, %2$@ a place",
@@ -5207,6 +5216,49 @@
         }
       }
     },
+    "%@ × %@ pixels": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ × %2$@ pixels"
+          }
+        }
+      }
+    },
+    "%@ × %@ · %@": {
+      "comment": "Virtual display preset: pixel size (width × height) and aspect ratio\nVirtual display summary: pixel size (width × height) and refresh rate",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ × %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%@ × %@ · HiDPI, looks like %@ × %@ · %@": {
+      "comment": "Virtual display summary: pixel size (width × height), HiDPI desktop size, refresh rate",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ × %2$@ · HiDPI, looks like %3$@ × %4$@ · %5$@"
+          }
+        }
+      }
+    },
+    "%@ × %@ · looks like %@ × %@": {
+      "comment": "New virtual display menu item: pixel size (width × height), then the HiDPI desktop size",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ × %2$@ · looks like %3$@ × %4$@"
+          }
+        }
+      }
+    },
     "%@ — %@": {
       "comment": "Tooltip: a layout name and its shortcut",
       "localizations": {
@@ -5600,6 +5652,12 @@
         }
       }
     },
+    "%@: Off": {
+      "comment": "HUD after a quick switch turned off; the placeholder is its name"
+    },
+    "%@: On": {
+      "comment": "HUD after a quick switch turned on; the placeholder is its name"
+    },
     "%@; the item was left as “%@”: %@": {
       "comment": "PowerRename: a rename failed (first value: the reason), and moving the item back failed too (second value: the temporary name it keeps; third value: why)",
       "localizations": {
@@ -5735,6 +5793,9 @@
           }
         }
       }
+    },
+    "%@×": {
+      "comment": "A brightness multiplier such as 1.6×\nBrightness slider value with extra brightness: a multiplier such as 1.4×"
     },
     "%@× speed": {
       "comment": "Optimizer settings hero summary: playback speed"
@@ -8449,6 +8510,9 @@
         }
       }
     },
+    "%lld displays connected": {
+      "comment": "Power Display hero: number of connected displays"
+    },
     "%lld displays ready": {
       "comment": "Power Display: number of connected displays",
       "localizations": {
@@ -8971,6 +9035,9 @@
           }
         }
       }
+    },
+    "%lld events": {
+      "comment": "Accessibility: number of events on a day"
     },
     "%lld failed attempts while locked": {
       "comment": "Title after unlocking; the number counts wrong passwords and unrecognized fingerprints\nVoiceOver announcement after unlocking",
@@ -9496,7 +9563,7 @@
       }
     },
     "%lld fps": {
-      "comment": "Frame rate: frames per second",
+      "comment": "Frame rate: frames per second\nFrames per second",
       "localizations": {
         "de": {
           "variations": {
@@ -12120,6 +12187,9 @@
         }
       }
     },
+    "%lld people": {
+      "comment": "Number of people invited to a meeting"
+    },
     "%lld pinned in %lld apps": {
       "comment": "%1$lld pinned shortcuts in %2$lld apps",
       "localizations": {
@@ -12224,6 +12294,9 @@
           }
         }
       }
+    },
+    "%lld power-user utilities for macOS: every Microsoft PowerToys utility, and more. Everything runs from the menu bar; each utility can be switched on or off in Settings.": {
+      "comment": "Welcome window; the number counts the utilities"
     },
     "%lld processes": {
       "localizations": {
@@ -15764,6 +15837,9 @@
         }
       }
     },
+    "12-hour": {
+      "comment": "Clock style"
+    },
     "127.0.0.1 or ::1": {
       "localizations": {
         "de": {
@@ -15963,6 +16039,9 @@
         }
       }
     },
+    "24-hour": {
+      "comment": "Clock style"
+    },
     "3 months": {
       "comment": "Clipboard history retention"
     },
@@ -16027,70 +16106,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "30 分鐘"
-          }
-        }
-      }
-    },
-    "31 power-user utilities for macOS, modeled on Microsoft PowerToys. Everything runs from the menu bar; each utility can be switched on or off in Settings.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 Werkzeuge für Power-User unter macOS, nach dem Vorbild von Microsoft PowerToys. Alles läuft über die Menüleiste; jedes Werkzeug lässt sich in den Einstellungen ein- oder ausschalten."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 utilidades avanzadas para macOS, inspiradas en Microsoft PowerToys. Todo funciona desde la barra de menús; cada utilidad se puede activar o desactivar en Ajustes."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 utilitaires avancés pour macOS, inspirés de Microsoft PowerToys. Tout fonctionne depuis la barre des menus ; chaque utilitaire peut être activé ou désactivé dans les Réglages."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 utility avanzate per macOS, ispirate a Microsoft PowerToys. Tutto funziona dalla barra dei menu; ogni utility si può attivare o disattivare in Impostazioni."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Microsoft PowerToysをモデルにした、macOS用の31種類のパワーユーザ向けユーティリティ。すべてメニューバーから使え、各ユーティリティは“設定”でオン/オフを切り替えられます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Microsoft PowerToys를 본뜬 macOS용 고급 사용자 유틸리티 31개. 모두 메뉴 막대에서 실행되며, 각 유틸리티는 설정에서 켜거나 끌 수 있습니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 utilitários avançados para macOS, inspirados no Microsoft PowerToys. Tudo funciona a partir da barra de menus; cada utilitário pode ser ativado ou desativado nos Ajustes."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 утилита для опытных пользователей macOS по образцу Microsoft PowerToys. Все работает из строки меню; каждую утилиту можно включить или выключить в Настройках."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 个面向高级用户的 macOS 工具，参照 Microsoft PowerToys 打造。所有功能都从菜单栏运行；每个工具都可以在设置中打开或关闭。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "31 個 macOS 進階使用者工具程式，參照 Microsoft PowerToys 打造。一切都從選單列執行；每個工具程式都能在「設定」中開啟或關閉。"
           }
         }
       }
@@ -17027,6 +17042,9 @@
     },
     "A battery with the limit marked; click it for the limit, top up and pause.": {},
     "A big canvas beside references, assets and chat.": {},
+    "A bit dark": {
+      "comment": "Camera Mirror light check: the face is underexposed"
+    },
     "A brief notice": {},
     "A calendar, world clocks and your next meeting in the menu bar.": {},
     "A card per file with the size saved, Restore, Downscale, Copy and more. Off: a short message instead.": {},
@@ -17812,6 +17830,7 @@
         }
       }
     },
+    "A live, resizable window of this display. Needs Screen Recording permission.": {},
     "A magnified, live view you can keep working in. ⌃⌥= and ⌃⌥- change the level.": {
       "localizations": {
         "de": {
@@ -18072,6 +18091,7 @@
         }
       }
     },
+    "A reminder with a Join button, so you’re never late to a call.": {},
     "A ring fills while you hold; lift early to keep the window": {},
     "A second divider, ‖. Icons to its left only appear when you ⌥-click the chevron, open the separate bar with ⌥ or search for them.": {},
     "A shortcut": {
@@ -18271,10 +18291,12 @@
     "A switcher that shows each display's layout, with minimized windows below. Hold the modifiers, press the key to move on, let go to switch.": {},
     "A tap on a Force Touch trackpad when the target changes or the close ring fills": {},
     "A tiled window gets its old size back": {},
+    "A virtual display is a screen that exists only in software. Mirror a monitor without HiDPI onto a HiDPI virtual display for sharper text, or give apps a screen to stream or record. Virtual displays exist while MacToys runs.": {},
     "A volume slider for every app": {},
     "A wide center between narrow tool columns.": {},
     "A wide center, a side column, two stacked windows.": {},
     "A wide sheet, a dashboard over a calculator.": {},
+    "A window or lamp behind you darkens your face. Turn toward the light.": {},
     "A window with the Window Controls palette open under its green button": {
       "comment": "Accessibility: the hero illustration"
     },
@@ -21315,6 +21337,8 @@
     "Add Step": {
       "comment": "Window Controls editor: add a step to the chain"
     },
+    "Add Text": {},
+    "Add Virtual Display": {},
     "Add a Mac by address": {
       "localizations": {
         "de": {
@@ -21379,6 +21403,8 @@
         }
       }
     },
+    "Add a city or time zone, like Tokyo, Paris or PST": {},
+    "Add a clock": {},
     "Add a control": {
       "comment": "Window Controls editor: tooltip of the + button"
     },
@@ -21446,6 +21472,7 @@
         }
       }
     },
+    "Add a piece to the menu bar text": {},
     "Add an API key for the AI provider in Advanced Paste settings.": {
       "localizations": {
         "de": {
@@ -22033,6 +22060,7 @@
     },
     "Add to New Pinboard…": {},
     "Add to Paste Stack": {},
+    "Add to favorites": {},
     "Add to the clipboard instead of replacing": {},
     "Add to the clipboard instead of replacing it (A, or hold ⌥ while releasing)": {},
     "Add to “%@”": {
@@ -24035,6 +24063,9 @@
         }
       }
     },
+    "All day": {
+      "comment": "Calendar event that lasts the whole day"
+    },
     "All displays": {
       "comment": "FancyZones: every display combined into one canvas\nMenu bar mouse wheel changes the brightness of",
       "localizations": {
@@ -24296,6 +24327,7 @@
         }
       }
     },
+    "Allow Access": {},
     "Allow Accessibility access in System Settings so Shortcut Guide can read %@’s menus.": {
       "comment": "%@ is the name of the frontmost app",
       "localizations": {
@@ -24365,6 +24397,8 @@
     "Allow Accessibility to open items from the bar": {},
     "Allow Accessibility to search by item name": {},
     "Allow Accessibility to search menus": {},
+    "Allow Calendar Access": {},
+    "Allow Camera Access": {},
     "Allow Full Disk Access to read Safari bookmarks": {
       "localizations": {
         "de": {
@@ -24431,6 +24465,7 @@
     },
     "Allow MacToys in System Settings › Privacy & Security › Screen & System Audio Recording, under System Audio Recording Only. Until then, apps play as usual.": {},
     "Allow MacToys in System Settings › Privacy & Security › Screen & System Audio Recording. Until then, apps play as usual.": {},
+    "Allow MacToys to control Finder to empty the Trash.": {},
     "Allow MacToys to control System Events": {
       "localizations": {
         "de": {
@@ -24495,6 +24530,9 @@
         }
       }
     },
+    "Allow MacToys to control System Events in System Settings › Privacy & Security › Automation.": {},
+    "Allow access to your calendars": {},
+    "Allow access to your calendars to show events and remind you of meetings. The calendar and world clocks work without it.": {},
     "Allow dialogs to snap": {
       "localizations": {
         "de": {
@@ -24886,6 +24924,9 @@
     "Already optimized": {
       "comment": "Optimizer: the file couldn't be made smaller"
     },
+    "Also for the agenda and world clocks.": {},
+    "Also from the MacToys menu and the Command Palette.": {},
+    "Also in the MacToys menu bar menu. Click one to flip it.": {},
     "Also in the menu bar flyout": {},
     "Also in the menu bar flyout, with the intensity in use": {},
     "Also in the names of files inside folder templates. Characters a name can’t hold become spaces.": {
@@ -25083,6 +25124,7 @@
         }
       }
     },
+    "Also offers each size at half its pixels per side, drawn twice as sharp.": {},
     "Also starts drawing while zoomed or in Live Zoom.": {
       "localizations": {
         "de": {
@@ -25802,6 +25844,7 @@
         }
       }
     },
+    "An iPhone near this Mac, signed in to the same Apple Account, appears here as a camera.": {},
     "An image is needed.": {
       "localizations": {
         "de": {
@@ -29628,6 +29671,7 @@
         }
       }
     },
+    "Ask to keep a new resolution": {},
     "Ask which display": {
       "comment": "Screen capture target: click a display to capture it"
     },
@@ -30303,7 +30347,7 @@
       }
     },
     "Automatic": {
-      "comment": "Recognition language: detect it automatically",
+      "comment": "Camera choice: the camera macOS prefers\nRecognition language: detect it automatically\nSoftware dimming method: color table where possible, else overlay",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -30367,6 +30411,7 @@
         }
       }
     },
+    "Automatic follows the camera macOS picks, such as an iPhone you bring close.": {},
     "Automatic: a voice for the text’s language": {},
     "Automatically delete backups": {
       "localizations": {
@@ -30884,6 +30929,7 @@
         }
       }
     },
+    "Awake isn’t available.": {},
     "Awake never changes your Energy settings; it only asks macOS not to sleep while a mode is on.": {
       "localizations": {
         "de": {
@@ -31412,6 +31458,7 @@
       "comment": "Calibration step: charge back to the limit"
     },
     "Back to layouts": {},
+    "Back to the menu bar (double-click)": {},
     "Back up settings": {
       "localizations": {
         "de": {
@@ -32197,6 +32244,9 @@
       "comment": "Optimizer: video quality level"
     },
     "Bands": {},
+    "Banner": {
+      "comment": "Meeting reminder style"
+    },
     "Bar": {},
     "Barcode copied": {
       "comment": "Card title"
@@ -33413,6 +33463,12 @@
         }
       }
     },
+    "Bluetooth Devices": {
+      "comment": "Quick switch group: connect paired devices"
+    },
+    "Bluetooth devices": {},
+    "Bluetooth isn’t available in this build": {},
+    "Bluetooth isn’t available in this build of MacToys": {},
     "Blur": {
       "comment": "Annotate tool: blur a region"
     },
@@ -35326,70 +35382,9 @@
         }
       }
     },
-    "Brightness, contrast, volume and input for every display": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Helligkeit, Kontrast, Lautstärke und Eingang für jedes Display"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Brillo, contraste, volumen y entrada de todas las pantallas"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Luminosité, contraste, volume et entrée pour chaque écran"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Luminosità, contrasto, volume e ingresso di ogni monitor"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべてのディスプレイの明るさ、コントラスト、音量、入力"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "모든 디스플레이의 밝기, 대비, 음량 및 입력"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Brilho, contraste, volume e entrada de cada monitor"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Яркость, контрастность, громкость и источник сигнала для каждого дисплея"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "每台显示器的亮度、对比度、音量和输入源"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "每台顯示器的亮度、對比、音量和輸入"
-          }
-        }
-      }
-    },
+    "Brightness sliders continue past 0 % by dimming in software. Displays without a brightness control always dim in software.": {},
+    "Brightness sync": {},
+    "Brightness, resolution, color and arrangement for every display": {},
     "Bring %@ forward": {
       "comment": "Window Gestures Dock badge; the app's name"
     },
@@ -36171,70 +36166,6 @@
         }
       }
     },
-    "Built-in displays and DDC/CI monitors appear here. Some docks and adapters don't pass DDC through.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Integrierte Displays und DDC/CI-Monitore erscheinen hier. Manche Docks und Adapter leiten DDC nicht weiter."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aquí aparecen las pantallas integradas y los monitores DDC/CI. Algunos docks y adaptadores no transmiten DDC."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les écrans intégrés et les moniteurs DDC/CI apparaissent ici. Certains docks et adaptateurs ne transmettent pas le DDC."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Qui compaiono i monitor integrati e DDC/CI. Alcuni dock e adattatori non trasmettono DDC."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "内蔵ディスプレイとDDC/CIモニタがここに表示されます。一部のドックやアダプタはDDCを通しません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "내장 디스플레이와 DDC/CI 모니터가 여기에 표시됩니다. 일부 도크와 어댑터는 DDC를 전달하지 않습니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Monitores integrados e monitores DDC/CI aparecem aqui. Alguns docks e adaptadores não repassam o DDC."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Здесь отображаются встроенные дисплеи и мониторы с DDC/CI. Некоторые док-станции и адаптеры не передают DDC."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "内建显示器和支持 DDC/CI 的显示器会显示在这里。部分扩展坞和转接器不会传递 DDC。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "內建顯示器和 DDC/CI 顯示器會顯示在這裡。某些擴充基座和轉接器不會傳遞 DDC。"
-          }
-        }
-      }
-    },
     "Bulk rename files with search and replace, regular expressions, numbering and undo.": {
       "localizations": {
         "de": {
@@ -36885,7 +36816,9 @@
         }
       }
     },
+    "Calendar": {},
     "Calendars": {},
+    "Calendars to show": {},
     "Calibrating": {
       "comment": "Charge Limit state: the calibration routine runs"
     },
@@ -36961,6 +36894,7 @@
       "comment": "Change Case option for code identifiers: camelCase"
     },
     "Camera": {
+      "comment": "Camera picker button when no camera is active",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -37025,7 +36959,11 @@
       }
     },
     "Camera Mirror": {},
+    "Camera Mirror Settings…": {},
+    "Camera Mirror is turned off in MacToys settings": {},
     "Camera Mirror preview": {},
+    "Camera Mirror shows your camera only while the mirror is open. Nothing is recorded or sent anywhere.": {},
+    "Camera access needed": {},
     "Camera manufacturer": {
       "localizations": {
         "de": {
@@ -37154,6 +37092,7 @@
         }
       }
     },
+    "Camera permission needed": {},
     "Cancel": {
       "comment": "Alert button\nCapture hint: esc cancels\nOptimizer card button: stop this job\nUnlock island button: close the island without unlocking the app",
       "localizations": {
@@ -39042,6 +38981,7 @@
         }
       }
     },
+    "Change rotation in System Settings › Displays": {},
     "Change the desktop picture with the appearance": {
       "localizations": {
         "de": {
@@ -39233,6 +39173,9 @@
           }
         }
       }
+    },
+    "Changing…": {
+      "comment": "Quick switch is applying a change"
     },
     "Character Viewer": {
       "localizations": {
@@ -39875,6 +39818,7 @@
         }
       }
     },
+    "Check the light": {},
     "Check your camera from the menu bar before a call, in a small window you can keep on top.": {},
     "Checked": {
       "comment": "Detail row: the menu item shows a check mark"
@@ -40146,6 +40090,7 @@
         }
       }
     },
+    "Choose a Focus shortcut in Quick Switches settings.": {},
     "Choose a MacToys settings backup folder.": {
       "localizations": {
         "de": {
@@ -40210,6 +40155,7 @@
         }
       }
     },
+    "Choose a camera": {},
     "Choose a domain": {
       "localizations": {
         "de": {
@@ -40450,6 +40396,7 @@
       }
     },
     "Choose a format: jpeg, png, heic, avif or webp": {},
+    "Choose a shortcut in settings": {},
     "Choose controls for keyboard mode in Settings.": {
       "comment": "Keyboard mode: no custom controls are numbered yet"
     },
@@ -40979,6 +40926,9 @@
         }
       }
     },
+    "Circle": {
+      "comment": "Camera Mirror window shape"
+    },
     "Circle highlight": {
       "comment": "Mouse Highlighter mode",
       "localizations": {
@@ -41050,6 +41000,9 @@
     "Classical": {
       "comment": "Equalizer preset (music genre)"
     },
+    "Clean Keyboard": {
+      "comment": "Quick action: lock the keyboard for a while to wipe it"
+    },
     "Clean Space": {},
     "Clean Space off": {},
     "Clean Space on": {},
@@ -41119,6 +41072,7 @@
         }
       }
     },
+    "Clean the keyboard now": {},
     "Clear": {
       "comment": "Button: forget the recent captures\nConfirmation button: delete the clipboard history",
       "localizations": {
@@ -42028,6 +41982,7 @@
     "Click a display to capture it": {
       "comment": "Display capture hint"
     },
+    "Click a piece to move or remove it. Dates follow your region’s order.": {},
     "Click a pile to expand it. Also with the button at the top of a shelf.": {},
     "Click a window to capture it": {
       "comment": "Window capture hint"
@@ -42164,11 +42119,15 @@
         }
       }
     },
+    "Click the camera icon to open the mirror; right-click for more.": {},
+    "Click the camera in the menu bar, or use the shortcut. The camera turns on only while the mirror is open and stops when you close it.": {},
     "Click the chevron to show or hide them, or turn on hover in Settings.": {
       "comment": "Arrangement card step"
     },
+    "Click the float button in the mirror or press D. Double-click the window to put it back.": {},
     "Click the highlighted window. Space switches between area and window.": {},
     "Click the icon to open the App Volume flyout.": {},
+    "Click the notch to open the mirror": {},
     "Click the sun to open the flyout.": {
       "localizations": {
         "de": {
@@ -42303,6 +42262,7 @@
         }
       }
     },
+    "Click to rename": {},
     "Click to show the items, drag to take them all": {},
     "Click to split · ⇧ rotates · drag dividers · drag across zones to merge": {
       "localizations": {
@@ -42435,6 +42395,7 @@
         }
       }
     },
+    "Clicking the empty menu bar in front of the camera opens the mirror under it.": {},
     "Clicks, double clicks and right clicks, with the modifier keys held": {},
     "Clipboard": {
       "comment": "Short title of the clipboard history pin\nSnippet placeholder button: inserts the clipboard text",
@@ -42898,7 +42859,7 @@
       }
     },
     "Close": {
-      "comment": "Accessibility: close the result card\nColor Picker mouse action: close the picker without picking\nMenu item: close the crop window\nOptimizer drop zone button\nPinned screenshot menu\nPinned screenshot: close it\nQuick Access card button\nSearch footer: Escape closes search\nTooltip: close the card\nWindow Gestures action: close the window",
+      "comment": "Accessibility: close the result card\nButton: close picture in picture\nColor Picker mouse action: close the picker without picking\nMenu item: close the crop window\nMenu item: close the picture-in-picture window\nOptimizer drop zone button\nPinned screenshot menu\nPinned screenshot: close it\nQuick Access card button\nSearch footer: Escape closes search\nTooltip: close the card\nWindow Gestures action: close the window",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -43483,6 +43444,7 @@
         }
       }
     },
+    "Close the mirror": {},
     "Close the shelf": {},
     "Close the window": {
       "comment": "Window Gestures action"
@@ -44526,6 +44488,7 @@
         }
       }
     },
+    "Color profile": {},
     "Color saturation": {
       "comment": "Monitor control (MCCS VCP) feature",
       "localizations": {
@@ -44655,6 +44618,10 @@
         }
       }
     },
+    "Color table": {
+      "comment": "Software dimming method: the display's gamma table"
+    },
+    "Color table dims everything, the pointer too. Overlay works on every display, including AirPlay and DisplayLink.": {},
     "Color temperature": {
       "localizations": {
         "de": {
@@ -46542,6 +46509,8 @@
         }
       }
     },
+    "Connect a camera, or bring your iPhone close to use it as a webcam.": {},
+    "Connect or disconnect paired headphones, speakers and other devices.": {},
     "Connect to another Mac": {
       "localizations": {
         "de": {
@@ -46607,7 +46576,7 @@
       }
     },
     "Connected": {
-      "comment": "Mouse Without Borders connection state",
+      "comment": "Bluetooth device state\nMouse Without Borders connection state",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -46801,6 +46770,8 @@
         }
       }
     },
+    "Connecting %@…": {},
+    "Connecting…": {},
     "Connection": {
       "localizations": {
         "de": {
@@ -47190,70 +47161,7 @@
         }
       }
     },
-    "Control brightness, contrast, volume and input of your displays from one flyout.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Helligkeit, Kontrast, Lautstärke und Eingang der Displays über ein Flyout steuern."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Controla el brillo, el contraste, el volumen y la entrada de tus pantallas desde un solo panel."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contrôlez la luminosité, le contraste, le volume et l’entrée de vos écrans depuis un seul panneau."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Controlla luminosità, contrasto, volume e ingresso dei monitor da un unico pannello."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ディスプレイの明るさ、コントラスト、音量、入力を1つのパネルから操作できます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "하나의 플라이아웃에서 디스플레이의 밝기, 대비, 음량 및 입력을 제어합니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Controle brilho, contraste, volume e entrada dos seus monitores em um só painel."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Управляйте яркостью, контрастностью, громкостью и источником сигнала дисплеев из одной панели."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "通过一个浮动面板控制显示器的亮度、对比度、音量和输入源。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "從同一個浮出視窗控制顯示器的亮度、對比、音量和輸入。"
-          }
-        }
-      }
-    },
+    "Control brightness, resolution, color and arrangement of your displays from one flyout.": {},
     "Control several Macs with one keyboard and mouse, and share the clipboard.": {
       "localizations": {
         "de": {
@@ -50622,6 +50530,9 @@
         }
       }
     },
+    "Copy “%@”": {
+      "comment": "Menu item: copy this date or time text; the placeholder is the text"
+    },
     "Copy, or paste into the shelf": {},
     "Copy, save, annotate, pin or drag the capture from a card in the corner.": {},
     "Copyright": {
@@ -51144,6 +51055,7 @@
         }
       }
     },
+    "Couldn't change mirroring": {},
     "Couldn't change the appearance: %@": {
       "comment": "Light Switch error; the placeholder is the AppleScript error message",
       "localizations": {
@@ -51209,6 +51121,8 @@
         }
       }
     },
+    "Couldn't change the color profile": {},
+    "Couldn't change the main display": {},
     "Couldn't create the app: %@": {
       "comment": "%@ is the error from the AppleScript compiler",
       "localizations": {
@@ -51274,6 +51188,7 @@
         }
       }
     },
+    "Couldn't create the virtual display": {},
     "Couldn't download the Homebrew database (%@) and there's no local Homebrew copy.": {
       "comment": "The placeholder is why the download failed",
       "localizations": {
@@ -52055,6 +51970,7 @@
         }
       }
     },
+    "Couldn't switch the resolution": {},
     "Couldn't write a temporary file: %@": {
       "comment": "The placeholder is the system's error message",
       "localizations": {
@@ -52249,8 +52165,17 @@
         }
       }
     },
+    "Couldn’t change Finder’s settings.": {},
+    "Couldn’t change Low Power Mode.": {},
+    "Couldn’t change the Dock’s settings.": {},
+    "Couldn’t change the input volume of %@.": {
+      "comment": "The placeholder is a microphone name"
+    },
     "Couldn’t compress the items": {
       "comment": "Alert title"
+    },
+    "Couldn’t connect %@": {
+      "comment": "The placeholder is a Bluetooth device name"
     },
     "Couldn’t create a temporary file.": {
       "localizations": {
@@ -52445,6 +52370,9 @@
         }
       }
     },
+    "Couldn’t disconnect %@": {
+      "comment": "The placeholder is a Bluetooth device name"
+    },
     "Couldn’t eject %@": {
       "localizations": {
         "de": {
@@ -52579,6 +52507,7 @@
         }
       }
     },
+    "Couldn’t open the %@ link": {},
     "Couldn’t read the DemoType script": {
       "localizations": {
         "de": {
@@ -52713,6 +52642,9 @@
     "Couldn’t rename “%@”": {
       "comment": "Alert title; the placeholder is a file name"
     },
+    "Couldn’t restart %@.": {
+      "comment": "The placeholder is Finder or Dock"
+    },
     "Couldn’t run %@": {
       "localizations": {
         "de": {
@@ -52777,6 +52709,7 @@
         }
       }
     },
+    "Couldn’t save the photo: %@": {},
     "Couldn’t save the screenshot": {},
     "Couldn’t save the snip": {
       "localizations": {
@@ -53035,6 +52968,7 @@
         }
       }
     },
+    "Couldn’t take the photo": {},
     "Count": {
       "comment": "Text action: count characters, words and lines"
     },
@@ -54904,6 +54838,7 @@
         }
       }
     },
+    "Current resolution": {},
     "Current time and date, other time zones, Unix timestamps and calendar weeks": {
       "localizations": {
         "de": {
@@ -56584,6 +56519,9 @@
         }
       }
     },
+    "Dark Mode": {
+      "comment": "Quick switch"
+    },
     "Dark Purple": {
       "comment": "Color name",
       "localizations": {
@@ -57488,6 +57426,7 @@
         }
       }
     },
+    "Darkest software dimming": {},
     "Darkness": {},
     "Data": {
       "comment": "Property list value type: raw bytes",
@@ -57815,6 +57754,7 @@
     "Date & time": {
       "comment": "Snippet placeholder button"
     },
+    "Date and time": {},
     "Date created": {
       "localizations": {
         "de": {
@@ -58007,6 +57947,9 @@
         }
       }
     },
+    "Date with year": {
+      "comment": "Menu bar format token, e.g. 4 Nov 2026"
+    },
     "Dates in variables": {
       "localizations": {
         "de": {
@@ -58072,7 +58015,7 @@
       }
     },
     "Day": {
-      "comment": "Meaning of the date token $D in file names",
+      "comment": "Meaning of the date token $D in file names\nMenu bar format token: day of the month, e.g. 4",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -58135,6 +58078,9 @@
           }
         }
       }
+    },
+    "Day and month": {
+      "comment": "Menu bar format token, e.g. 4 Nov"
     },
     "Day of year": {
       "comment": "Time format row: the day's number in the year",
@@ -58395,6 +58341,7 @@
         }
       }
     },
+    "Declined and canceled events are left out. New calendars are shown until you turn them off.": {},
     "Decoded Base64": {
       "localizations": {
         "de": {
@@ -58460,7 +58407,7 @@
       }
     },
     "Default": {
-      "comment": "Image Resizer encoder option: let the system decide\nMicrophone: the system default input\nName of the first keyboard profile\nResult row label: the default app for the file",
+      "comment": "Image Resizer encoder option: let the system decide\nMicrophone: the system default input\nName of the first keyboard profile\nRefresh rate the display doesn't report\nResult row label: the default app for the file",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -60678,7 +60625,7 @@
       "comment": "FancyZones layout preset name (graphic or UI design work)"
     },
     "Desktop": {
-      "comment": "macOS shortcut: Finder, go to the Desktop folder",
+      "comment": "Folder name\nmacOS shortcut: Finder, go to the Desktop folder",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -61321,6 +61268,7 @@
         }
       }
     },
+    "Dim below the hardware minimum": {},
     "Dim every window behind the one you're working in.": {},
     "Dim them completely": {
       "comment": "Focus Dimmer: other displays are dimmed entirely"
@@ -61390,6 +61338,8 @@
         }
       }
     },
+    "Dimmed %@": {},
+    "Dimmed in software below the display's minimum": {},
     "Dimmed, as in the menu; choosing one does nothing.": {},
     "Dimming": {},
     "Dimming around the active window": {},
@@ -61785,6 +61735,9 @@
     "Discharging": {
       "comment": "Charge Limit state: running from the battery while plugged in"
     },
+    "Disconnect": {
+      "comment": "Button: remove this virtual display"
+    },
     "Disconnected.": {
       "comment": "File transfer failed: the other Mac disconnected",
       "localizations": {
@@ -61851,7 +61804,7 @@
       }
     },
     "Dismiss": {
-      "comment": "Optimizer card button: close this card",
+      "comment": "Button: close the meeting reminder\nKeyboard hint: Esc closes the reminder\nOptimizer card button: close this card",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -62151,6 +62104,7 @@
     "Display above": {
       "comment": "Window Controls: move to the display above"
     },
+    "Display arrangement": {},
     "Display below": {
       "comment": "Window Controls: move to the display below"
     },
@@ -62484,6 +62438,7 @@
     "Display on the right": {
       "comment": "Window Controls: move to the display on the right"
     },
+    "Display options": {},
     "Display scaling": {
       "comment": "Monitor control (MCCS VCP) feature",
       "localizations": {
@@ -62941,6 +62896,9 @@
           }
         }
       }
+    },
+    "Do Not Disturb": {
+      "comment": "Quick switch: Focus mode"
     },
     "Do nothing": {
       "comment": "If the app is already running\nWindow Gestures: the gesture is off",
@@ -64639,6 +64597,7 @@
       }
     },
     "Drag the keystrokes where they should appear": {},
+    "Drag the window anywhere; drag its corner grip to resize it.": {},
     "Drag threshold": {
       "localizations": {
         "de": {
@@ -64704,6 +64663,7 @@
       }
     },
     "Drag to Position…": {},
+    "Drag to move the part of the picture the mirror shows": {},
     "Drag to reorder. Each action appears only when it fits the selection, so the bar stays short.": {},
     "Drag to resize": {
       "localizations": {
@@ -67143,6 +67103,7 @@
       "comment": "Clipboard panel dialog title"
     },
     "Edit Text…": {},
+    "Edit Virtual Displays…": {},
     "Edit Zones…": {
       "localizations": {
         "de": {
@@ -68295,7 +68256,7 @@
       "comment": "A shelf with no items"
     },
     "Empty Trash": {
-      "comment": "Confirmation button: empty the Trash",
+      "comment": "Confirmation button: empty the Trash\nQuick action",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -68360,6 +68321,11 @@
       }
     },
     "Empty space is the part of the menu bar between the app's menus and your icons.": {},
+    "Empty the Trash?": {},
+    "Empty the Trash? %lld items will be erased.": {
+      "comment": "Confirmation; the placeholder is the number of items"
+    },
+    "Empty the Trash? 1 item will be erased.": {},
     "Enable": {
       "comment": "Uncomment the hosts entry",
       "localizations": {
@@ -69988,6 +69954,7 @@
         }
       }
     },
+    "Erase the items in the Trash, after asking.": {},
     "Eraser": {
       "comment": "Drawing tool",
       "localizations": {
@@ -70118,6 +70085,7 @@
         }
       }
     },
+    "Errors are always shown.": {},
     "Esc key": {
       "localizations": {
         "de": {
@@ -70446,6 +70414,7 @@
     "Event": {
       "comment": "Kind of QR code content: a calendar event"
     },
+    "Events, dots and meeting reminders need it. The calendar and world clocks work without it.": {},
     "Every Mac disconnects until you enter the new key on them.": {
       "localizations": {
         "de": {
@@ -70578,10 +70547,12 @@
       }
     },
     "Every display": {},
+    "Every display is hidden. Show them again in Power Display settings.": {},
     "Every gesture that is on, at a glance": {},
     "Every key": {
       "comment": "Keystroke Overlay mode"
     },
+    "Every key, including media and brightness keys, is ignored. Needs Accessibility access.": {},
     "Every open window of every app": {
       "localizations": {
         "de": {
@@ -71164,6 +71135,7 @@
         }
       }
     },
+    "Example: Design review": {},
     "Example: “%@” → “%@”": {
       "comment": "New+: a template name with variables, then the name it creates",
       "localizations": {
@@ -73297,70 +73269,11 @@
         }
       }
     },
-    "External monitors are controlled over DDC/CI on Apple silicon; the built-in display and Apple displays use macOS's own brightness control. Many USB-C/Thunderbolt docks and DisplayLink adapters don't pass DDC/CI through. Rotation isn't offered: macOS has no public API to rotate a display — use System Settings › Displays › Rotation.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Externe Monitore werden auf Apple Silicon über DDC/CI gesteuert; das integrierte Display und Apple-Displays nutzen die Helligkeitssteuerung von macOS. Viele USB-C-/Thunderbolt-Docks und DisplayLink-Adapter leiten DDC/CI nicht weiter. Drehen wird nicht angeboten: macOS hat keine öffentliche API zum Drehen eines Displays – dafür „Systemeinstellungen › Displays › Drehung“ verwenden."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "En Apple silicon, los monitores externos se controlan mediante DDC/CI; la pantalla integrada y las pantallas de Apple usan el control de brillo propio de macOS. Muchos docks USB-C/Thunderbolt y adaptadores DisplayLink no transmiten DDC/CI. No se ofrece la rotación: macOS no tiene ninguna API pública para girar una pantalla — usa Ajustes del Sistema › Pantallas › Rotación."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les moniteurs externes sont contrôlés via DDC/CI sur les Mac avec puce Apple ; l’écran intégré et les écrans Apple utilisent le réglage de luminosité de macOS. De nombreux docks USB-C/Thunderbolt et adaptateurs DisplayLink ne transmettent pas le DDC/CI. La rotation n’est pas proposée : macOS n’a pas d’API publique pour faire pivoter un écran — utilisez Réglages Système › Moniteurs › Rotation."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I monitor esterni vengono controllati tramite DDC/CI su Apple silicon; il monitor integrato e i monitor Apple usano il controllo della luminosità di macOS. Molti dock USB-C/Thunderbolt e adattatori DisplayLink non trasmettono DDC/CI. La rotazione non è disponibile: macOS non ha un'API pubblica per ruotare un monitor; usa Impostazioni di Sistema › Monitor › Rotazione."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Appleシリコン搭載のMacでは、外部モニタはDDC/CIで制御されます。内蔵ディスプレイとAppleディスプレイはmacOS独自の明るさ調整を使用します。多くのUSB-C/ThunderboltドックやDisplayLinkアダプタはDDC/CIを通しません。回転には対応していません: macOSにはディスプレイを回転する公開APIがないため、“システム設定” › “ディスプレイ” › “回転”を使用してください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple 실리콘에서는 외장 모니터를 DDC/CI로 제어하며, 내장 디스플레이와 Apple 디스플레이는 macOS 자체 밝기 제어를 사용합니다. 많은 USB-C/Thunderbolt 도크와 DisplayLink 어댑터는 DDC/CI를 전달하지 않습니다. macOS에는 디스플레이를 회전하는 공개 API가 없어 회전 기능은 제공되지 않습니다. 시스템 설정 › 디스플레이 › 회전을 사용하세요."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Monitores externos são controlados via DDC/CI em Macs com Apple silicon; o monitor integrado e os monitores Apple usam o controle de brilho do próprio macOS. Muitos docks USB-C/Thunderbolt e adaptadores DisplayLink não repassam o DDC/CI. A rotação não é oferecida: o macOS não tem uma API pública para girar um monitor — use Ajustes do Sistema › Monitores › Rotação."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Внешние мониторы на Mac с Apple silicon управляются по DDC/CI; встроенный дисплей и дисплеи Apple используют собственное управление яркостью macOS. Многие док-станции USB-C/Thunderbolt и адаптеры DisplayLink не передают DDC/CI. Поворот недоступен: в macOS нет общедоступного API для поворота дисплея — используйте Системные настройки › Дисплеи › Поворот."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Apple 芯片上，外接显示器通过 DDC/CI 控制；内建显示器和 Apple 显示器使用 macOS 自身的亮度控制。许多 USB-C/雷雳扩展坞和 DisplayLink 转接器不会传递 DDC/CI。不提供旋转功能：macOS 没有用于旋转显示器的公开 API — 请使用系统设置 › 显示器 › 旋转。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Apple 晶片上，外接顯示器透過 DDC/CI 控制；內建顯示器和 Apple 顯示器則使用 macOS 本身的亮度控制。許多 USB-C/Thunderbolt 擴充基座和 DisplayLink 轉接器不會傳遞 DDC/CI。不提供旋轉功能：macOS 沒有可旋轉顯示器的公開 API — 請使用「系統設定」›「顯示器」›「旋轉」。"
-          }
-        }
-      }
-    },
+    "External monitors are controlled over DDC/CI on Apple silicon; the built-in display and Apple displays use macOS's own brightness control. Many USB-C/Thunderbolt docks and DisplayLink adapters don't pass DDC/CI through; those displays dim in software. Software dimming and extra brightness last only while MacToys runs: macOS restores the displays when it quits. Rotation isn't offered: macOS has no public API to rotate a display — use System Settings › Displays › Rotation.": {},
+    "Extra brightness": {},
+    "Extra brightness %@": {},
+    "Extra brightness from the display's HDR headroom": {},
+    "Extra brightness on XDR displays": {},
     "Extra durations": {
       "localizations": {
         "de": {
@@ -76687,6 +76600,7 @@
         }
       }
     },
+    "First day of the week": {},
     "Fit": {
       "comment": "Image Resizer: keep the whole picture inside the size",
       "localizations": {
@@ -77350,11 +77264,21 @@
         }
       }
     },
+    "Float": {},
+    "Float above other windows": {},
+    "Float in a Window": {},
+    "Float in a window": {},
+    "Float in a window (D)": {},
+    "Float on Top": {
+      "comment": "Menu item: keep the picture-in-picture window above other windows"
+    },
     "Float or tile the focused window": {},
     "Float or tile the window": {},
+    "Float the mirror in a window": {},
     "Float this window": {
       "comment": "Auto Tiling quick action above a window"
     },
+    "Floating window": {},
     "Floating · %@": {
       "comment": "HUD: the window floats above the tiles; %@ is the app"
     },
@@ -77697,6 +77621,9 @@
         }
       }
     },
+    "Follow %@": {
+      "comment": "Brightness sync menu item: other displays follow this one, keeping their distance"
+    },
     "Follow Night Shift": {
       "comment": "Light Switch schedule mode",
       "localizations": {
@@ -77892,6 +77819,9 @@
           }
         }
       }
+    },
+    "Follows %@": {
+      "comment": "Brightness sync: other displays follow this display's brightness"
     },
     "Font size": {
       "localizations": {
@@ -79250,6 +79180,7 @@
         }
       }
     },
+    "Framing": {},
     "Free-form zones you draw, move and resize, which may overlap. Scales to other displays.": {},
     "Freeze the screen while selecting": {},
     "From": {
@@ -79316,6 +79247,9 @@
           }
         }
       }
+    },
+    "From %@": {
+      "comment": "Multi-day event: starts at this time today"
     },
     "From %@ · %@": {
       "comment": "Received file: the sending Mac's name, then the file size",
@@ -79728,7 +79662,7 @@
       "comment": "Screenshot output scale: the display's native pixels"
     },
     "Full screen": {
-      "comment": "Launch a window as: in full-screen mode",
+      "comment": "Launch a window as: in full-screen mode\nMeeting reminder style: big card over the whole screen",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -79792,6 +79726,7 @@
         }
       }
     },
+    "Full screen dims the desktop and shows the next meeting in a large card; press Return to join or Esc to dismiss.": {},
     "Full screen · %@": {
       "comment": "Record Screen action when idle; %@ is the file format, e.g. MP4",
       "localizations": {
@@ -81862,6 +81797,9 @@
         }
       }
     },
+    "Go to today": {},
+    "Go to today (T)": {},
+    "Go to today (in the calendar)": {},
     "Goes between items you join with ⌘M or paste together.": {},
     "Gold": {
       "comment": "Color name",
@@ -81927,6 +81865,9 @@
           }
         }
       }
+    },
+    "Good light": {
+      "comment": "Camera Mirror light check"
     },
     "Good to know": {
       "localizations": {
@@ -82848,6 +82789,9 @@
       }
     },
     "Haptic feedback": {},
+    "Has the menu bar": {
+      "comment": "Arrange pane: this display is the main display"
+    },
     "Header Comments": {
       "localizations": {
         "de": {
@@ -83516,6 +83460,7 @@
         }
       }
     },
+    "HiDPI": {},
     "Hidden": {
       "comment": "Hero illustration caption: the menu bar with icons hidden\nKeystroke Overlay state: not showing keys\nLaunch a window as: its app hidden\nMenu Bar Manager section: icons shown on demand\nWindow state: its app is hidden",
       "localizations": {
@@ -83909,6 +83854,9 @@
         }
       }
     },
+    "Hide Desktop Icons": {
+      "comment": "Quick switch"
+    },
     "Hide Icons": {},
     "Hide Keystrokes": {},
     "Hide Launch Options": {
@@ -84112,6 +84060,7 @@
     "Hide cards after": {},
     "Hide desktop icons in captures": {},
     "Hide desktop icons, show hidden files, connect AirPods and more, from the menu bar.": {},
+    "Hide files and folders on the desktop, for screen sharing or a clean look. Finder restarts.": {},
     "Hide leading digits, spaces and dots": {
       "localizations": {
         "de": {
@@ -84176,6 +84125,7 @@
         }
       }
     },
+    "Hide low-resolution duplicates": {},
     "Hide menu bar items": {
       "comment": "Menu Bar Manager chevron: accessibility label and tooltip"
     },
@@ -84310,6 +84260,13 @@
       }
     },
     "Hide password": {},
+    "Hide resolution, color and arrangement": {},
+    "Hide the Dock": {
+      "comment": "Quick switch: automatically hide and show the Dock"
+    },
+    "Hide the Menu Bar": {
+      "comment": "Quick switch: automatically hide and show the menu bar"
+    },
     "Hide the app": {
       "comment": "Window Gestures Dock action",
       "localizations": {
@@ -84578,6 +84535,7 @@
     "Higher quality": {
       "comment": "Optimizer: video quality level"
     },
+    "Higher rates are smoother and use more energy.": {},
     "Higher rates look smoother and use more energy": {
       "localizations": {
         "de": {
@@ -88422,6 +88380,7 @@
         }
       }
     },
+    "How much light is taken away at the end of the slider.": {},
     "How much of the display the main window takes": {},
     "How scripts work": {
       "localizations": {
@@ -88854,6 +88813,11 @@
         }
       }
     },
+    "ISO 8601": {
+      "comment": "Week numbering standard name"
+    },
+    "ISO 8601 date": {},
+    "ISO 8601: weeks start on Monday and week 1 has the year’s first Thursday. Regional: your region’s rule.": {},
     "ISO sensitivity": {
       "localizations": {
         "de": {
@@ -88984,6 +88948,12 @@
       }
     },
     "Icon": {},
+    "Icon and text": {
+      "comment": "Menu Bar Calendar: icon followed by the text"
+    },
+    "Icon with the day": {
+      "comment": "Menu Bar Calendar: show a calendar icon with today's day number"
+    },
     "Icons": {
       "comment": "Text Actions bar style: icons only"
     },
@@ -89378,6 +89348,7 @@
     "Ignore": {
       "comment": "Custom action result: do nothing with the output"
     },
+    "Ignore every key for a while so you can wipe the keyboard. Press esc three times to stop early.": {},
     "Ignore movements smaller than": {
       "localizations": {
         "de": {
@@ -90357,6 +90328,7 @@
     "In a shelf": {},
     "In text you can edit": {},
     "In text you can edit, when the clipboard holds text": {},
+    "In the Shortcuts app, make a shortcut with the Set Focus action (for example Do Not Disturb, Turn On).": {},
     "In the editor, Create Shortcut saves a small app you can keep in the Dock, a web location or a shell script that launches the workspace.": {
       "localizations": {
         "de": {
@@ -91011,6 +90983,9 @@
           }
         }
       }
+    },
+    "Independent": {
+      "comment": "Brightness sync: every display on its own"
     },
     "Index": {
       "localizations": {
@@ -94113,8 +94088,17 @@
     "Jazz": {
       "comment": "Equalizer preset (music genre)"
     },
+    "Join": {
+      "comment": "Button: join the video call"
+    },
     "Join Lines": {
       "comment": "Card tile, an on/off switch: join wrapped lines into paragraphs"
+    },
+    "Join Next Call": {},
+    "Join the next call": {},
+    "Join the next call (in the calendar)": {},
+    "Join with %@": {
+      "comment": "Button help; the placeholder is a video call service like Zoom\nButton; the placeholder is a video call service like Zoom"
     },
     "Just move the pointer": {
       "comment": "Easy Mouse: switch Macs without holding a key",
@@ -94187,10 +94171,14 @@
     "Kebab case": {
       "comment": "Change Case option for code identifiers: kebab-case"
     },
+    "Keep": {
+      "comment": "Button: keep the new resolution"
+    },
     "Keep Audio": {
       "comment": "Optimizer card menu: re-encode with sound"
     },
     "Keep Awake": {
+      "comment": "Quick switch: stop the Mac from sleeping",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -94852,6 +94840,7 @@
         }
       }
     },
+    "Keep on top of other windows": {},
     "Keep originals": {},
     "Keep pinching to close": {},
     "Keep pinching to quit": {},
@@ -95318,6 +95307,7 @@
       "comment": "Focus Dimmer: each other display keeps its topmost window undimmed"
     },
     "Keep them after quitting": {},
+    "Keep this resolution?": {},
     "Keep up to": {},
     "Keep windows in their zones when displays change": {
       "localizations": {
@@ -96484,6 +96474,7 @@
     "Keyboard Shortcuts…": {
       "comment": "Button: open the Keyboard Shortcuts settings"
     },
+    "Keyboard locked for cleaning": {},
     "Keyboard mode": {
       "comment": "Title of the Window Controls keyboard-mode HUD"
     },
@@ -96552,6 +96543,7 @@
       }
     },
     "Keyboard shortcuts": {},
+    "Keyboard unlocked": {},
     "Keypad": {
       "comment": "Key picker section",
       "localizations": {
@@ -96749,6 +96741,7 @@
     "Keys in the annotate window": {
       "comment": "Screenshot settings: list of annotate keys"
     },
+    "Keys in the mirror": {},
     "Keys pressed with ⌘, ⌃ or ⌥. What you type stays private.": {},
     "Keys to press": {},
     "Keys while drawing": {
@@ -97698,7 +97691,7 @@
       }
     },
     "Large": {
-      "comment": "Image Resizer default size name\nOverlay size\nQuick Access card size\nText Actions bar size",
+      "comment": "Image Resizer default size name\nOverlay size\nPicture-in-picture window size\nQuick Access card size\nText Actions bar size",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -99929,6 +99922,8 @@
       }
     },
     "Leave full-screen apps alone": {},
+    "Leave it on Same shortcut if yours toggles the Focus.": {},
+    "Leave out 1× modes when the same desktop size exists in HiDPI.": {},
     "Leave them undimmed": {
       "comment": "Focus Dimmer: other displays are not dimmed at all"
     },
@@ -102039,6 +102034,9 @@
         }
       }
     },
+    "Light is behind you": {
+      "comment": "Camera Mirror light check: backlit face"
+    },
     "Light mode": {
       "localizations": {
         "de": {
@@ -102423,6 +102421,7 @@
         }
       }
     },
+    "Like a mirror: raise your right hand and it moves on the right. Others in a call see you unmirrored.": {},
     "Like a thumbnail, but clicking it brings the original window forward with that area under the pointer": {
       "localizations": {
         "de": {
@@ -103052,69 +103051,8 @@
         }
       }
     },
-    "Link brightness levels": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Helligkeitsstufen verknüpfen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vincular niveles de brillo"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lier les niveaux de luminosité"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Collega i livelli di luminosità"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "明るさのレベルをリンク"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "밝기 수준 연동"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vincular níveis de brilho"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Связать уровни яркости"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "联动亮度级别"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "連結亮度等級"
-          }
-        }
-      }
+    "Linked": {
+      "comment": "Brightness sync: one slider for all displays"
     },
     "Linked at %@": {
       "localizations": {
@@ -103180,9 +103118,14 @@
         }
       }
     },
+    "Linked moves every display with one slider. Follow keeps each display's distance to the one you pick, for example the built-in display as it adapts to ambient light.": {},
+    "Linked: one slider for all": {
+      "comment": "Brightness sync menu item"
+    },
     "Links": {
       "comment": "Clipboard type filter"
     },
+    "Links to Zoom, Google Meet, Microsoft Teams, Webex and FaceTime are found in the event’s URL, location and notes.": {},
     "List": {
       "comment": "Expanded shelf layout: one row per item"
     },
@@ -104415,7 +104358,7 @@
     },
     "Lock App": {},
     "Lock Screen": {
-      "comment": "Privacy Screen hot corner action\nSystem Settings pane; use the name macOS shows",
+      "comment": "Privacy Screen hot corner action\nQuick action: lock the Mac now\nSystem Settings pane; use the name macOS shows",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -104812,6 +104755,7 @@
       "comment": "VoiceOver; the placeholder is the lock style name"
     },
     "Lock starts when the Mac has had no input for this long.": {},
+    "Lock the keyboard for": {},
     "Lock the left (primary) button": {
       "localizations": {
         "de": {
@@ -105068,6 +105012,7 @@
         }
       }
     },
+    "Lock your Mac and show the login window.": {},
     "Lock, blur or hide — right where you are": {},
     "Lock, sleep, restart, shut down and more": {
       "localizations": {
@@ -105793,6 +105738,10 @@
     "Low": {
       "comment": "Shake sensitivity: needs a long, wide shake"
     },
+    "Low Power Mode": {
+      "comment": "Quick switch"
+    },
+    "Low Power Mode wasn’t changed.": {},
     "Low battery": {
       "comment": "Charge Limit state"
     },
@@ -106124,70 +106073,6 @@
       }
     },
     "MacToys can't read this Mac's power controller.": {},
-    "MacToys can't talk to this display. DisplayLink, AirPlay and Sidecar displays, and some docks and adapters, don't support DDC/CI.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys kann nicht mit diesem Display kommunizieren. DisplayLink-, AirPlay- und Sidecar-Displays sowie manche Docks und Adapter unterstützen DDC/CI nicht."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys no puede comunicarse con esta pantalla. Las pantallas DisplayLink, AirPlay y Sidecar, así como algunos docks y adaptadores, no admiten DDC/CI."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys ne peut pas communiquer avec cet écran. Les écrans DisplayLink, AirPlay et Sidecar, ainsi que certains docks et adaptateurs, ne prennent pas en charge le DDC/CI."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys non riesce a comunicare con questo monitor. I monitor DisplayLink, AirPlay e Sidecar, e alcuni dock e adattatori, non supportano DDC/CI."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToysはこのディスプレイと通信できません。DisplayLink、AirPlay、Sidecarのディスプレイや、一部のドックとアダプタはDDC/CIに対応していません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys가 이 디스플레이와 통신할 수 없습니다. DisplayLink, AirPlay 및 Sidecar 디스플레이와 일부 도크 및 어댑터는 DDC/CI를 지원하지 않습니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O MacToys não consegue se comunicar com este monitor. Monitores DisplayLink, AirPlay e Sidecar, além de alguns docks e adaptadores, não são compatíveis com DDC/CI."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys не может связаться с этим дисплеем. Дисплеи DisplayLink, AirPlay и Sidecar, а также некоторые док-станции и адаптеры не поддерживают DDC/CI."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys 无法与此显示器通信。DisplayLink、隔空播放和随航显示器，以及某些扩展坞和转接器不支持 DDC/CI。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacToys 無法與此顯示器通訊。DisplayLink、AirPlay 和 Sidecar 顯示器，以及某些擴充基座和轉接器不支援 DDC/CI。"
-          }
-        }
-      }
-    },
     "MacToys doesn't open at login": {
       "localizations": {
         "de": {
@@ -107102,6 +106987,9 @@
         }
       }
     },
+    "Main": {
+      "comment": "Badge: the main display (menu bar)"
+    },
     "Main display": {
       "comment": "Window Controls: move to the display with the menu bar"
     },
@@ -107233,6 +107121,9 @@
           }
         }
       }
+    },
+    "Make Main": {
+      "comment": "Button: make this the main display"
     },
     "Make main window": {
       "comment": "Auto Tiling quick action above a window"
@@ -108284,6 +108175,7 @@
       }
     },
     "Maximum capacity": {},
+    "Maximum extra brightness": {},
     "Maximum file size to preview": {
       "localizations": {
         "de": {
@@ -109160,7 +109052,7 @@
       }
     },
     "Medium": {
-      "comment": "Image Resizer default size name\nOverlay size\nQuick Access card size\nShake sensitivity\nText Actions bar size",
+      "comment": "Image Resizer default size name\nOverlay size\nPicture-in-picture window size\nQuick Access card size\nShake sensitivity\nText Actions bar size",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -109227,6 +109119,7 @@
     "Meeting": {
       "comment": "FancyZones layout preset name (a video call)"
     },
+    "Meeting reminders": {},
     "Memory": {
       "comment": "Detail row: memory a process uses",
       "localizations": {
@@ -109358,7 +109251,9 @@
       }
     },
     "Menu Bar Calendar": {},
+    "Menu Bar Calendar Settings…": {},
     "Menu Bar Calendar events and meeting reminders": {},
+    "Menu Bar Calendar settings": {},
     "Menu Bar Manager": {},
     "Menu Bar Manager Settings…": {
       "comment": "Chevron menu"
@@ -110650,6 +110545,7 @@
         }
       }
     },
+    "Mirror": {},
     "Mirror Displays": {
       "comment": "Key name",
       "localizations": {
@@ -110715,6 +110611,9 @@
         }
       }
     },
+    "Mirror Photo %@": {
+      "comment": "File name of a photo taken in Camera Mirror; the placeholder is a date and time like 2026-11-04 21.43.07"
+    },
     "Mirror frame rate": {
       "localizations": {
         "de": {
@@ -110778,6 +110677,11 @@
           }
         }
       }
+    },
+    "Mirror the picture": {},
+    "Mirror the picture (M)": {},
+    "Mirroring": {
+      "comment": "Badge: this display shows a copy of another display"
     },
     "Mission Control": {
       "comment": "macOS shortcut: show Mission Control (feature name)",
@@ -111622,7 +111526,7 @@
       }
     },
     "Month": {
-      "comment": "Meaning of the date token $M in file names",
+      "comment": "Meaning of the date token $M in file names\nMenu bar format token, e.g. November",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -111814,6 +111718,9 @@
           }
         }
       }
+    },
+    "Month, short": {
+      "comment": "Menu bar format token, e.g. Nov"
     },
     "Month, two digits": {
       "comment": "Meaning of the date token $MM in file names",
@@ -113044,6 +112951,7 @@
         }
       }
     },
+    "Move Left": {},
     "Move Pin Left": {
       "localizations": {
         "de": {
@@ -113172,6 +113080,7 @@
         }
       }
     },
+    "Move Right": {},
     "Move Up": {
       "localizations": {
         "de": {
@@ -113304,6 +113213,8 @@
     "Move and size": {
       "comment": "Keyboard mode cheat sheet section"
     },
+    "Move away from direct light or lower the lamp.": {},
+    "Move by day or week": {},
     "Move down": {
       "comment": "Window Controls editor: move the step later in the chain",
       "localizations": {
@@ -115441,6 +115352,9 @@
         }
       }
     },
+    "Mute Microphone": {
+      "comment": "Quick switch"
+    },
     "Mute or unmute the sound output": {
       "localizations": {
         "de": {
@@ -116159,6 +116073,12 @@
     "Names show in the list and are searched first. Leave empty to show the content again.": {},
     "Narrower, wider, shorter, taller": {
       "comment": "Keyboard mode: shift-arrows resize the window"
+    },
+    "Native": {
+      "comment": "Badge: the panel's own resolution"
+    },
+    "Native shape": {
+      "comment": "Mode list: the aspect ratio of the panel itself"
     },
     "Navigation": {
       "comment": "Key picker section",
@@ -117012,6 +116932,9 @@
         }
       }
     },
+    "New Event": {
+      "comment": "Title of a calendar event that has none"
+    },
     "New Finder window": {
       "localizations": {
         "de": {
@@ -117344,6 +117267,7 @@
         }
       }
     },
+    "New Virtual Display": {},
     "New action": {
       "comment": "Name of a newly added custom AI action",
       "localizations": {
@@ -118326,6 +118250,7 @@
     "Next display": {
       "comment": "Keyboard mode: move the window to the next display\nWindow Controls: move to the next display"
     },
+    "Next month": {},
     "Next to the battery.": {},
     "Next window": {
       "localizations": {
@@ -118587,6 +118512,7 @@
         }
       }
     },
+    "Night Shift": {},
     "Night Shift has no schedule": {
       "localizations": {
         "de": {
@@ -118651,6 +118577,7 @@
         }
       }
     },
+    "Night Shift isn’t here: macOS gives apps no public way to turn it on or off. Use Control Center or System Settings › Displays.": {},
     "Night Shift schedule": {
       "localizations": {
         "de": {
@@ -119148,6 +119075,9 @@
       }
     },
     "No battery": {},
+    "No calendars yet. Add accounts in the Calendar app or in System Settings › Internet Accounts.": {},
+    "No call to join in the next hours": {},
+    "No camera found": {},
     "No captures yet": {
       "comment": "Capture history: empty"
     },
@@ -119478,6 +119408,7 @@
       }
     },
     "No display with a camera notch is connected. These settings apply when one is.": {},
+    "No displays": {},
     "No displays found.": {
       "localizations": {
         "de": {
@@ -119538,70 +119469,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "找不到顯示器。"
-          }
-        }
-      }
-    },
-    "No displays with controls": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keine Displays mit Steuerelementen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No hay pantallas con controles"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aucun écran avec des commandes"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nessun monitor con controlli"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "コントロールのあるディスプレイがありません"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "제어할 수 있는 디스플레이 없음"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhum monitor com controles"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет дисплеев с элементами управления"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "没有可控制的显示器"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "沒有具備控制項的顯示器"
           }
         }
       }
@@ -120069,6 +119936,7 @@
       "comment": "HUD: a URL asked for a saved layout that doesn't exist; %@ is the name"
     },
     "No layout saved for these displays": {},
+    "No matching city or time zone.": {},
     "No matching entries": {
       "localizations": {
         "de": {
@@ -120137,6 +120005,7 @@
       "comment": "Clipboard panel: filters exclude everything"
     },
     "No menu bar items": {},
+    "No microphone": {},
     "No microphone found": {
       "localizations": {
         "de": {
@@ -120201,6 +120070,7 @@
         }
       }
     },
+    "No microphone is connected.": {},
     "No more files to preview.": {
       "localizations": {
         "de": {
@@ -120399,6 +120269,7 @@
         }
       }
     },
+    "No paired devices. Pair headphones and other devices in System Settings › Bluetooth.": {},
     "No paste actions apply to this content.": {
       "localizations": {
         "de": {
@@ -122027,7 +121898,7 @@
       }
     },
     "None": {
-      "comment": "Auto Tiling highlight style: no highlight\nBreak timer background: a plain dark screen\nDetail row value: the script takes no argument\nImage Resizer: no TIFF compression\nLayout editor: no quick-apply key\nNo desktop picture chosen\nNo file chosen\nNo menu bar icons in this section\nPowerRename text format: no case change\nRequired modifier key: no key needs to be held\nScreen Ruler default mode: no tool selected\nSunrise or sunset offset of zero minutes\nWi-Fi QR code: an open network has no password",
+      "comment": "Auto Tiling highlight style: no highlight\nBreak timer background: a plain dark screen\nDetail row value: the script takes no argument\nImage Resizer: no TIFF compression\nLayout editor: no quick-apply key\nNo desktop picture chosen\nNo file chosen\nNo menu bar icons in this section\nNo shortcut chosen\nPowerRename text format: no case change\nRequired modifier key: no key needs to be held\nScreen Ruler default mode: no tool selected\nSunrise or sunset offset of zero minutes\nWi-Fi QR code: an open network has no password",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -122628,7 +122499,7 @@
       "comment": "A dimmed menu command"
     },
     "Not connected": {
-      "comment": "Mouse Without Borders connection state",
+      "comment": "Bluetooth device state\nMouse Without Borders connection state",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -123944,6 +123815,7 @@
         }
       }
     },
+    "Nothing scheduled": {},
     "Nothing selected": {
       "comment": "Clipboard preview pane without a selection"
     },
@@ -124398,6 +124270,9 @@
           }
         }
       }
+    },
+    "Nowhere": {
+      "comment": "Virtual display: no physical monitor shows it"
     },
     "Nudge": {
       "comment": "Area selection hint: arrow keys move the selection"
@@ -125771,6 +125646,9 @@
       }
     },
     "Number it in keyboard mode": {},
+    "Numeric date": {
+      "comment": "Menu bar format token, e.g. 04/11/2026"
+    },
     "OK": {
       "comment": "Action of a hint or error row; it does nothing\nButton: dismiss the failed attempts list",
       "localizations": {
@@ -126034,6 +125912,7 @@
         }
       }
     },
+    "Of the menu bar mirror and of rounded and rectangular windows. A circle is always round.": {},
     "Of the screen's native resolution.": {
       "localizations": {
         "de": {
@@ -126099,7 +125978,7 @@
       }
     },
     "Off": {
-      "comment": "Auto Tiling status: the utility is turned off\nBeautify automatically: never\nFocus Dimmer quick action: dimming is off\nFocus Dimmer state: the module is turned off\nImage Resizer: PNG interlacing off\nKeystroke Overlay quick action: not showing keys\nKeystroke Overlay state: the module is turned off\nLayout editor toolbar: snapping to the grid is off\nMagSafe LED mode: the light stays off\nMenu bar mouse wheel: does nothing\nMode state\nNight Shift schedule: off\nOptimizer quick switch detail: not optimizing copied images\nPrivacy Screen hot corner: no corner\nQuick action detail: Text Actions is turned off\nSelf-timer: capture right away\nStatus: the utility or option is turned off\nWindow Gestures: no modifier sends windows to another display",
+      "comment": "Auto Tiling status: the utility is turned off\nBeautify automatically: never\nFocus Dimmer quick action: dimming is off\nFocus Dimmer state: the module is turned off\nImage Resizer: PNG interlacing off\nKeystroke Overlay quick action: not showing keys\nKeystroke Overlay state: the module is turned off\nLayout editor toolbar: snapping to the grid is off\nMagSafe LED mode: the light stays off\nMeeting reminders: none\nMenu bar mouse wheel: does nothing\nMirroring: off\nMode state\nNight Shift schedule: off\nOptimizer quick switch detail: not optimizing copied images\nPrivacy Screen hot corner: no corner\nQuick action detail: Text Actions is turned off\nQuick switch state\nSelf-timer: capture right away\nStatus: the utility or option is turned off\nWindow Gestures: no modifier sends windows to another display",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -126423,6 +126302,7 @@
         }
       }
     },
+    "Off saves them as others see you, so text reads the right way.": {},
     "Off shows crisp pixels.": {
       "localizations": {
         "de": {
@@ -127068,7 +126948,7 @@
       }
     },
     "On": {
-      "comment": "Column: the hosts entry is active\nImage Resizer: PNG interlacing on\nMode state\nMonitor power mode\nStatus: the utility or option is turned on",
+      "comment": "Column: the hosts entry is active\nImage Resizer: PNG interlacing on\nMode state\nMonitor power mode\nQuick switch state\nStatus: the utility or option is turned on",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -127132,6 +127012,8 @@
         }
       }
     },
+    "On HDR-capable panels (MacBook Pro Liquid Retina XDR, Pro Display XDR) the slider continues past 100 % into the HDR headroom.": {},
+    "On XDR displays the brightness slider continues past 100 % into the HDR headroom. Sustained high brightness uses more power and warms the display; macOS may lower it again to protect the panel. Very bright parts of HDR videos and photos can lose detail while it's on.": {},
     "On a Dock icon": {},
     "On a display Auto Tiling arranges, Window Controls leaves the tiled windows alone and says so.": {},
     "On a title bar": {},
@@ -127867,6 +127749,7 @@
     },
     "Only actions that fit appear: links open, words are looked up, sums are calculated, JSON is formatted.": {},
     "Only embedded images are re-encoded: text and drawings stay sharp and selectable. Password-protected PDFs are left as they are.": {},
+    "Only for meetings with a video call link": {},
     "Only images can be converted": {},
     "Only images inside the document's folder. In Quick Look the macOS sandbox may still hide them; Peek always shows them.": {
       "localizations": {
@@ -127996,6 +127879,7 @@
         }
       }
     },
+    "Only on Macs whose display has a notch.": {},
     "Only one window to switch to": {
       "localizations": {
         "de": {
@@ -128124,6 +128008,7 @@
         }
       }
     },
+    "Only picture in picture uses it, to show a live image of a display.": {},
     "Only show renamed": {
       "localizations": {
         "de": {
@@ -128972,6 +128857,7 @@
     },
     "Open App Volume": {},
     "Open Battery Settings": {},
+    "Open Calendar": {},
     "Open Charge Limit Settings…": {},
     "Open Command Palette": {
       "localizations": {
@@ -130075,6 +129961,8 @@
         }
       }
     },
+    "Open Shortcuts": {},
+    "Open System Settings": {},
     "Open Templates Folder": {
       "localizations": {
         "de": {
@@ -130338,6 +130226,7 @@
       }
     },
     "Open a URL with the selection, run a shell script, AppleScript or Shortcut on it, or press keys. They join the list above.": {},
+    "Open a display in picture in picture from its Arrange tab in the flyout, or with `mactoys powerdisplay pip -n <n>`. Right-click the window for size and options.": {},
     "Open a shelf while dragging": {},
     "Open a shelf with a shortcut": {},
     "Open an app or run a program": {
@@ -131183,6 +131072,7 @@
         }
       }
     },
+    "Open the Calendar app": {},
     "Open the Workspaces editor": {
       "localizations": {
         "de": {
@@ -131248,6 +131138,7 @@
       }
     },
     "Open the annotate window": {},
+    "Open the calendar": {},
     "Open the editor on": {
       "localizations": {
         "de": {
@@ -132030,6 +131921,7 @@
       }
     },
     "Opening a shelf": {},
+    "Opening the mirror": {},
     "Opening this file launches “%@”.": {
       "comment": "Save panel message; %@ is the workspace name",
       "localizations": {
@@ -132974,6 +132866,7 @@
         }
       }
     },
+    "Or click the date in the menu bar. Right-click it to copy the date, week number or time.": {},
     "Or paste them with ⌘V. Drag items out to any app.": {},
     "Or select images in Finder and choose MacToys › Resize with Image Resizer.": {
       "localizations": {
@@ -133369,6 +133262,9 @@
     "Originals are kept in the backups folder either way.": {},
     "Originals of optimized files can no longer be restored.": {
       "comment": "Optimizer: confirmation message"
+    },
+    "Other": {
+      "comment": "Calendar account group without a name"
     },
     "Other Macs": {
       "localizations": {
@@ -134121,6 +134017,7 @@
       "comment": "Spotlight shape"
     },
     "Overlay": {
+      "comment": "Software dimming method: a dark window over the screen",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -137702,6 +137599,9 @@
         }
       }
     },
+    "Photo saved to %@": {},
+    "Photos": {},
+    "Photos keep the mirror’s zoom and framing, at the camera’s full resolution.": {},
     "Photos saved as PNG shrink much more as JPEG or HEIC. The file’s extension changes.": {},
     "Pick Color": {
       "localizations": {
@@ -138412,6 +138312,14 @@
       }
     },
     "Picking a display's layout again, or pressing its shortcut again, evens out tiles you resized.": {},
+    "Picture": {},
+    "Picture in Picture": {},
+    "Picture in Picture: %@": {
+      "comment": "Window title; the placeholder is a display name"
+    },
+    "Pictures": {
+      "comment": "Folder name"
+    },
     "Pin": {
       "comment": "Annotate toolbar: pin the image to the screen\nClipboard panel action: keep this entry forever\nToolbar button: keep the Peek window's position and size",
       "localizations": {
@@ -140179,6 +140087,7 @@
         }
       }
     },
+    "Pixel for pixel": {},
     "Pixel tolerance for edge detection": {
       "localizations": {
         "de": {
@@ -140522,6 +140431,7 @@
         }
       }
     },
+    "Play a sound": {},
     "Play a sound when pinning a window": {
       "localizations": {
         "de": {
@@ -142988,6 +142898,7 @@
         }
       }
     },
+    "Press esc three times to stop early.": {},
     "Press it again, Esc or click to clear.": {},
     "Press once: a line sweeps across; press again to slow it, again to fix it, then the same for the other direction; the last press clicks. Esc cancels.": {
       "localizations": {
@@ -143964,6 +143875,9 @@
     "Previous display": {
       "comment": "Window Controls: move to the previous display"
     },
+    "Previous month": {},
+    "Previous or next month": {},
+    "Previous resolution restored": {},
     "Previous segment": {
       "localizations": {
         "de": {
@@ -145946,6 +145860,7 @@
         }
       }
     },
+    "Proportions": {},
     "Protected even if MacToys quits": {},
     "Protection": {},
     "Proto-Indo-European": {
@@ -147058,6 +146973,8 @@
     },
     "Quick Look the selected items": {},
     "Quick Switches": {},
+    "Quick Switches wants to turn off Low Power Mode.": {},
+    "Quick Switches wants to turn on Low Power Mode.": {},
     "Quick access shelf": {
       "localizations": {
         "de": {
@@ -150624,7 +150541,7 @@
       }
     },
     "Rectangle": {
-      "comment": "Annotate tool\nSpotlight shape"
+      "comment": "Annotate tool\nCamera Mirror window shape\nSpotlight shape"
     },
     "Rectangle (hold ⌃)": {
       "comment": "Drawing tool and its key",
@@ -150951,6 +150868,7 @@
         }
       }
     },
+    "Refresh rate": {},
     "Refuse Macs outside this Mac’s local network.": {
       "localizations": {
         "de": {
@@ -151014,6 +150932,9 @@
           }
         }
       }
+    },
+    "Regional": {
+      "comment": "Week numbering: follow the region's rule"
     },
     "Register Extensions": {
       "localizations": {
@@ -151802,6 +151723,7 @@
         }
       }
     },
+    "Reload List": {},
     "Reload from Disk": {
       "localizations": {
         "de": {
@@ -152637,6 +152559,7 @@
       }
     },
     "Remembered apps": {},
+    "Remind me": {},
     "Reminds you that hosts entries change name resolution for every app.": {
       "localizations": {
         "de": {
@@ -153356,6 +153279,7 @@
         }
       }
     },
+    "Remove from favorites": {},
     "Remove from layout": {
       "localizations": {
         "de": {
@@ -155545,6 +155469,7 @@
         }
       }
     },
+    "Reset Size and Position": {},
     "Resize": {
       "comment": "Area selection hint: option + arrow keys resize\nGrab And Move: the gesture that resizes a window\nWindow Controls step: change the window's size",
       "localizations": {
@@ -156728,6 +156653,7 @@
       }
     },
     "Resolution": {},
+    "Resolution, color and arrangement": {},
     "Resolving": {
       "comment": "Connection state: looking up the other Mac's address",
       "localizations": {
@@ -158558,6 +158484,7 @@
     },
     "Reverse swipe directions": {},
     "Revert": {
+      "comment": "Button: go back to the previous resolution",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -159959,8 +159886,9 @@
         }
       }
     },
+    "Rotation": {},
     "Rounded": {
-      "comment": "Menu bar background shape: a rounded bar inset from the screen edges"
+      "comment": "Camera Mirror window shape: rounded rectangle\nMenu bar background shape: a rounded bar inset from the screen edges"
     },
     "Rows": {
       "comment": "Auto Tiling layout: stacked rows\nFancyZones layout template: zones stacked vertically\nWindow Controls: stepper for the number of grid rows",
@@ -160092,6 +160020,7 @@
       }
     },
     "Rows layout": {},
+    "Rule-of-thirds lines to line up your eyes and the camera.": {},
     "Ruler: keep a measurement": {
       "localizations": {
         "de": {
@@ -160221,7 +160150,7 @@
       }
     },
     "Run": {
-      "comment": "Action: run the command or script",
+      "comment": "Action: run the command or script\nQuick switch tile: an action, not an on/off switch",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -161943,6 +161872,7 @@
         }
       }
     },
+    "Runs a shortcut you choose that sets a Focus.": {},
     "Runs as root from /Library/PrivilegedHelperTools and switches charging. Only you can talk to it.": {},
     "Runs in zsh as a login shell. The selection arrives on standard input and in $MACTOYS_TEXT; what the script prints is the result. A non-zero exit status shows the error.": {},
     "Runs it on the focused window": {},
@@ -162009,6 +161939,9 @@
           }
         }
       }
+    },
+    "Runs “%@”": {
+      "comment": "The placeholder is a Shortcuts shortcut name"
     },
     "SF Symbol name": {},
     "SQLite database": {
@@ -162530,6 +162463,9 @@
       "comment": "Charge Limit state: the battery drifts between the lower bound and the limit without charging"
     },
     "Sailing range": {},
+    "Same shortcut": {
+      "comment": "Run the same shortcut to turn Focus off (it toggles)"
+    },
     "Same subnet only": {
       "localizations": {
         "de": {
@@ -162593,6 +162529,9 @@
           }
         }
       }
+    },
+    "Same time": {
+      "comment": "World clock: no time difference"
     },
     "Sample rate": {},
     "Sample text": {},
@@ -163188,6 +163127,8 @@
       }
     },
     "Save layout": {},
+    "Save photos mirrored": {},
+    "Save photos to": {},
     "Save snip to file": {
       "localizations": {
         "de": {
@@ -163655,6 +163596,9 @@
         }
       }
     },
+    "Saved to %@": {
+      "comment": "Camera Mirror: a photo was saved; the placeholder is a folder name like Desktop"
+    },
     "Saved “%@” · %lld windows": {
       "comment": "HUD after saving a window layout; %@ is its name, %lld the number of windows",
       "localizations": {
@@ -163666,6 +163610,7 @@
         }
       }
     },
+    "Saves energy. Changing it asks for your administrator password.": {},
     "Saves the windows on screen as a new layout": {},
     "Save…": {
       "comment": "Pinned screenshot menu",
@@ -163989,6 +163934,7 @@
         }
       }
     },
+    "Says when your face is too dark, too bright or lit from behind.": {},
     "Scale": {},
     "Scale by a factor": {
       "comment": "Optimizer: downscale mode, e.g. to 50 %"
@@ -168485,6 +168431,8 @@
         }
       }
     },
+    "See your events here": {},
+    "See yourself before the call starts": {},
     "Segments end at [end]. Also: [enter] [up] [down] [left] [right] [pause:n] [paste]…[/paste]. Clipboard text starting with [start] is used instead.": {
       "comment": "Keep the bracketed tags such as [end], [pause:n] and [paste] unchanged: they are DemoType script commands.",
       "localizations": {
@@ -170257,6 +170205,7 @@
         }
       }
     },
+    "Separators": {},
     "Session & accessibility": {
       "localizations": {
         "de": {
@@ -171370,6 +171319,9 @@
     "Shape style": {
       "comment": "Annotate option"
     },
+    "Shape: %@": {
+      "comment": "Camera Mirror button: switch the window to this shape"
+    },
     "Share": {
       "comment": "Annotate toolbar"
     },
@@ -172038,6 +171990,8 @@
         }
       }
     },
+    "Shortcut that turns Focus off": {},
+    "Shortcut that turns Focus on": {},
     "Shortcut to run": {},
     "Shortcuts": {
       "comment": "Filter: shortcut remaps\nSettings section",
@@ -172300,7 +172254,7 @@
       "comment": "Keystroke Overlay mode"
     },
     "Show": {
-      "comment": "Capture history filter",
+      "comment": "Button: show this display in picture in picture\nCapture history filter",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -172363,6 +172317,9 @@
           }
         }
       }
+    },
+    "Show %@ in the menu": {
+      "comment": "Accessibility label; the placeholder is a switch name"
     },
     "Show %@ windows": {
       "comment": "Window Gestures Dock badge; the app's name"
@@ -172631,6 +172588,7 @@
       }
     },
     "Show Drop Zone": {},
+    "Show Example": {},
     "Show Executable in Finder": {
       "localizations": {
         "de": {
@@ -172758,6 +172716,9 @@
           }
         }
       }
+    },
+    "Show Hidden Files": {
+      "comment": "Quick switch"
     },
     "Show Hidden Items": {
       "comment": "Chevron menu"
@@ -172895,6 +172856,7 @@
       }
     },
     "Show Keystrokes": {},
+    "Show Mirror": {},
     "Show New+ in the Finder menu": {
       "localizations": {
         "de": {
@@ -172959,6 +172921,7 @@
         }
       }
     },
+    "Show Night Shift button": {},
     "Show Original Window": {
       "localizations": {
         "de": {
@@ -173087,6 +173050,9 @@
           }
         }
       }
+    },
+    "Show Pointer": {
+      "comment": "Menu item: show the mouse pointer in picture in picture"
     },
     "Show PowerRename in the Finder menu": {
       "localizations": {
@@ -173344,7 +173310,10 @@
         }
       }
     },
+    "Show a confirmation when a switch changes": {},
     "Show a drop zone while dragging files": {},
+    "Show a grid": {},
+    "Show a grid (G)": {},
     "Show a notice when switching by hand": {
       "localizations": {
         "de": {
@@ -173612,6 +173581,7 @@
     "Show as List": {
       "comment": "Shelf menu"
     },
+    "Show as switches": {},
     "Show clipboard and connection messages": {
       "localizations": {
         "de": {
@@ -173934,6 +173904,7 @@
         }
       }
     },
+    "Show dots for days with events": {},
     "Show expanded shelves as": {},
     "Show file details": {
       "localizations": {
@@ -173999,6 +173970,7 @@
         }
       }
     },
+    "Show files whose names start with a dot, in Finder and Open dialogs. Finder restarts.": {},
     "Show fonts": {
       "localizations": {
         "de": {
@@ -174524,6 +174496,7 @@
         }
       }
     },
+    "Show in the menu": {},
     "Show in the menu bar": {
       "localizations": {
         "de": {
@@ -174978,6 +174951,7 @@
       }
     },
     "Show on": {},
+    "Show on all Spaces": {},
     "Show only pixels": {
       "localizations": {
         "de": {
@@ -175237,6 +175211,9 @@
         }
       }
     },
+    "Show or hide the camera mirror": {},
+    "Show or hide the grid": {},
+    "Show or hide the mirror": {},
     "Show output": {
       "comment": "Script mode: shows the full output",
       "localizations": {
@@ -176345,6 +176322,7 @@
       }
     },
     "Show the preview pane": {},
+    "Show the whole picture": {},
     "Show time elapsed after expiration": {
       "localizations": {
         "de": {
@@ -176473,6 +176451,8 @@
         }
       }
     },
+    "Show week numbers": {},
+    "Show what another display shows": {},
     "Show where the window goes": {},
     "Show window": {
       "comment": "If the app is already running: bring its window forward",
@@ -176667,6 +176647,7 @@
         }
       }
     },
+    "Show world clocks in the calendar": {},
     "Show zone number": {
       "localizations": {
         "de": {
@@ -176951,6 +176932,9 @@
           }
         }
       }
+    },
+    "Shown on %@": {
+      "comment": "Virtual display: a physical monitor mirrors it; the placeholder is its name"
     },
     "Shown under pixels. Points follow each display's scaling; inches and centimeters use its physical size.": {
       "localizations": {
@@ -177738,6 +177722,7 @@
         }
       }
     },
+    "Size and position": {},
     "Size limit": {},
     "Size name": {
       "localizations": {
@@ -178263,7 +178248,7 @@
       }
     },
     "Small": {
-      "comment": "Image Resizer default size name\nOverlay size\nQuick Access card size\nText Actions bar size",
+      "comment": "Image Resizer default size name\nOverlay size\nPicture-in-picture window size\nQuick Access card size\nText Actions bar size",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -179132,6 +179117,7 @@
         }
       }
     },
+    "Software dimming method": {},
     "Solid": {
       "comment": "Privacy Screen lock style: an opaque dark screen"
     },
@@ -180983,6 +180969,7 @@
       }
     },
     "Start Calibration": {},
+    "Start Now": {},
     "Start Over": {
       "comment": "Card button: empty the additive clipboard collection"
     },
@@ -180990,6 +180977,7 @@
       "comment": "Tooltip: empty the additive clipboard collection"
     },
     "Start Screen Saver": {
+      "comment": "Quick action",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -181570,6 +181558,7 @@
         }
       }
     },
+    "Start the screen saver right away.": {},
     "Start typing…": {
       "localizations": {
         "de": {
@@ -181978,6 +181967,7 @@
       }
     },
     "Stop Calibration": {},
+    "Stop Clean Keyboard early": {},
     "Stop recording (⌃⌥5)": {
       "localizations": {
         "de": {
@@ -182049,6 +182039,7 @@
     "Stop watching this folder": {
       "comment": "Optimizer: remove a watch folder"
     },
+    "Stop your Mac from sleeping, with Awake.": {},
     "Stopped after %lld of %lld images": {
       "localizations": {
         "de": {
@@ -183839,6 +183830,7 @@
         }
       }
     },
+    "Switch between light and dark appearance. Uses Light Switch when it is on.": {},
     "Switch between windows in the current zone": {
       "localizations": {
         "de": {
@@ -184583,6 +184575,7 @@
         }
       }
     },
+    "Switch to this resolution": {},
     "Switch to, close or minimize open windows of any app": {
       "localizations": {
         "de": {
@@ -184711,6 +184704,8 @@
         }
       }
     },
+    "Switches": {},
+    "Switches back after 15 seconds unless you keep it, in case the display can't show it.": {},
     "Switches right away; the schedule resumes at its next change.": {
       "localizations": {
         "de": {
@@ -184774,6 +184769,9 @@
           }
         }
       }
+    },
+    "Switching back in %lld seconds unless you keep it.": {
+      "comment": "Resolution confirmation countdown; the placeholder is a number of seconds"
     },
     "Switching inputs over DDC/CI can leave the screen black if the new input has no signal, and software control may be unavailable until you switch back with the monitor's buttons. Not every monitor exposes all inputs.": {
       "localizations": {
@@ -185431,6 +185429,9 @@
         }
       }
     },
+    "System setting": {
+      "comment": "Clock: follow the system's 12/24-hour setting\nFirst day of the week: follow Language & Region"
+    },
     "System-wide settings (/etc/zshenv, /etc/paths, /etc/paths.d) are read-only here. Variables only reach shells and apps started after Apply.": {
       "localizations": {
         "de": {
@@ -185923,6 +185924,10 @@
         }
       }
     },
+    "Take a Photo": {},
+    "Take a photo": {},
+    "Take a photo (Space)": {},
+    "Take a photo in the mirror": {},
     "Taken by another app": {
       "localizations": {
         "de": {
@@ -186892,7 +186897,7 @@
       }
     },
     "Text": {
-      "comment": "Annotate tool\nClipboard entry kind\nClipboard entry type\nClipboard type filter: plain text entries\nField: the text the remap types\nKind of QR code content: plain text\nKind of shelf item: text that was dropped on the shelf\nSnippet editor field: the snippet's content",
+      "comment": "Annotate tool\nClipboard entry kind\nClipboard entry type\nClipboard type filter: plain text entries\nField: the text the remap types\nKind of QR code content: plain text\nKind of shelf item: text that was dropped on the shelf\nMenu Bar Calendar: show the date as text\nSnippet editor field: the snippet's content",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -188596,6 +188601,7 @@
         }
       }
     },
+    "The Dock slides in when you move the pointer to its edge.": {},
     "The GIF couldn’t be exported": {
       "localizations": {
         "de": {
@@ -188790,6 +188796,8 @@
     },
     "The PDF could not be rewritten": {},
     "The PDF is password-protected": {},
+    "The Shortcuts app isn’t available.": {},
+    "The Trash is empty": {},
     "The action failed": {},
     "The action failed with exit status %lld.": {
       "comment": "%lld is the process exit status",
@@ -189024,6 +189032,8 @@
       }
     },
     "The call over its chat, notes beside it.": {},
+    "The camera didn’t start": {},
+    "The camera is in use by another app.": {},
     "The card has the text, its language, translation, read aloud, links and your recent captures.": {},
     "The charge helper refused: %@": {
       "comment": "Error banner; the placeholder is the helper's reason (English)"
@@ -189288,6 +189298,7 @@
     },
     "The countdown waits while the pointer is on the menu bar or a menu from it is open.": {},
     "The current time.": {},
+    "The date in the menu bar opens a month with week numbers, the day’s events with Join buttons, and clocks for the places you work with.": {},
     "The dimmed area around the spotlight (50 % black when transparent).": {
       "localizations": {
         "de": {
@@ -189485,6 +189496,7 @@
     },
     "The display with the menu bar": {},
     "The display with the pointer": {},
+    "The display's default resolution": {},
     "The document matches what's saved.": {
       "localizations": {
         "de": {
@@ -190905,6 +190917,7 @@
         }
       }
     },
+    "The macOS clock stays in the menu bar; turn it to analog or hide the date in Control Center settings if you like.": {},
     "The managed blocks in ~/.zshenv and ~/.zprofile, env.zsh and the login agent are removed, and launchd variables are restored. Your profiles stay saved in MacToys.": {
       "localizations": {
         "de": {
@@ -190969,6 +190982,7 @@
         }
       }
     },
+    "The menu bar appears when you move the pointer to the top of the screen.": {},
     "The microphone couldn’t be started": {
       "localizations": {
         "de": {
@@ -191033,6 +191047,7 @@
         }
       }
     },
+    "The mirror opens": {},
     "The model couldn't be rendered.": {
       "localizations": {
         "de": {
@@ -191097,6 +191112,7 @@
         }
       }
     },
+    "The monitor mirrors the virtual display: for HiDPI on a monitor that doesn't offer it.": {},
     "The name is empty": {
       "localizations": {
         "de": {
@@ -191852,11 +191868,15 @@
         }
       }
     },
+    "The screen saver isn’t available.": {},
     "The selected items are added to it.": {
       "comment": "New pinboard dialog"
     },
     "The selection is the Shortcut’s input; the text it outputs is the result.": {},
     "The separate bar sits under the menu bar, so icons never end up behind the notch. Opening an item from it needs Accessibility.": {},
+    "The shortcut “%@” didn’t run.": {
+      "comment": "The placeholder is a Shortcuts shortcut name"
+    },
     "The slicer's embedded image when there is one, otherwise the toolpath": {
       "localizations": {
         "de": {
@@ -193065,6 +193085,7 @@
         }
       }
     },
+    "This copy of MacToys can’t use Bluetooth. Connect devices from Control Center.": {},
     "This database has no tables.": {
       "localizations": {
         "de": {
@@ -193130,6 +193151,8 @@
       }
     },
     "This device has no volume control. Use the volume on the device itself.": {},
+    "This display doesn't offer other resolutions.": {},
+    "This display has no hardware controls MacToys can reach (DisplayLink, AirPlay and Sidecar displays, and some docks and adapters, don't support DDC/CI). Its brightness slider dims in software.": {},
     "This document": {
       "localizations": {
         "de": {
@@ -194434,7 +194457,7 @@
     "Tiling": {},
     "Tiling is paused": {},
     "Time": {
-      "comment": "Snippet placeholder button: inserts the current time\nUnit category: seconds, hours, days…",
+      "comment": "Menu bar format token\nSnippet placeholder button: inserts the current time\nUnit category: seconds, hours, days…",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -194627,8 +194650,11 @@
       }
     },
     "Time between finishing a selection and the bar appearing.": {},
+    "Time with seconds": {
+      "comment": "Menu bar format token"
+    },
     "Time zone": {
-      "comment": "Time format row: the time zone and its UTC offset",
+      "comment": "Menu bar format token, e.g. CET\nTime format row: the time zone and its UTC offset",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -195488,8 +195514,9 @@
       }
     },
     "To change an app's sound, MacToys records it through macOS's System Audio Recording permission and plays it back adjusted. macOS asks the first time you change an app. Apps you leave as they are are never touched, and while MacToys handles an app's sound macOS shows its recording indicator in the menu bar.": {},
+    "To stop early, press": {},
     "Today": {
-      "comment": "Capture history section\nClipboard date filter",
+      "comment": "Calendar button: go to today\nCapture history section\nClipboard date filter\nLabel next to today's date in the agenda",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -195685,6 +195712,7 @@
     },
     "Today's date and the current time.": {},
     "Today's date. Use {date:yyyy-MM-dd} for a custom format.": {},
+    "Today, your week and the world, one click away": {},
     "Together: %@": {
       "comment": "Window Controls: a chain that runs all steps at once; %@ lists the steps"
     },
@@ -196367,6 +196395,12 @@
           }
         }
       }
+    },
+    "Tomorrow": {
+      "comment": "World clock: the date there is tomorrow"
+    },
+    "Too dark": {
+      "comment": "Camera Mirror light check"
     },
     "Too many wrong passwords": {
       "comment": "Unlock island: the user must wait before the next attempt"
@@ -199121,6 +199155,7 @@
     "Turn on Auto Tiling and every window you open takes its place in the layout.": {},
     "Turn on Menu Bar Manager to see your icons here, sorted by section.": {},
     "Turn on Smart zoom in Trackpad settings › Scroll & Zoom for the double-tap. Elsewhere it zooms as usual.": {},
+    "Turn on a light in front of you, or face a window.": {},
     "Turn on a utility to see its actions here.": {
       "localizations": {
         "de": {
@@ -199378,6 +199413,7 @@
         }
       }
     },
+    "Turn on extra brightness?": {},
     "Turn on light mode": {
       "localizations": {
         "de": {
@@ -199506,6 +199542,7 @@
         }
       }
     },
+    "Turn on switches below to see them here.": {},
     "Turn one app down, boost another, send music to the speakers and calls to your headphones. Apps you don't change play as they are.": {},
     "Turn the displays off": {
       "localizations": {
@@ -199572,6 +199609,7 @@
       }
     },
     "Turn the grid on portrait displays": {},
+    "Turn the input volume of the current microphone to zero, and back to where it was.": {},
     "Turn them back on here or from the MacToys menu bar flyout.": {},
     "Turn this Mac off": {
       "localizations": {
@@ -202540,6 +202578,13 @@
         }
       }
     },
+    "Under the camera": {
+      "comment": "Camera Mirror: where the mirror opens (top center of the screen)"
+    },
+    "Under the camera puts it right where you look on a laptop.": {},
+    "Under the menu bar icon": {
+      "comment": "Camera Mirror: where the mirror opens"
+    },
     "Under the pointer": {
       "comment": "Where new shelves appear"
     },
@@ -204562,6 +204607,9 @@
         }
       }
     },
+    "Until %@": {
+      "comment": "Multi-day event: ends at this time today"
+    },
     "Until %@ · %@": {
       "comment": "Awake status: first the end time, e.g. '23:30', then the screen state",
       "localizations": {
@@ -204639,6 +204687,7 @@
     "Until the size limit": {
       "comment": "Capture history: no age limit"
     },
+    "Until you pick some, every paired audio device is shown.": {},
     "Untitled": {
       "comment": "A window without a title\nCustom AI action without a name\nName of a new, unsaved document (a file name without extension)",
       "localizations": {
@@ -207031,6 +207080,7 @@
         }
       }
     },
+    "Uses the panel's HDR headroom: the brightness slider continues past 100 %. Uses more power and warms the display.": {},
     "Uses the trackpad's Smart zoom gesture": {},
     "Using the battery.": {},
     "Using the macOS charge limit": {},
@@ -208136,6 +208186,9 @@
         }
       }
     },
+    "Very bright": {
+      "comment": "Camera Mirror light check: overexposed"
+    },
     "Vibecoding": {
       "comment": "FancyZones layout preset for coding with an AI assistant"
     },
@@ -208725,6 +208778,15 @@
         }
       }
     },
+    "Virtual": {
+      "comment": "Flyout footer: virtual displays menu\nHow a display is connected: a virtual display MacToys created"
+    },
+    "Virtual Display %lld": {
+      "comment": "Default name; the placeholder is a number"
+    },
+    "Virtual display": {},
+    "Virtual displays": {},
+    "Virtual displays aren't available on this version of macOS.": {},
     "Visibility": {
       "localizations": {
         "de": {
@@ -209056,6 +209118,12 @@
       "comment": "Accessibility label; the placeholder is an app name"
     },
     "Volume, output and equalizer come back when the app plays again. When off, they're cleared when the app quits, except for apps kept in the list.": {},
+    "W": {
+      "comment": "Column header for week numbers; keep it one or two letters"
+    },
+    "W%lld": {
+      "comment": "Week number in the menu bar, e.g. W45; keep it short"
+    },
     "Wait after a display is connected or wakes before reading it again. Raise it if monitors are missed after hot-plug.": {
       "localizations": {
         "de": {
@@ -210121,6 +210189,13 @@
         }
       }
     },
+    "Week number": {
+      "comment": "Menu bar format token, e.g. W45"
+    },
+    "Week numbers": {},
+    "Weekday": {
+      "comment": "Menu bar format token, e.g. Wednesday"
+    },
     "Weekday name": {
       "comment": "Meaning of the date token $DDDD in file names",
       "localizations": {
@@ -210185,6 +210260,9 @@
           }
         }
       }
+    },
+    "Weekday, short": {
+      "comment": "Menu bar format token, e.g. Wed"
     },
     "Welcome to MacToys": {
       "localizations": {
@@ -211151,6 +211229,9 @@
         }
       }
     },
+    "When it starts": {
+      "comment": "Meeting reminder lead time"
+    },
     "When multiple zones overlap": {
       "localizations": {
         "de": {
@@ -211292,6 +211373,7 @@
     "When the selection is the path of a file or folder": {},
     "When the text has letters with case": {},
     "When the text is in another language, on this Mac": {},
+    "When zoomed in, drag the picture to frame your face, or pinch on the trackpad. The camera turns on only while a mirror is open, and nothing leaves your Mac.": {},
     "Whenever text is selected": {},
     "Whenever text is selected; click again to stop": {},
     "Where": {
@@ -213152,6 +213234,7 @@
     "Windows stay where they are": {},
     "Windows stay where they are until you resume": {},
     "Windows stay where they are.": {},
+    "Wipe away. Keys, media keys and clicks on this screen do nothing until the time is up.": {},
     "With Accessibility access, Focus Dimmer reads the focused window directly, so sheets and dialogs stay bright and switching windows inside an app takes effect at once.": {},
     "With Reduce Transparency the colors are drawn solid; with Increase Contrast the edge is stronger.": {},
     "With one file selected in Finder, ← and → move through the other items of its folder. With several selected, Peek moves between those.": {
@@ -213219,6 +213302,7 @@
       }
     },
     "With the output": {},
+    "With the time difference and whether it’s day or night there.": {},
     "Without $PATH this replaces the PATH zsh and apps inherit; add $PATH to keep the system folders.": {
       "localizations": {
         "de": {
@@ -213479,6 +213563,9 @@
           }
         }
       }
+    },
+    "Work": {
+      "comment": "Example calendar name"
     },
     "Workflows": {
       "comment": "Layout editor: presets for kinds of work"
@@ -215107,6 +215194,9 @@
         }
       }
     },
+    "Year": {
+      "comment": "Menu bar format token"
+    },
     "Year taken": {
       "localizations": {
         "de": {
@@ -215560,7 +215650,7 @@
       }
     },
     "Yesterday": {
-      "comment": "Capture history section\nClipboard date filter"
+      "comment": "Capture history section\nClipboard date filter\nWorld clock: the date there is yesterday"
     },
     "Yesterday %@": {
       "comment": "Date modified: %@ is a time of day",
@@ -215691,6 +215781,7 @@
         }
       }
     },
+    "You can’t undo this.": {},
     "You click empty menu bar space": {},
     "Your .zshrc also loads one (for example Homebrew's `brew command-not-found-init`). The MacToys block comes last, so it wins.": {
       "localizations": {
@@ -215885,6 +215976,7 @@
       }
     },
     "Your desktop, frosted beyond recognition.": {},
+    "Your face is well lit.": {},
     "Your keys on screen, as you press them": {},
     "Your own commands: executable scripts in the Script Commands folder": {
       "localizations": {
@@ -216014,6 +216106,7 @@
         }
       }
     },
+    "Your switches": {},
     "Your templates": {
       "localizations": {
         "de": {
@@ -216077,6 +216170,9 @@
           }
         }
       }
+    },
+    "Your text": {
+      "comment": "Placeholder: custom text to add to the menu bar format"
     },
     "Your web browser": {
       "localizations": {
@@ -216531,6 +216627,9 @@
       }
     },
     "Zoom button palette": {},
+    "Zoom in on the center (+ and −)": {},
+    "Zoom in or out": {},
+    "Zoom in to fill the mirror with your face, then drag the frame where your face is. Saved for every mirror and photo.": {},
     "Zoom in, draw, time breaks, record and snip — each with its own shortcut.": {
       "localizations": {
         "de": {
@@ -216723,6 +216822,7 @@
         }
       }
     },
+    "Zoom; click to show the whole picture": {},
     "ZoomIt": {
       "localizations": {
         "de": {
@@ -218055,6 +218155,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "亮度、明度、強度"
+          }
+        }
+      }
+    },
+    "calendar.starts-in": {
+      "comment": "A meeting starts in this much time; the placeholder is a duration such as '5 min'",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "in %@"
           }
         }
       }
@@ -220822,6 +220934,7 @@
         }
       }
     },
+    "joins the next call": {},
     "key.side.left": {
       "comment": "Keycap before a modifier symbol: the left-hand key of the pair (Left ⌘)",
       "extractionState": "extracted_with_value",
@@ -221837,6 +221950,7 @@
         }
       }
     },
+    "macOS doesn’t tell apps whether a Focus is on, so the switch shows what it last set unless MacToys has Full Disk Access.": {},
     "macOS draws icons that don't fit behind the camera. Hide some of them, or show hidden items in the separate bar.": {},
     "macOS has its own charge limit (%@–%@) in Battery settings.": {
       "comment": "Placeholders are the range macOS offers",
@@ -223624,6 +223738,9 @@
         }
       }
     },
+    "now": {
+      "comment": "A meeting is starting now"
+    },
     "of %@ designed": {
       "comment": "Battery cycle count detail; the placeholder is a number"
     },
@@ -223890,6 +224007,7 @@
     "pastes the next": {
       "comment": "Paste stack HUD footer, after the ⌘V keycaps"
     },
+    "pixels": {},
     "plist.column.key": {
       "comment": "Column header: the key (name) of a property-list dictionary entry, not a keyboard key",
       "extractionState": "extracted_with_value",
@@ -225595,6 +225713,9 @@
           }
         }
       }
+    },
+    "started %@ ago": {
+      "comment": "A meeting started this long ago"
     },
     "stretch": {
       "comment": "Image Resizer size summary (lowercase): distort to the exact size",
@@ -228994,6 +229115,9 @@
     "⇧-arrows make the window narrower, wider, shorter or taller": {},
     "⇧-clicking to extend a selection": {},
     "⇧↩ pastes as plain text, ⌥↩ does the other action, ⌘C only copies.": {},
+    "−%@": {
+      "comment": "Brightness slider value while dimming in software; the placeholder is a percentage"
+    },
     "⌃  Control": {
       "comment": "Modifier key; keep the key symbol"
     },
