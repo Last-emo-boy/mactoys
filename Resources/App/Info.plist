@@ -108,7 +108,44 @@
 			<key>NSSendFileTypes</key>
 			<array>
 				<string>public.item</string>
+				<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Optimize with MacToys</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>runService</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.image</string>
+				<string>public.movie</string>
+				<string>com.adobe.pdf</string>
+				<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Downscale with MacToys</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>runService</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.image</string>
+				<string>public.movie</string>
 			</array>
+			<key>NSUserData</key>
+			<string>optimizer/downscale</string>
+		</dict>
+	</array>
+			<key>NSUserData</key>
+			<string>optimizer/optimize</string>
+		</dict>
+	</array>
 			<key>NSUserData</key>
 			<string>shelf/add</string>
 		</dict>
