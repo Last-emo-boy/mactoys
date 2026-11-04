@@ -99,12 +99,24 @@ public enum PowerDisplayCLI {
                                              (default step: the mouse wheel increment)
       profiles                               Saved profiles with their numeric ids
       apply-profile <id>                     Apply a saved profile
+      modes [-n <n[,n…]>]                    Resolutions grouped by aspect ratio: * current,
+                                             HiDPI, native, ★ favorite, refresh rates
+      set-mode -n <n> <W>x<H>[@<Hz>] [--hidpi|--no-hidpi]
+                                             Switch resolution (also --refresh <Hz>,
+                                             --mode-id <id>); applies at once, no prompt
+      dim [-n <n[,n…]>] <0-100|off>          Software dimming below the hardware minimum
+                                             (needs MacToys running; lasts while it runs)
+      pip -n <n> [--close]                   Picture in picture of a display (needs
+                                             MacToys running and Screen Recording)
 
     Options:
       -n, --monitor-number <n[,n…]>          1-based monitor numbers (see list)
       -i, --monitor-id <id>                  Stable monitor id; wins over -n
       --setting <s>                          brightness, contrast, volume, color-temperature,
                                              input-source, power-state, orientation
+      --refresh <Hz>, --hidpi, --no-hidpi, --mode-id <id>
+                                             set-mode choices
+      --level <0-100>                        dim level (or as the last argument)
       --json                                 JSON Lines on stdout, errors as JSON on stderr
       --quiet                                No warnings
     """
@@ -147,6 +159,14 @@ public enum PowerDisplayCLI {
                 try set(&opts)
             case "up", "down":
                 try nudge(&opts, up: opts.command == "up")
+            case "modes":
+                try printModes(&opts)
+            case "set-mode":
+                try setMode(&opts)
+            case "dim":
+                try dim(&opts)
+            case "pip":
+                try pip(&opts)
             default:
                 throw Failure(message: "unknown command \(opts.command)\n\n\(usage)", exitCode: 2)
             }
@@ -174,6 +194,11 @@ public enum PowerDisplayCLI {
         var orientation: String?
         var step: Int?
         var confirmPowerOff = false
+        var refresh: Double?
+        var hiDPI: Bool?
+        var modeID: Int32?
+        var level: String?
+        var close = false
         var json = false
         var quiet = false
         var positional: [String] = []
@@ -204,6 +229,18 @@ public enum PowerDisplayCLI {
                     o.step = s
                 case "--orientation": o.orientation = try value(arg)
                 case "--confirm-power-off": o.confirmPowerOff = true
+                case "--refresh":
+                    guard let hz = Double(try value(arg).lowercased().replacingOccurrences(of: "hz", with: "")), hz > 0 else {
+                        throw Failure(message: "--refresh takes a rate in Hz, e.g. 60 or 59.94", exitCode: 2)
+                    }
+                    o.refresh = hz
+                case "--hidpi": o.hiDPI = true
+                case "--no-hidpi": o.hiDPI = false
+                case "--mode-id":
+                    guard let id = Int32(try value(arg)) else { throw Failure(message: "--mode-id takes a number from `modes --json`", exitCode: 2) }
+                    o.modeID = id
+                case "--level": o.level = try value(arg)
+                case "--close": o.close = true
                 case "--json": o.json = true
                 case "--quiet": o.quiet = true
                 case "-h", "--help", "-?": o.command = "help"
@@ -230,7 +267,7 @@ public enum PowerDisplayCLI {
             return [m]
         }
         guard !o.numbers.isEmpty else {
-            if single || o.command != "get" { throw Failure(message: "pass --monitor-number or --monitor-id", exitCode: 2) }
+            if single || !["get", "modes"].contains(o.command) { throw Failure(message: "pass --monitor-number or --monitor-id", exitCode: 2) }
             return all
         }
         if single && o.numbers.count > 1 { throw Failure(message: "\(o.command) takes one monitor", exitCode: 2) }
@@ -350,6 +387,190 @@ public enum PowerDisplayCLI {
         }
         notifyApp()
         if !failed.isEmpty { throw Failure(message: "couldn't change \(feature.cliName) on \(failed.joined(separator: ", "))", exitCode: 1) }
+    }
+
+    // MARK: - Resolution, dimming, picture in picture
+
+    /// A display as `list` numbers it, without the slow DDC probing `discover` does.
+    struct LightMonitor {
+        var number: Int
+        var id: String
+        var name: String
+        var displayID: CGDirectDisplayID
+        var builtIn: Bool
+    }
+
+    static func lightMonitors() -> [LightMonitor] {
+        let names = MainActor.assumeIsolated { DisplayEngine.screenNames() }
+        let displays = DisplayEngine.onlineDisplays(names: names)
+        let ids = DisplayEngine.stableIDs(displays)
+        return displays.enumerated().map { i, d in
+            LightMonitor(number: i + 1, id: ids[i], name: d.name.isEmpty ? "Display \(i + 1)" : d.name,
+                         displayID: d.id, builtIn: d.isBuiltIn)
+        }
+    }
+
+    static func lightTargets(_ o: Options, single: Bool, allByDefault: Bool) throws -> [LightMonitor] {
+        let all = lightMonitors()
+        if let id = o.id {
+            guard let m = all.first(where: { $0.id == id }) else { throw Failure(message: "no monitor with id \(id)", exitCode: 2) }
+            return [m]
+        }
+        guard !o.numbers.isEmpty else {
+            if allByDefault && !single { return all }
+            throw Failure(message: "pass --monitor-number or --monitor-id", exitCode: 2)
+        }
+        if single && o.numbers.count > 1 { throw Failure(message: "\(o.command) takes one monitor", exitCode: 2) }
+        return try o.numbers.map { n in
+            guard let m = all.first(where: { $0.number == n }) else { throw Failure(message: "no monitor \(n); see `list`", exitCode: 2) }
+            return m
+        }
+    }
+
+    public struct ModeLine: Codable, Sendable {
+        public var monitor: Int
+        public var id: String
+        public var aspect: String
+        public var width: Int
+        public var height: Int
+        public var pixelWidth: Int
+        public var pixelHeight: Int
+        public var hidpi: Bool
+        public var native: Bool
+        public var current: Bool
+        public var favorite: Bool
+        public var refreshRates: [Double]
+        public var modeIDs: [Int32]
+    }
+
+    /// Refresh rates as the command line prints them: `60`, `59.94`.
+    static func rateText(_ rate: Double) -> String { String(format: "%g", RefreshFormat.rounded(rate)) }
+
+    static func modeText(_ m: DisplayModeInfo) -> String {
+        "\(m.width)x\(m.height)\(m.isHiDPI ? " HiDPI" : "")\(m.refreshRate > 0 ? " @ \(rateText(m.refreshRate)) Hz" : "")"
+    }
+
+    static func printModes(_ o: inout Options) throws {
+        let settings = loadSettings()
+        for m in try lightTargets(o, single: false, allByDefault: true) {
+            let catalog = DisplayModeReader.catalog(m.displayID, favorites: settings.prefs(m.id).favoriteModes,
+                                                    hideLowResolutionDuplicates: false)
+            if o.json {
+                for g in catalog.groups {
+                    for e in g.entries {
+                        emit(ModeLine(monitor: m.number, id: m.id, aspect: g.aspect.title(locale: Locale(identifier: "en_US_POSIX")),
+                                      width: e.key.width, height: e.key.height, pixelWidth: e.key.pixelWidth,
+                                      pixelHeight: e.key.pixelHeight, hidpi: e.isHiDPI, native: e.isNative, current: e.isCurrent,
+                                      favorite: e.isFavorite, refreshRates: e.refreshRates.map(RefreshFormat.rounded),
+                                      modeIDs: e.modes.map(\.modeID)))
+                    }
+                }
+                continue
+            }
+            print("\(m.number)  \(m.name)\(catalog.current.map { "  (current \(modeText($0)))" } ?? "")")
+            if catalog.isEmpty { print("   no modes reported") }
+            for g in catalog.groups {
+                print("   \(g.aspect.title(locale: Locale(identifier: "en_US_POSIX")))")
+                for e in g.entries {
+                    let size = "\(e.key.width)x\(e.key.height)".padding(toLength: 11, withPad: " ", startingAt: 0)
+                    var tags: [String] = []
+                    if e.isHiDPI { tags.append("HiDPI") }
+                    if e.isNative { tags.append("native") }
+                    let rates = e.refreshRates.filter { $0 > 0 }.map(rateText).joined(separator: ", ")
+                    let line = "   \(e.isCurrent ? "*" : " ") \(size) \(tags.joined(separator: " ").padding(toLength: 12, withPad: " ", startingAt: 0))"
+                        + (rates.isEmpty ? "" : " \(rates) Hz") + (e.isFavorite ? "  ★" : "")
+                    print(line)
+                }
+            }
+        }
+    }
+
+    static func setMode(_ o: inout Options) throws {
+        guard let m = try lightTargets(o, single: true, allByDefault: false).first else { return }
+        var request: ModeRequest
+        if let text = o.positional.first {
+            guard let r = ModeRequest.parse(text) else {
+                throw Failure(message: "can't read \(text); use <width>x<height>[@<Hz>], e.g. 2560x1440@60", exitCode: 2)
+            }
+            request = r
+        } else if o.modeID != nil {
+            request = ModeRequest()
+        } else {
+            throw Failure(message: "set-mode needs <width>x<height>[@<Hz>] or --mode-id", exitCode: 2)
+        }
+        if let id = o.modeID { request.modeID = id }
+        if let hz = o.refresh { request.refresh = hz }
+        if let h = o.hiDPI { request.hiDPI = h }
+        let catalog = DisplayModeReader.catalog(m.displayID, favorites: [], hideLowResolutionDuplicates: false)
+        guard let mode = catalog.match(request) else {
+            throw Failure(message: "\(m.name) has no such mode; see `mactoys powerdisplay modes -n \(m.number)`", exitCode: 1)
+        }
+        if mode != catalog.current {
+            guard DisplayModeReader.apply(mode, to: m.displayID) else {
+                throw Failure(message: "macOS refused to switch \(m.name) to \(modeText(mode))", exitCode: 1)
+            }
+            notifyApp()
+        }
+        if o.json {
+            struct Line: Codable { var monitor: Int; var id: String; var width: Int; var height: Int; var hidpi: Bool; var refreshRate: Double; var modeID: Int32 }
+            emit(Line(monitor: m.number, id: m.id, width: mode.width, height: mode.height, hidpi: mode.isHiDPI,
+                      refreshRate: RefreshFormat.rounded(mode.refreshRate), modeID: mode.modeID))
+        } else {
+            print("\(m.number) \(m.name): \(modeText(mode))")
+        }
+    }
+
+    /// `off`, or 0…100.
+    static func parseDimLevel(_ text: String) -> Int? {
+        let t = text.trimmingCharacters(in: .whitespaces).lowercased().replacingOccurrences(of: "%", with: "")
+        if t == "off" { return 0 }
+        guard let n = Int(t), (0...100).contains(n) else { return nil }
+        return n
+    }
+
+    static func dim(_ o: inout Options) throws {
+        guard let text = o.level ?? o.positional.last, let level = parseDimLevel(text) else {
+            throw Failure(message: "dim takes a level from 0 to 100, or off", exitCode: 2)
+        }
+        let targets: [String] = o.id != nil || !o.numbers.isEmpty
+            ? try lightTargets(o, single: false, allByDefault: false).map(\.id) : ["all"]
+        try requireApp()
+        for t in targets {
+            sendToApp(AppCommand(module: "powerdisplay", action: "dim", parameters: ["monitor": t, "level": "\(level)"]))
+        }
+        if !o.json && !o.quiet { print(level == 0 ? "Software dimming off." : "Software dimming \(level)%.") }
+    }
+
+    static func pip(_ o: inout Options) throws {
+        guard let m = try lightTargets(o, single: true, allByDefault: false).first else { return }
+        try requireApp()
+        var params = ["monitor": m.id]
+        if o.close { params["close"] = "1" }
+        sendToApp(AppCommand(module: "powerdisplay", action: "pip", parameters: params))
+    }
+
+    /// Software dimming and picture in picture live in the app: the window server undoes a color
+    /// table when the process that set it exits, and PiP is a window.
+    static func requireApp() throws {
+        guard !NSRunningApplication.runningApplications(withBundleIdentifier: Paths.bundleIdentifier).isEmpty else {
+            throw Failure(message: "MacToys isn't running; open it first (software dimming and picture in picture live in the app)", exitCode: 1)
+        }
+        let general = SettingsStore.shared.load("general", default: GeneralSettings())
+        guard general.enabled["powerdisplay"] == true else {
+            throw Failure(message: "Power Display is off; turn it on with `mactoys modules enable powerdisplay`", exitCode: 1)
+        }
+    }
+
+    static func sendToApp(_ command: AppCommand) {
+        guard let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: Paths.bundleIdentifier) else { return }
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = false
+        let semaphore = DispatchSemaphore(value: 0)
+        NSWorkspace.shared.open([command.url], withApplicationAt: app, configuration: config) { _, error in
+            if let error { FileHandle.standardError.write(Data("mactoys powerdisplay: \(error.localizedDescription)\n".utf8)) }
+            semaphore.signal()
+        }
+        _ = semaphore.wait(timeout: .now() + 10)
     }
 
     static func emit<T: Encodable>(_ value: T) {
