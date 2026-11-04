@@ -75,7 +75,7 @@ struct QuickAccessCardView: View {
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
         ZStack {
-            Color(red: 0.12, green: 0.12, blue: 0.14)
+            LinearGradient(colors: [Color(white: 0.24), Color(white: 0.14)], startPoint: .top, endPoint: .bottom)
             Image(nsImage: model.thumbnail)
                 .resizable()
                 .interpolation(.high)
@@ -109,15 +109,22 @@ struct QuickAccessCardView: View {
     private var hoverLayer: some View {
         ZStack {
             Color.black.opacity(0.45)
-            VStack(spacing: 8) {
-                pill(Text("Copy", comment: "Quick Access card: copy the screenshot")) {
-                    actions.copy(model.item)
-                    model.flash(String(localized: "Copied", comment: "Quick Access card: the screenshot was copied"))
+            // Short cards put the two buttons side by side, clear of the corner buttons.
+            GeometryReader { proxy in
+                let layout = proxy.size.height < 150
+                    ? AnyLayout(HStackLayout(spacing: 6)) : AnyLayout(VStackLayout(spacing: 8))
+                layout {
+                    pill(Text("Copy", comment: "Quick Access card: copy the screenshot")) {
+                        actions.copy(model.item)
+                        model.flash(String(localized: "Copied", comment: "Quick Access card: the screenshot was copied"))
+                    }
+                    pill(model.item.savedURL == nil ? Text("Save", comment: "Quick Access card: save the screenshot to a file")
+                                                    : Text("Show in Finder", comment: "Quick Access card: reveal the saved file")) {
+                        actions.save(model.item)
+                    }
                 }
-                pill(model.item.savedURL == nil ? Text("Save", comment: "Quick Access card: save the screenshot to a file")
-                                                : Text("Show in Finder", comment: "Quick Access card: reveal the saved file")) {
-                    actions.save(model.item)
-                }
+                .padding(.horizontal, 10)
+                .frame(width: proxy.size.width, height: proxy.size.height)
             }
             corner(.topLeading, "xmark", Text("Close", comment: "Quick Access card button")) { model.onClose() }
             corner(.topTrailing, "pencil.tip.crop.circle", Text("Annotate", comment: "Quick Access card button")) {
@@ -135,7 +142,9 @@ struct QuickAccessCardView: View {
             title
                 .font(.system(size: 12.5, weight: .semibold))
                 .foregroundStyle(.white)
-                .frame(minWidth: 96)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .frame(minWidth: 72, maxWidth: 120)
                 .padding(.vertical, 6)
                 .padding(.horizontal, 12)
                 .background(Capsule().fill(.white.opacity(0.16)))

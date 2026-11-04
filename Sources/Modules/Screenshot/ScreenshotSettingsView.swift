@@ -370,6 +370,7 @@ struct ScreenshotHeroArt: View {
             }
             .frame(width: 168, height: 104)
             .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .compositingGroup()
             .shadow(color: .black.opacity(0.4 * style.shadow), radius: 4 + 8 * style.shadow, y: 2 + 4 * style.shadow)
             .overlay(alignment: .topLeading) { annotations }
             .offset(y: -4)

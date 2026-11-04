@@ -13,21 +13,47 @@ enum ScreenshotPreviews {
 
     static func scenes(module: ScreenshotModule) -> [PreviewScene] {
         [
-            PreviewScene("area", size: desktopSize, wallpaper: false) { fill(areaScene(adjusting: false)) },
-            PreviewScene("area-previous", size: desktopSize, wallpaper: false) { fill(areaScene(adjusting: true)) },
-            PreviewScene("window", size: desktopSize, wallpaper: false) { fill(windowScene) },
-            PreviewScene("quickaccess", size: desktopSize, wallpaper: false) { fill(quickAccessScene) },
-            PreviewScene("annotate", size: CGSize(width: 1280, height: 820), wallpaper: false) { fill(annotateScene(module: module)) },
-            PreviewScene("beautified", size: CGSize(width: 1200, height: 675), wallpaper: false) { fill(beautifiedScene) },
-            PreviewScene("pin", size: desktopSize, wallpaper: false) { fill(pinScene) },
-            PreviewScene("history", size: CGSize(width: 1000, height: 680), wallpaper: false) { fill(historyScene) },
-            PreviewScene("timer", size: CGSize(width: 640, height: 400), wallpaper: false) { fill(timerScene) },
+            PreviewScene("area", size: desktopSize, wallpaper: false) { onDesktop { areaScene(adjusting: false, size: $0) } },
+            PreviewScene("area-previous", size: desktopSize, wallpaper: false) { onDesktop { areaScene(adjusting: true, size: $0) } },
+            PreviewScene("window", size: desktopSize, wallpaper: false) { onDesktop { windowScene(size: $0) } },
+            PreviewScene("quickaccess", size: desktopSize, wallpaper: false) { onDesktop { quickAccessScene(size: $0) } },
+            PreviewScene("annotate", size: framedSize(annotateSize), wallpaper: false) {
+                framed(annotateScene(module: module), size: annotateSize)
+            },
+            PreviewScene("beautified", size: framedSize(beautifiedSize), wallpaper: false) { AnyView(beautifiedScene) },
+            PreviewScene("pin", size: desktopSize, wallpaper: false) { onDesktop { pinScene(size: $0) } },
+            PreviewScene("history", size: framedSize(historySize), wallpaper: false) { framed(historyScene, size: historySize) },
+            PreviewScene("timer", size: CGSize(width: 780, height: 476), wallpaper: false) { onDesktop { timerScene(size: $0) } },
         ]
     }
 
-    /// Scenes cover the whole snapshot window, title bar area included.
-    private static func fill<V: View>(_ view: V) -> AnyView {
-        AnyView(view.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).ignoresSafeArea())
+    static let annotateSize = CGSize(width: 1280, height: 820)
+    static let historySize = CGSize(width: 1000, height: 680)
+    static let beautifiedSize = CGSize(width: 1200, height: 675)
+
+    /// A desktop scene laid out at the snapshot's full size: the snapshot window adds its title bar
+    /// to the scene height, and the desktop runs under it.
+    private static func onDesktop<V: View>(@ViewBuilder _ content: @escaping (CGSize) -> V) -> AnyView {
+        AnyView(GeometryReader { proxy in content(proxy.size) }.ignoresSafeArea())
+    }
+
+    /// Room around a window shown on the wallpaper.
+    private static func framedSize(_ window: CGSize) -> CGSize {
+        CGSize(width: window.width + 120, height: window.height + 80)
+    }
+
+    /// A tool window on the wallpaper, centered in the whole snapshot.
+    private static func framed<V: View>(_ window: V, size: CGSize) -> AnyView {
+        AnyView(window
+            .frame(width: size.width, height: size.height)
+            .background(Color(nsColor: .windowBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.black.opacity(0.18), lineWidth: 0.5))
+            .compositingGroup()
+            .shadow(color: .black.opacity(0.4), radius: 30, y: 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background { BackdropSwatch(backdrop: .preset(.dusk)) }
+            .ignoresSafeArea())
     }
 
     // MARK: Images
@@ -43,8 +69,11 @@ enum ScreenshotPreviews {
         return image
     }
 
-    static var desktop: CGImage? {
-        render("desktop", size: desktopSize) { SampleDesktop() }
+    static var desktop: CGImage? { desktop(desktopSize) }
+
+    /// The sample desktop at any size: the windows keep their places, the wallpaper fills the rest.
+    static func desktop(_ size: CGSize) -> CGImage? {
+        render("desktop-\(Int(size.width))x\(Int(size.height))", size: size) { SampleDesktop() }
     }
 
     /// The dashboard window alone, as a window capture (transparent corners, shadow).
@@ -93,20 +122,20 @@ enum ScreenshotPreviews {
 
     // MARK: Scenes
 
-    private static func desktopBackground() -> some View {
+    private static func desktopBackground(_ size: CGSize) -> some View {
         Group {
-            if let desktop { Image(decorative: desktop, scale: 2) } else { Color.black }
+            if let desktop = desktop(size) { Image(decorative: desktop, scale: 2) } else { Color.black }
         }
-        .frame(width: desktopSize.width, height: desktopSize.height)
+        .frame(width: size.width, height: size.height)
     }
 
-    private static func display() -> SelectionModel.Display {
-        SelectionModel.Display(screen: nil, axFrame: CGRect(origin: .zero, size: desktopSize), scale: 2, snapshot: desktop,
+    private static func display(_ size: CGSize) -> SelectionModel.Display {
+        SelectionModel.Display(screen: nil, axFrame: CGRect(origin: .zero, size: size), scale: 2, snapshot: desktop(size),
                                name: "Built-in Retina Display")
     }
 
-    static func areaScene(adjusting: Bool) -> some View {
-        let model = SelectionModel(mode: .area, displays: [display()], frozen: true, showMagnifier: true, showCrosshair: true,
+    static func areaScene(adjusting: Bool, size: CGSize) -> some View {
+        let model = SelectionModel(mode: .area, displays: [display(size)], frozen: true, showMagnifier: true, showCrosshair: true,
                                    canSwitchMode: true)
         model.active = 0
         model.selectionDisplay = 0
@@ -118,26 +147,26 @@ enum ScreenshotPreviews {
         } else {
             model.dragging = true
             model.pointer = CGPoint(x: r.maxX, y: r.maxY)
-            if let desktop {
+            if let desktop = desktop(size) {
                 model.loupe = LoupeCard.patch(of: desktop, centerX: Int(r.maxX * 2), centerY: Int(r.maxY * 2),
                                               cells: SelectionModel.loupeCells)
             }
         }
         return ZStack(alignment: .topLeading) {
-            desktopBackground()
+            desktopBackground(size)
             SelectionOverlayView(model: model, index: 0)
         }
     }
 
-    static var windowScene: some View {
-        let model = SelectionModel(mode: .window, displays: [display()], frozen: true, showMagnifier: true, showCrosshair: true,
+    static func windowScene(size: CGSize) -> some View {
+        let model = SelectionModel(mode: .window, displays: [display(size)], frozen: true, showMagnifier: true, showCrosshair: true,
                                    canSwitchMode: true)
         model.active = 0
         model.pointer = CGPoint(x: 700, y: 400)
         model.hoveredWindow = CaptureWindow(id: 1, pid: 0, app: "Safari", title: "Q3 Overview — Northwind Analytics",
                                             frame: dashboardFrame, bundleID: "com.apple.Safari")
         return ZStack(alignment: .topLeading) {
-            desktopBackground()
+            desktopBackground(size)
             SelectionOverlayView(model: model, index: 0)
         }
     }
@@ -157,12 +186,12 @@ enum ScreenshotPreviews {
         return items
     }
 
-    static var quickAccessScene: some View {
+    static func quickAccessScene(size: CGSize) -> some View {
         let items = sampleItems()
         let width = OverlaySize.medium.width
         let sizes = items.map { QuickAccessLayout.cardSize(image: $0.pointSize, width: width) }
-        // Cocoa frames in a 1280×800 "screen" with a 24 pt menu bar; flipped for SwiftUI below.
-        let visible = CGRect(x: 0, y: 0, width: desktopSize.width, height: desktopSize.height - 24)
+        // Cocoa frames in the "screen" below a 24 pt menu bar; flipped for SwiftUI below.
+        let visible = CGRect(x: 0, y: 0, width: size.width, height: size.height - 24)
         let frames = QuickAccessLayout.frames(sizes: sizes, corner: .bottomLeft, in: visible)
         let models = items.enumerated().map { i, item in
             let model = QuickAccessCardModel(item: item, thumbnail: QuickAccessController.thumbnail(item, width: width))
@@ -170,12 +199,13 @@ enum ScreenshotPreviews {
             return model
         }
         return ZStack(alignment: .topLeading) {
-            desktopBackground()
+            desktopBackground(size)
             ForEach(Array(zip(models, frames).enumerated()), id: \.offset) { _, pair in
                 QuickAccessCardView(model: pair.0, actions: QuickAccessActions())
                     .frame(width: pair.1.width, height: pair.1.height)
+                    .compositingGroup()
                     .shadow(color: .black.opacity(0.35), radius: 14, y: 6)
-                    .position(x: pair.1.midX, y: desktopSize.height - pair.1.midY)
+                    .position(x: pair.1.midX, y: size.height - pair.1.midY)
             }
         }
     }
@@ -187,15 +217,15 @@ enum ScreenshotPreviews {
         let item = CaptureItem(image: img, scale: 2, kind: .area)
         let red = MarkupPalette.colors[0], yellow = MarkupPalette.colors[2], blue = MarkupPalette.colors[4]
         item.document.items = [
-            MarkupItem(shape: .highlighter([CGPoint(x: 44, y: 486), CGPoint(x: 330, y: 486)]), color: yellow, size: .large),
-            MarkupItem(shape: .rectangle(CGRect(x: 30, y: 82, width: 172, height: 92), filled: false), color: red, size: .medium),
-            MarkupItem(shape: .arrow(from: CGPoint(x: 360, y: 300), to: CGPoint(x: 214, y: 150), bend: -38), color: red, size: .medium),
+            MarkupItem(shape: .highlighter([CGPoint(x: 34, y: 482), CGPoint(x: 160, y: 482)]), color: yellow, size: .large),
+            MarkupItem(shape: .rectangle(CGRect(x: 17, y: 78, width: 188, height: 108), filled: false), color: red, size: .medium),
+            MarkupItem(shape: .arrow(from: CGPoint(x: 322, y: 298), to: CGPoint(x: 150, y: 192), bend: -38), color: red, size: .medium),
             MarkupItem(shape: .text(MarkupText(origin: CGPoint(x: 330, y: 304), string: "Best quarter so far", style: .solid)),
                        color: red, size: .medium),
-            MarkupItem(shape: .counter(center: CGPoint(x: 30, y: 82), number: 1), color: blue, size: .medium),
-            MarkupItem(shape: .counter(center: CGPoint(x: 560, y: 222), number: 2), color: blue, size: .medium),
-            MarkupItem(shape: .ellipse(CGRect(x: 508, y: 196, width: 108, height: 56), filled: false), color: blue, size: .small),
-            MarkupItem(shape: .pixelate(CGRect(x: 600, y: 470, width: 150, height: 70)), color: red, size: .medium),
+            MarkupItem(shape: .counter(center: CGPoint(x: 17, y: 78), number: 1), color: blue, size: .medium),
+            MarkupItem(shape: .counter(center: CGPoint(x: 638, y: 232), number: 2), color: blue, size: .medium),
+            MarkupItem(shape: .ellipse(CGRect(x: 640, y: 228, width: 88, height: 50), filled: false), color: blue, size: .small),
+            MarkupItem(shape: .pixelate(CGRect(x: 580, y: 470, width: 166, height: 23)), color: red, size: .medium),
         ]
         var style = BeautifyStyle()
         style.backdrop = .preset(.aurora)
@@ -221,23 +251,29 @@ enum ScreenshotPreviews {
 
     static var beautifiedScene: some View {
         let image: CGImage? = annotatedDocumentItem().map { item in
-            item.document.beautify?.aspect = .xPost
+            item.document.beautify?.aspect = .sixteenNine
             item.document.beautify?.padding = 56
             return item.rendered
         }
+        // The exported image, shown at its own size the way a viewer would.
         return Group {
-            if let image { Image(decorative: image, scale: CGFloat(image.width) / 1200) }
+            if let image { Image(decorative: image, scale: CGFloat(image.width) / beautifiedSize.width) }
         }
-        .frame(width: 1200, height: 675)
+        .frame(width: beautifiedSize.width, height: beautifiedSize.height)
+        .shadow(color: .black.opacity(0.28), radius: 18, y: 8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .underPageBackgroundColor))
+        .ignoresSafeArea()
     }
 
-    static var pinScene: some View {
+    static func pinScene(size: CGSize) -> some View {
         let model = PinModel(image: codeSnippet.map { NSImage(cgImage: $0, size: CGSize(width: 460, height: 236)) } ?? NSImage())
         model.hovering = true
         return ZStack(alignment: .topLeading) {
-            desktopBackground()
+            desktopBackground(size)
             PinView(model: model, actions: PinActions())
                 .frame(width: 460, height: 236)
+                .compositingGroup()
                 .shadow(color: .black.opacity(0.45), radius: 22, y: 10)
                 .position(x: 960, y: 560)
         }
@@ -276,18 +312,20 @@ enum ScreenshotPreviews {
         return HistoryView(history: history, actions: HistoryActions(), areaShortcut: ScreenshotSettings().areaShortcut, chrome: true)
     }
 
-    static var timerScene: some View {
+    /// The countdown over the dashboard's content.
+    static func timerScene(size: CGSize) -> some View {
         let model = Countdown.Model(seconds: 5)
         model.remaining = 3
         model.progress = 0.6
+        let crop = CGRect(x: dashboardFrame.minX + 180, y: dashboardFrame.minY + 44, width: size.width, height: size.height)
         return ZStack {
-            if let img = area(CGRect(x: 320, y: 200, width: 640, height: 400)) {
+            if let img = area(crop) {
                 Image(decorative: img, scale: 2)
             }
             CountdownView(model: model) {}
                 .frame(width: 168, height: 196)
         }
-        .frame(width: 640, height: 400)
+        .frame(width: size.width, height: size.height)
     }
 }
 
@@ -301,11 +339,13 @@ struct SampleDesktop: View {
             SampleNotesWindow()
                 .frame(width: ScreenshotPreviews.notesFrame.width, height: ScreenshotPreviews.notesFrame.height)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .compositingGroup()
                 .shadow(color: .black.opacity(0.35), radius: 20, y: 10)
                 .offset(x: ScreenshotPreviews.notesFrame.minX, y: ScreenshotPreviews.notesFrame.minY)
             SampleDashboardWindow()
                 .frame(width: ScreenshotPreviews.dashboardFrame.width, height: ScreenshotPreviews.dashboardFrame.height)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .compositingGroup()
                 .shadow(color: .black.opacity(0.42), radius: 26, y: 14)
                 .offset(x: ScreenshotPreviews.dashboardFrame.minX, y: ScreenshotPreviews.dashboardFrame.minY)
             menuBar

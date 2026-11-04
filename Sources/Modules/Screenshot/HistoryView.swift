@@ -157,7 +157,7 @@ struct HistoryTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
-            ZStack(alignment: .topTrailing) {
+            ZStack {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(Color.primary.opacity(0.05))
                 if let thumbnail {
@@ -182,6 +182,7 @@ struct HistoryTile: View {
                     .background(Capsule().fill(.black.opacity(0.55)))
                     .foregroundStyle(.white)
                     .padding(8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .transition(.opacity)
                 }
             }

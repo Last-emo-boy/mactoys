@@ -271,6 +271,7 @@ struct LoupeCard: View {
         .padding(4)
         .background(RoundedRectangle(cornerRadius: 15, style: .continuous).fill(Color(red: 0.1, green: 0.1, blue: 0.12).opacity(0.94)))
         .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous).strokeBorder(.white.opacity(0.16)))
+        .compositingGroup()
         .shadow(color: .black.opacity(0.35), radius: 12, y: 5)
     }
 
