@@ -5,10 +5,10 @@ import PackageDescription
 /// One SwiftPM target per utility. Each compiles on its own against MacToysCore,
 /// so a module can be built and tested in isolation: `swift build --target FancyZones`.
 let toyModules = [
-    "AdvancedPaste", "AlwaysOnTop", "Awake", "ColorPicker", "CommandNotFound", "CommandPalette",
+    "AdvancedPaste", "AlwaysOnTop", "AutoTiling", "Awake", "ColorPicker", "CommandNotFound", "CommandPalette",
     "CropAndLock", "EnvironmentVariables", "FancyZones", "FinderAddons", "FileLocksmith",
     "GrabAndMove", "HostsEditor", "ImageResizer", "KeyboardManager", "LightSwitch",
-    "MouseUtilities", "MouseWithoutBorders", "NewPlus", "Peek", "PowerDisplay", "PowerRename",
+    "MouseUtilities", "MouseWithoutBorders", "NewPlus", "Peek", "PowerDisplay", "PowerRename", "PrivacyScreen",
     "QuickAccent", "PlistPreview", "ScreenRuler", "ShortcutGuide", "TextExtractor",
     "WindowHopper", "Workspaces", "ZoomIt",
 ]

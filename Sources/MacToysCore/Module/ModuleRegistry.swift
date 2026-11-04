@@ -117,4 +117,8 @@ public enum Services {
 
     /// Set by FancyZones: snaps the focused window to zone index on the current display.
     public static var snapFocusedWindowToZone: ((Int) -> Void)?
+
+    /// Set by Auto Tiling: whether it arranges the windows on this display right now. FancyZones
+    /// leaves new windows and window drags on such a display to Auto Tiling.
+    public static var autoTilingManagesDisplay: ((CGDirectDisplayID) -> Bool)?
 }

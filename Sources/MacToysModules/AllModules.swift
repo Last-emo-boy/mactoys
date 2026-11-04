@@ -1,5 +1,6 @@
 import AdvancedPaste
 import AlwaysOnTop
+import AutoTiling
 import Awake
 import ColorPicker
 import CommandNotFound
@@ -20,6 +21,7 @@ import NewPlus
 import Peek
 import PowerDisplay
 import PowerRename
+import PrivacyScreen
 import QuickAccent
 import PlistPreview
 import ScreenRuler
@@ -37,6 +39,7 @@ public enum AllModules {
         [
         AdvancedPasteModule(),
         AlwaysOnTopModule(),
+        AutoTilingModule(),
         AwakeModule(),
         ColorPickerModule(),
         CommandNotFoundModule(),
@@ -57,6 +60,7 @@ public enum AllModules {
         PeekModule(),
         PowerDisplayModule(),
         PowerRenameModule(),
+        PrivacyScreenModule(),
         QuickAccentModule(),
         PlistPreviewModule(),
         ScreenRulerModule(),
