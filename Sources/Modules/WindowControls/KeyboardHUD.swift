@@ -52,8 +52,9 @@ struct KeyboardHUDView: View {
                             }
                             row(["⌫"], Text("Undo", comment: "Keyboard mode: put the window back where it was"))
                                 .opacity(model.canUndo ? 1 : 0.45)
+                            row(["⇥"], Text("Next window · ⇧ previous", comment: "Keyboard mode: tab arranges another window"))
                         }
-                        .frame(width: 270, alignment: .leading)
+                        .frame(width: 320, alignment: .leading)
                         VStack(alignment: .leading, spacing: 9) {
                             sectionTitle(Text("Custom controls", comment: "Keyboard mode cheat sheet section"))
                             if model.controls.isEmpty {
@@ -74,10 +75,8 @@ struct KeyboardHUDView: View {
                                         .lineLimit(1)
                                 }
                             }
-                            row(["⇥"], Text("Next window · ⇧ previous", comment: "Keyboard mode: tab arranges another window"))
-                                .padding(.top, model.controls.isEmpty ? 0 : 4)
                         }
-                        .frame(width: 230, alignment: .leading)
+                        .frame(width: 240, alignment: .leading)
                     }
                 }
             }
@@ -98,28 +97,35 @@ struct KeyboardHUDView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Keyboard mode", comment: "Title of the Window Controls keyboard-mode HUD")
                     .font(.system(size: 14, weight: .semibold))
-                ZStack(alignment: .leading) {
-                    if let action = model.lastAction {
-                        Text(verbatim: action)
-                            .foregroundStyle(Color.accentColor.opacity(0.95))
-                            .transition(.opacity)
-                            .id(action)
-                    } else {
-                        HStack(spacing: 5) {
-                            if let icon = model.appIcon { Image(nsImage: icon).resizable().frame(width: 13, height: 13) }
-                            Text(verbatim: model.windowTitle.isEmpty ? model.appName : "\(model.appName) — \(model.windowTitle)")
-                                .foregroundStyle(.white.opacity(0.6))
-                        }
-                        .transition(.opacity)
-                    }
+                HStack(spacing: 5) {
+                    if let icon = model.appIcon { Image(nsImage: icon).resizable().frame(width: 14, height: 14) }
+                    Text(verbatim: model.windowTitle.isEmpty ? model.appName : "\(model.appName) — \(model.windowTitle)")
+                        .foregroundStyle(.white.opacity(0.6))
                 }
                 .font(.system(size: 12))
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .frame(maxWidth: 420, alignment: .leading)
-                .animation(reduceMotion ? nil : .smooth(duration: 0.2), value: model.lastAction)
+                .frame(maxWidth: 300, alignment: .leading)
             }
             Spacer(minLength: 16)
+            ZStack(alignment: .trailing) {
+                if let action = model.lastAction {
+                    Label {
+                        Text(verbatim: action).foregroundStyle(.white.opacity(0.92)).lineLimit(1)
+                    } icon: {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(Color(red: 0.42, green: 0.86, blue: 0.5))
+                    }
+                    .labelStyle(.titleAndIcon)
+                    .font(.system(size: 12, weight: .medium))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(Color.white.opacity(0.1)))
+                    .transition(.opacity)
+                    .id(action)
+                }
+            }
+            .animation(reduceMotion ? nil : .smooth(duration: 0.2), value: model.lastAction)
             HStack(spacing: 6) {
                 keycap("esc")
                 Text("Done", comment: "Keyboard mode: esc leaves it").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6))
@@ -135,7 +141,9 @@ struct KeyboardHUDView: View {
         HStack(spacing: 9) {
             HStack(spacing: 3) { ForEach(Array(keys.enumerated()), id: \.offset) { keycap($0.element) } }
                 .frame(minWidth: 26, alignment: .leading)
-            text.font(.system(size: 12.5)).foregroundStyle(.white.opacity(0.85)).lineLimit(1)
+            text.font(.system(size: 12.5)).foregroundStyle(.white.opacity(0.85))
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

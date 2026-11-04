@@ -246,6 +246,8 @@ struct PaletteGrid: View {
         let selection = model.selection
         Canvas { ctx, canvasSize in
             let screen = Path(roundedRect: CGRect(origin: .zero, size: canvasSize), cornerRadius: 9, style: .continuous)
+            // A dark well, so the cells read the same over light and dark windows.
+            ctx.fill(screen, with: .color(.black.opacity(0.3)))
             ctx.fill(screen, with: .color(.white.opacity(0.05)))
             let spacing: CGFloat = 3
             let cw = (canvasSize.width - spacing) / CGFloat(grid.columns)
@@ -330,7 +332,8 @@ struct PaletteSurface<Content: View>: View {
                         .strokeBorder(.white.opacity(contrast == .increased ? 0.5 : 0.16), lineWidth: 1))
                     .environment(\.colorScheme, .dark)
             } else {
-                GlassPanel(cornerRadius: cornerRadius) { content }
+                // Extra shade so text stays legible over busy windows behind the glass.
+                GlassPanel(cornerRadius: cornerRadius) { content.background(Color.black.opacity(0.6)) }
                     .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .strokeBorder(.white.opacity(contrast == .increased ? 0.45 : 0), lineWidth: 1))
             }

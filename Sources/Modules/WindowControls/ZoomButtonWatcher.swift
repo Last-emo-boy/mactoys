@@ -41,6 +41,7 @@ final class ZoomButtonWatcher {
     // Double-click state (tap side).
     private var pendingClick: DispatchWorkItem?
     private var swallowUp = false
+    private var tapAdded = false
     private static let tapID = "windowcontrols.zoombutton"
     /// How long the pointer must rest before the hit test runs (separately from the hover delay, so
     /// a double-click right after arriving still finds the button).
@@ -64,18 +65,26 @@ final class ZoomButtonWatcher {
             removeMonitor()
         }
         if doubleClick {
-            InputTap.shared.add(Self.tapID, priority: 55, events: [.leftMouseDown, .leftMouseUp]) { [weak self] type, event in
-                self?.handleClick(type, event) ?? .pass
+            // Added once: settings change often (a slider moving), and re-adding rebuilds the tap.
+            if !tapAdded {
+                tapAdded = true
+                InputTap.shared.add(Self.tapID, priority: 55, events: [.leftMouseDown, .leftMouseUp]) { [weak self] type, event in
+                    self?.handleClick(type, event) ?? .pass
+                }
             }
         } else {
-            InputTap.shared.remove(Self.tapID)
-            cancelPendingClick()
+            removeTap()
         }
     }
 
     func stop() {
         removeMonitor()
-        InputTap.shared.remove(Self.tapID)
+        removeTap()
+    }
+
+    private func removeTap() {
+        if tapAdded { InputTap.shared.remove(Self.tapID) }
+        tapAdded = false
         cancelPendingClick()
     }
 

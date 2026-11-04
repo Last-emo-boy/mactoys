@@ -23,15 +23,20 @@ struct WindowControlsSettingsView: View {
                             .formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(2))))
                     }
                     LabeledContent {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 4) {
+                            Text(verbatim: "\(v.gridColumns)").monospacedDigit().frame(minWidth: 18, alignment: .trailing)
                             Stepper(value: $s.value.gridColumns, in: 2...12) {
-                                Text(verbatim: "\(v.gridColumns)").monospacedDigit().frame(minWidth: 18, alignment: .trailing)
+                                Text("Columns", comment: "Window Controls: stepper for the number of grid columns")
                             }
-                            Text(verbatim: "×").foregroundStyle(.secondary)
+                            .labelsHidden()
+                            Text(verbatim: "×").foregroundStyle(.secondary).padding(.horizontal, 6)
+                            Text(verbatim: "\(v.gridRows)").monospacedDigit().frame(minWidth: 18, alignment: .trailing)
                             Stepper(value: $s.value.gridRows, in: 2...12) {
-                                Text(verbatim: "\(v.gridRows)").monospacedDigit().frame(minWidth: 18, alignment: .trailing)
+                                Text("Rows", comment: "Window Controls: stepper for the number of grid rows")
                             }
+                            .labelsHidden()
                         }
+                        .foregroundStyle(.primary)
                         .fixedSize()
                     } label: {
                         RowLabel("Grid", subtitle: "Columns × rows of the resize grid")
@@ -122,7 +127,7 @@ struct WindowControlsSettingsView: View {
             Section("Other ways to use it") {
                 LabeledContent {
                     VStack(alignment: .trailing, spacing: 3) {
-                        ForEach(["keyboard", "control?name=Left Half", "save-layout?name=…", "restore-layout?name=…"], id: \.self) { a in
+                        ForEach(["keyboard", "control?name=left-half", "save-layout?name=…", "restore-layout?name=…"], id: \.self) { a in
                             Text(verbatim: "mactoys://windowcontrols/\(a)")
                         }
                     }
@@ -195,7 +200,7 @@ struct HeroDesktop: View {
                     ZStack(alignment: .topLeading) {
                         Rectangle().fill(.white.opacity(0.28)).frame(height: menuBar)
                         MockAppWindow(title: "Field notes", accent: .orange, compact: true, hoverZoom: true)
-                            .frame(width: size.width * 0.5, height: size.height * 0.56)
+                            .frame(width: size.width * 0.42, height: size.height * 0.56)
                             .offset(x: windowOrigin.x, y: windowOrigin.y)
                         TargetOutlineMini()
                             .frame(width: target.width, height: target.height)
@@ -397,7 +402,7 @@ struct LayoutList: View {
                         badge(Text("Saved automatically", comment: "Badge: the layout was saved when a display disconnected"), color: .secondary)
                     }
                     if current {
-                        badge(Text("These displays", comment: "Badge: the layout was saved for the displays connected now"), color: Tint.green.color)
+                        badge(Text("These displays", comment: "Badge: the layout was saved for the displays connected now"), color: Self.currentGreen)
                     }
                 }
                 Text(summary(layout))
@@ -405,10 +410,9 @@ struct LayoutList: View {
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 if layout.autoRestore {
-                    Label {
-                        Text("Restores when these displays connect", comment: "Window Controls: the layout comes back on its own")
-                    } icon: {
+                    HStack(spacing: 4) {
                         Image(systemName: "arrow.uturn.backward.circle")
+                        Text("Restores when these displays connect", comment: "Window Controls: the layout comes back on its own")
                     }
                     .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
@@ -439,6 +443,12 @@ struct LayoutList: View {
         }
         .padding(.vertical, 8)
     }
+
+    /// A green dark enough to read as text on the light page, the usual green on the dark one.
+    private static let currentGreen = Color(nsColor: NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            ? Tint.green.nsColor : NSColor(srgbRed: 0.08, green: 0.52, blue: 0.2, alpha: 1)
+    })
 
     private func badge(_ text: Text, color: Color) -> some View {
         text.font(.system(size: 10, weight: .semibold))

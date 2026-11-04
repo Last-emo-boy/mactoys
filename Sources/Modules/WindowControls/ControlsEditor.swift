@@ -53,15 +53,26 @@ struct ControlsEditorView: View {
     private var sidebar: some View {
         @Bindable var s = settings
         return VStack(spacing: 0) {
-            List(selection: $state.selection) {
-                ForEach(s.value.controls) { control in
-                    ControlRow(control: control, keyNumber: keyNumber(of: control.id))
-                        .tag(control.id)
+            ScrollViewReader { proxy in
+                List(selection: $state.selection) {
+                    ForEach(s.value.controls) { control in
+                        ControlRow(control: control, keyNumber: keyNumber(of: control.id))
+                            .tag(control.id)
+                            .id(control.id)
+                            .listRowSeparator(.hidden)
+                    }
+                    .onMove { from, to in s.value.controls.move(fromOffsets: from, toOffset: to) }
                 }
-                .onMove { from, to in s.value.controls.move(fromOffsets: from, toOffset: to) }
+                .listStyle(.inset)
+                .scrollContentBackground(.hidden)
+                // Opening the editor on a control further down the list shows that control.
+                .onAppear {
+                    // After the list has laid out its rows.
+                    guard let id = state.selection else { return }
+                    DispatchQueue.main.async { proxy.scrollTo(id, anchor: .center) }
+                }
+                .onChange(of: state.selection) { _, id in if let id { proxy.scrollTo(id) } }
             }
-            .listStyle(.sidebar)
-            .scrollContentBackground(.hidden)
             Divider()
             HStack(spacing: 4) {
                 Menu {
@@ -137,31 +148,43 @@ private struct ControlRow: View {
                 .frame(width: 34, height: 22)
             VStack(alignment: .leading, spacing: 1) {
                 Text(verbatim: control.displayName).lineLimit(1)
-                if control.isChain {
-                    Text(control.chainMode == .cycle
-                         ? String(localized: "\(control.steps.count) steps in turn", comment: "Window Controls editor: a chain that runs one step per use")
-                         : String(localized: "\(control.steps.count) steps at once", comment: "Window Controls editor: a chain that runs every step together"))
-                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                if let detail {
+                    Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
+            .layoutPriority(1)
             Spacer(minLength: 4)
-            if let sc = control.shortcut { Keycaps(sc) }
-            if let keyNumber {
-                Text(verbatim: "\(keyNumber)")
-                    .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
-                    .foregroundStyle(.secondary)
-                    .frame(width: 17, height: 17)
-                    .background(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(.secondary.opacity(0.5)))
-                    .help(Text("Key \(keyNumber) in keyboard mode", comment: "Window Controls editor: this control's number key"))
+            if let sc = control.shortcut {
+                badge(Text(verbatim: sc.description))
+                    .help(Text("Shortcut \(sc.description)", comment: "Window Controls editor: tooltip of a control's shortcut; %@ is the key combination"))
             }
-            if control.inPalette {
-                Image(systemName: "square.grid.3x2")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
-                    .help(Text("In the zoom button palette", comment: "Window Controls editor: icon meaning the control shows in the palette"))
+            if let keyNumber {
+                badge(Text(verbatim: "\(keyNumber)"))
+                    .help(Text("Key \(keyNumber) in keyboard mode", comment: "Window Controls editor: this control's number key"))
             }
         }
         .padding(.vertical, 3)
+    }
+
+    private func badge(_ text: Text) -> some View {
+        text.font(.system(size: 10.5, weight: .semibold).monospacedDigit())
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, 4)
+            .frame(minWidth: 17, minHeight: 17)
+            .background(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(.secondary.opacity(0.5)))
+    }
+
+    /// A chain's kind, or that the control stays out of the palette.
+    private var detail: String? {
+        if control.isChain {
+            return control.chainMode == .cycle
+                ? String(localized: "\(control.steps.count) steps in turn", comment: "Window Controls editor: a chain that runs one step per use")
+                : String(localized: "\(control.steps.count) steps at once", comment: "Window Controls editor: a chain that runs every step together")
+        }
+        return control.inPalette ? nil
+            : String(localized: "Not in the palette", comment: "Window Controls editor: the control doesn't show in the zoom button palette")
     }
 }
 
@@ -237,7 +260,7 @@ private struct ControlDetail: View {
     private var summary: String {
         let names = control.steps.map(StepDescription.text)
         guard control.steps.count > 1 else { return names.first ?? "" }
-        let list = names.formatted(.list(type: .and))
+        let list = names.joined(separator: control.chainMode == .cycle ? " · " : " → ")
         return control.chainMode == .cycle
             ? String(localized: "In turn: \(list)", comment: "Window Controls: a chain that runs one step per use; %@ lists the steps")
             : String(localized: "Together: \(list)", comment: "Window Controls: a chain that runs all steps at once; %@ lists the steps")

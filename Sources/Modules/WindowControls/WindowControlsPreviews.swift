@@ -11,7 +11,7 @@ enum WindowControlsPreviews {
             PreviewScene("palette", size: CGSize(width: 1440, height: 900)) { AnyView(PalettePreview()) },
             PreviewScene("keyboard", size: CGSize(width: 1440, height: 900)) { AnyView(KeyboardPreview()) },
             PreviewScene("controls-editor", size: CGSize(width: 920, height: 640), wallpaper: false) { AnyView(EditorPreview()) },
-            PreviewScene("layouts", size: CGSize(width: 780, height: 520), wallpaper: false) { AnyView(LayoutsPreview()) },
+            PreviewScene("layouts", size: CGSize(width: 780, height: 430), wallpaper: false) { AnyView(LayoutsPreview()) },
         ]
     }
 
@@ -63,12 +63,12 @@ enum WindowControlsPreviews {
     }
 
     /// Two controls a user might add: a chain and a pinned size.
-    static var customControls: [WindowControl] {
-        [WindowControl(name: "Writing column", steps: [.display(.main), .resize(.points(900), .fraction(1), anchor: .center)],
-                       shortcut: Shortcut(0x0D, [.control, .option, .command]), inPalette: true, inKeyboard: true),
-         WindowControl(name: "Video corner", steps: [.resize(.points(640), .points(360), anchor: .bottomRight)],
-                       inPalette: true, inKeyboard: false)]
-    }
+    static let customControls: [WindowControl] = [
+        WindowControl(name: "Writing column", steps: [.display(.main), .resize(.points(900), .fraction(1), anchor: .center)],
+                      shortcut: Shortcut(0x0D, [.control, .option, .command]), inPalette: true, inKeyboard: true),
+        WindowControl(name: "Video corner", steps: [.resize(.points(640), .points(360), anchor: .bottomRight)],
+                      inPalette: true, inKeyboard: false),
+    ]
 }
 
 /// A menu bar strip for the scene desktops.
@@ -102,9 +102,9 @@ private struct PalettePreview: View {
         let model = HeroPalette.model(grid: grid, selection: selection,
                                       displays: [DisplayChoice(index: 1, name: "Studio Display")])
         model.gridSize = PaletteLayout.gridSize(for: visible)
-        model.current = UnitRect(x: 120.0 / 1440, y: 80.0 / 870, width: 760.0 / 1440, height: 520.0 / 870)
+        model.current = UnitRect(x: 90.0 / 1440, y: 74.0 / 870, width: 600.0 / 1440, height: 470.0 / 870)
         model.targetSize = target.size
-        let window = CGRect(x: 120, y: 110, width: 760, height: 520)
+        let window = CGRect(x: 90, y: 104, width: 600, height: 470)
         return ZStack(alignment: .topLeading) {
             Color.clear
             MockMenuBar(app: "Notes")
@@ -177,6 +177,7 @@ private struct EditorPreview: View {
             ControlsEditorView(settings: settings, state: state)
         }
         .background(Color(nsColor: .windowBackgroundColor))
+        .environment(\.controlActiveState, .key)
     }
 }
 
