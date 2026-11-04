@@ -207,7 +207,7 @@ public enum KeyCodes {
             var chars = [UniChar](repeating: 0, count: 4)
             let mods: UInt32 = shift ? UInt32(shiftKey >> 8) & 0xFF : 0
             let status = UCKeyTranslate(layout, code, UInt16(kUCKeyActionDisplay), mods,
-                                        UInt32(LMGetKbdType()), OptionBits(kUCKeyTranslateNoDeadKeysBit),
+                                        UInt32(LMGetKbdType()), OptionBits(kUCKeyTranslateNoDeadKeysMask),
                                         &deadKeys, chars.count, &length, &chars)
             guard status == noErr, length > 0 else { return nil }
             return String(utf16CodeUnits: chars, count: length)
