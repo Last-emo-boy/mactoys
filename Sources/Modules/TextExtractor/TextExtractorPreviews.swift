@@ -15,7 +15,7 @@ enum TextExtractorPreviews {
                 return AnyView(TextExtractorOverlay(model: model, background: SampleScreen(),
                                                     languages: [("en-US", "English (United States)")]))
             },
-            PreviewScene("card", size: CGSize(width: 1100, height: 700), wallpaper: false) {
+            PreviewScene("card", size: CGSize(width: 1100, height: 800), wallpaper: false) {
                 let card = model(recents: true)
                 card.capture = releaseNotes
                 card.canJoin = true
@@ -49,7 +49,6 @@ enum TextExtractorPreviews {
                 let card = model(recents: false)
                 card.capture = Capture(text: "Der Zug nach München fährt heute von Gleis 14 ab.", mode: .paragraphs, source: .screen,
                                        language: "de")
-                card.canJoin = true
                 card.target = Locale.Language(identifier: "ko")
                 card.translation = .needsDownload
                 return AnyView(framed(card))
@@ -58,7 +57,6 @@ enum TextExtractorPreviews {
                 let card = model(recents: false)
                 card.capture = Capture(text: "Order #48213 · Shipped 3 November", mode: .lines, source: .screen, language: "en")
                 card.addedCount = 3
-                card.canJoin = true
                 return AnyView(framed(card))
             },
             PreviewScene("file", size: CGSize(width: 560, height: 300)) {

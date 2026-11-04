@@ -118,8 +118,12 @@ struct ResultCard: View {
         }
         .padding(12)
         .frame(width: Self.width, alignment: .leading)
-        .background(background)
-        .glassEffect(.regular, in: .rect(cornerRadius: 22))
+        // The glass sits behind the content rather than around it, so text keeps the card's own
+        // light or dark colors instead of adapting to whatever is under the card.
+        .background {
+            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(background)
+                .glassEffect(.regular, in: .rect(cornerRadius: 22))
+        }
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous)
             .strokeBorder(Color.primary.opacity(contrast == .increased ? 0.45 : 0.12), lineWidth: 1))
@@ -152,7 +156,8 @@ struct ResultCard: View {
                     Text(verbatim: subtitle)
                         .font(.system(size: 11.5))
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer(minLength: 6)
@@ -287,7 +292,7 @@ struct ResultCard: View {
 
     private var dropOverlay: some View {
         RoundedRectangle(cornerRadius: 22, style: .continuous)
-            .fill(scheme == .dark ? Color(red: 0.1, green: 0.13, blue: 0.14).opacity(0.94) : Color(red: 0.93, green: 0.98, blue: 0.97).opacity(0.95))
+            .fill(scheme == .dark ? Color(red: 0.1, green: 0.13, blue: 0.14).opacity(0.97) : Color(red: 0.93, green: 0.98, blue: 0.97).opacity(0.97))
             .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .strokeBorder(Tint.mint.color, style: StrokeStyle(lineWidth: 2, dash: [7, 5])))
             .overlay {
@@ -296,7 +301,7 @@ struct ResultCard: View {
                         .font(.system(size: 28, weight: .medium))
                         .symbolRenderingMode(.hierarchical)
                     Text("Drop to extract text").font(.system(size: 14, weight: .semibold))
-                    Text("Images and PDFs").font(.system(size: 11.5)).foregroundStyle(.secondary)
+                    Text("Images and PDFs").font(.system(size: 11.5)).foregroundStyle(Color.secondary)
                 }
                 .foregroundStyle(Tint.mint.color)
             }
@@ -316,9 +321,8 @@ struct ResultCard: View {
             if isText {
                 if model.canJoin {
                     let joined = c?.mode == .paragraphs || c?.mode == .singleLine
-                    CardTile(title: joined ? String(localized: "Keep Lines", comment: "Card tile: undo joining lines")
-                                : String(localized: "Join Lines", comment: "Card tile: join wrapped lines into paragraphs"),
-                             symbol: joined ? "text.alignleft" : "text.justify.left", active: joined) { model.send(.toggleJoin) }
+                    CardTile(title: String(localized: "Join Lines", comment: "Card tile, an on/off switch: join wrapped lines into paragraphs"),
+                             symbol: "text.justify.left", active: joined) { model.send(.toggleJoin) }
                 }
                 CardTile(title: String(localized: "Translate", comment: "Card tile"), symbol: "translate",
                          active: model.translation != .hidden) { model.send(.translate) }
@@ -442,6 +446,7 @@ struct CardTile: View {
         .opacity(enabled ? 1 : 0.45)
         .onHover { hovering = $0 }
         .accessibilityLabel(Text(verbatim: title))
+        .accessibilityAddTraits(active ? .isSelected : [])
     }
 }
 
