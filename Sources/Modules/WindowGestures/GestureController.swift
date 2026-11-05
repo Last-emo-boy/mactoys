@@ -188,7 +188,8 @@ final class GestureController {
                                              menuBar: cfg.menuBarFill ? strip : nil,
                                              skipFullScreen: cfg.disableInFullScreen)
         let fallback = CGFloat(cfg.titleBarHeight)
-        let surface = SurfaceHitTest.surface(at: p, entries: WindowEntry.onScreen(), context: context) { [probe] e in
+        let hit = CGWindowID(clamping: NSWindow.windowNumber(at: ScreenGeometry.toCocoa(p), belowWindowWithWindowNumber: 0))
+        let surface = SurfaceHitTest.surface(at: p, hit: hit, entries: WindowEntry.onScreen(), context: context) { [probe] e in
             probe.band(for: e, fallback: fallback)
         }
         let sessionSurface: Session.Surface

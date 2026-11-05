@@ -80,13 +80,25 @@ public enum SurfaceHitTest {
 
     /// The surface at `p`.
     ///
+    /// `hit` is the window a click at `p` would reach (`NSWindow.windowNumber(at:)`, 0 for none), and
+    /// only it decides. The window list alone can't tell which windows take clicks: Notification
+    /// Center and the Dock keep transparent full-screen windows in front of every app, and so do
+    /// some apps' overlays. Nil: not known, the list is walked as below.
+    ///
     /// Windows are checked front to back. The first normal window under the point decides: its
     /// title bar band (asked through `band`, only when the point is near its top) or nothing. The
     /// Dock is the Dock. The menu bar and its status items are looked through, and so are MacToys'
     /// own click-through overlays; any other app's floating window, menu or panel on top means
     /// nothing. With no window under it, a point in the menu bar strip is the menu bar.
-    public static func surface<S: Sequence>(at p: CGPoint, entries: S, context c: Context,
+    public static func surface<S: Sequence>(at p: CGPoint, hit: CGWindowID? = nil, entries: S, context c: Context,
                                             band: (WindowEntry) -> CGFloat) -> GestureSurface where S.Element == WindowEntry {
+        guard let hit else { return walk(at: p, entries: entries, context: c, band: band) }
+        let front = entries.first { $0.id == hit }
+        return walk(at: p, entries: front.map { [$0] } ?? [], context: c, band: band)
+    }
+
+    private static func walk<S: Sequence>(at p: CGPoint, entries: S, context c: Context,
+                                          band: (WindowEntry) -> CGFloat) -> GestureSurface where S.Element == WindowEntry {
         for e in entries where e.alpha > 0.01 && e.frame.contains(p) {
             if e.layer < 0 { continue }
             if e.layer == 0 {

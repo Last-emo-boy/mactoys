@@ -466,8 +466,8 @@ private struct Run {
     }
 
     func hit(_ p: CGPoint, _ entries: [WindowEntry], band: CGFloat = 32, context c: SurfaceHitTest.Context? = nil,
-             asked: UnsafeMutablePointer<Int>? = nil) -> GestureSurface {
-        SurfaceHitTest.surface(at: p, entries: entries, context: c ?? context()) { _ in
+             clicked: CGWindowID? = nil, asked: UnsafeMutablePointer<Int>? = nil) -> GestureSurface {
+        SurfaceHitTest.surface(at: p, hit: clicked, entries: entries, context: c ?? context()) { _ in
             asked?.pointee += 1
             return band
         }
@@ -508,6 +508,25 @@ private struct Run {
         #expect(hit(CGPoint(x: 500, y: 110), [overlay, Self.window]) == .titleBar(Self.window, fullScreen: false))
         let settings = WindowEntry(id: 6, pid: Self.own, layer: 0, frame: CGRect(x: 300, y: 100, width: 600, height: 400))
         #expect(hit(CGPoint(x: 500, y: 110), [settings, Self.window]) == .none)
+    }
+
+    @Test func clickThroughLayersInFrontAreLookedThrough() {
+        // As on macOS 26: Notification Center and the Dock keep transparent full-screen windows in
+        // front of every app, and so does a game helper's overlay. Clicks reach the window behind.
+        let center = WindowEntry(id: 20, pid: Self.other, layer: 21, frame: Self.display)
+        let dockLayer = WindowEntry(id: 21, pid: Self.dock, layer: SurfaceHitTest.dockLevel, frame: Self.display)
+        let overlay = WindowEntry(id: 22, pid: Self.other, layer: 5, frame: Self.display)
+        let menuWindow = WindowEntry(id: 9, pid: Self.other, layer: SurfaceHitTest.menuBarLevel, frame: Self.strip)
+        let list = [menuWindow, center, dockLayer, overlay, Self.window]
+        // The window list alone can't tell: the overlays hide the title bar.
+        #expect(hit(CGPoint(x: 500, y: 110), list) == .none)
+        #expect(hit(CGPoint(x: 500, y: 110), list, clicked: 1) == .titleBar(Self.window, fullScreen: false))
+        #expect(hit(CGPoint(x: 500, y: 400), list, clicked: 1) == .none)                  // content
+        #expect(hit(CGPoint(x: 600, y: 860), list, clicked: 21) == .dock(dockLayer))       // over the Dock's icons
+        #expect(hit(CGPoint(x: 300, y: 10), list, clicked: 9) == .menuBar)
+        #expect(hit(CGPoint(x: 300, y: 50), list, clicked: 0) == .none)                    // the desktop
+        // A window that does take the click still blocks.
+        #expect(hit(CGPoint(x: 500, y: 110), list, clicked: 22) == .none)
     }
 
     @Test func invisibleWindowsAreSkipped() {

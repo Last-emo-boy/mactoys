@@ -350,21 +350,12 @@ final class MouseController {
         engine.activate(hit.window)
     }
 
-    /// The topmost window at a point (top-left coordinates), skipping MacToys' click-through overlays.
+    /// The window a click at a point (top-left coordinates) would reach. The window list can't tell:
+    /// Notification Center, the Dock and some apps keep transparent windows in front of every app,
+    /// and MacToys' overlays let clicks through.
     private static func frontWindow(at p: CGPoint) -> CGWindowID? {
-        let own = ProcessInfo.processInfo.processIdentifier
-        let list = (CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
-                    as? [[String: Any]]) ?? []
-        for d in list {
-            guard let id = d[kCGWindowNumber as String] as? CGWindowID,
-                  let pid = d[kCGWindowOwnerPID as String] as? pid_t,
-                  let layer = d[kCGWindowLayer as String] as? Int, layer >= 0,
-                  let bounds = (d[kCGWindowBounds as String] as? NSDictionary).flatMap({ CGRect(dictionaryRepresentation: $0) }),
-                  bounds.contains(p) else { continue }
-            if pid == own, let alpha = d[kCGWindowAlpha as String] as? Double, alpha < 1 || layer != 0 { continue }
-            return id
-        }
-        return nil
+        let number = NSWindow.windowNumber(at: ScreenGeometry.toCocoa(p), belowWindowWithWindowNumber: 0)
+        return number > 0 ? CGWindowID(number) : nil
     }
 
     private static func menuIsOpen() -> Bool {
