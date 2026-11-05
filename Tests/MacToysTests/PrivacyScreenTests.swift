@@ -284,6 +284,20 @@ import Testing
         #expect(all[0].parts == [front])
     }
 
+    @Test func floatingWindowsAboveDontHideAPrivateWindow() {
+        // An app's invisible floating panel lies over part of a private window (seen on a real Mac:
+        // 1138 × 2137 pt, half of it off screen). The window list can't tell it from a palette, so the
+        // private window stays covered under it.
+        let messages = CGRect(x: 0, y: 200, width: 1200, height: 600)
+        let scene = WindowScene(windows: [
+            sample(1, 40, CGRect(x: 922, y: -827, width: 1138, height: 2137), layer: 3),
+            sample(2, 20, messages),
+        ], frontPID: 99)
+        #expect(scene.visibleRegions(overlayLevel: 4) { $0 == 20 }.first?.parts == [messages])
+        // App Lock likewise.
+        #expect(scene.visibleRegions(overlayLevel: 4, skipFrontmost: false) { $0 == 20 }.first?.parts == [messages])
+    }
+
     @Test func windowsAboveTheOverlayAreIgnored() {
         let scene = WindowScene(windows: [
             sample(1, 1, CGRect(x: 0, y: 0, width: 1500, height: 900), layer: 25),  // a status-level panel

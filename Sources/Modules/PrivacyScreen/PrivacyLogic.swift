@@ -272,14 +272,17 @@ struct WindowScene: Equatable, Sendable {
     }
 
     /// The visible parts of every window whose owner matches, front to back, skipping the frontmost
-    /// app when `skipFrontmost` is set. Each window loses what any window above it covers.
+    /// app when `skipFrontmost` is set. Each window loses what any normal window above it covers.
+    /// Floating windows above don't count: the window list can't tell a palette from a transparent
+    /// overlay (some apps keep an invisible panel over half the screen), and a private window must
+    /// never show through one.
     func visibleRegions(overlayLevel: Int, skipFrontmost: Bool = true,
                         where matches: (pid_t) -> Bool) -> [(window: WindowSample, parts: [CGRect])] {
         let below = covered(by: overlayLevel)
         var result: [(WindowSample, [CGRect])] = []
         for (i, w) in below.enumerated() {
             guard matches(w.pid), !(skipFrontmost && w.pid == frontPID) else { continue }
-            let above = below[..<i].map(\.frame)
+            let above = below[..<i].filter { $0.layer == 0 }.map(\.frame)
             let parts = RegionGeometry.visibleParts(of: w.frame, above: above)
             if !parts.isEmpty { result.append((w, parts)) }
         }
