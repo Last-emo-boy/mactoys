@@ -1,6 +1,7 @@
 #!/bin/zsh
 # Builds every product and assembles build/MacToys.app (app + CLI + three app extensions),
-# signed with the local "MacToys Dev" identity.  CONFIG=release scripts/bundle.sh
+# signed with the local "MacToys Dev" identity, or with SIGN_IDENTITY when it is set.
+# CONFIG=release scripts/bundle.sh
 set -euo pipefail
 CONFIG=${CONFIG:-debug}
 ROOT=${0:A:h:h}
@@ -44,9 +45,14 @@ for ext in QuickLook Thumbnails FinderSync; do
   cp -R "$APP"/Contents/Resources/*.lproj "$X/Contents/Resources/"
 done
 
-"$ROOT/scripts/dev-identity.sh"
-KC="$HOME/Library/Keychains/mactoys-dev.keychain-db"
-sign() { codesign --force --sign "MacToys Dev" --keychain "$KC" --timestamp=none --options runtime "$@" }
+if [[ -n ${SIGN_IDENTITY:-} ]]; then
+  # A distribution certificate (scripts/release.sh): secure timestamps, as notarization requires.
+  sign() { codesign --force --sign "$SIGN_IDENTITY" --timestamp --options runtime "$@" }
+else
+  "$ROOT/scripts/dev-identity.sh"
+  KC="$HOME/Library/Keychains/mactoys-dev.keychain-db"
+  sign() { codesign --force --sign "MacToys Dev" --keychain "$KC" --timestamp=none --options runtime "$@" }
+fi
 for ext in QuickLook Thumbnails FinderSync; do
   sign --entitlements "Resources/Extensions/$ext/$ext.entitlements" "$APP/Contents/PlugIns/MacToys$ext.appex"
 done
